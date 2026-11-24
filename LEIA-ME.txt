@@ -1,0 +1,5 @@
+FluxSaude - projeto para gerar APK (Capacitor)
+1. Crie um repositorio PRIVADO no GitHub e envie estes arquivos.
+2. Aba Actions > "Gerar APK" > Run workflow.
+3. Ao terminar, baixe o artefato "FluxSaude-apk" (zip com o app-debug.apk).
+Para alterar o app, edite www/index.html e faca commit: o APK e gerado de novo.
