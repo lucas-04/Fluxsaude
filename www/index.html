@@ -143,9 +143,14 @@ details.kit>div.body{padding:6px 8px 10px}
 </div>
 
 <div id="login" class="hidden" style="position:fixed;inset:0;background:var(--bg);z-index:20;padding:24px;overflow:auto"><div class="container"><header><div class="brand"><h1><span class="fl">Flux</span><span class="sa">Saúde</span></h1></div></header>
-<div class="card"><h2>Entrar</h2><div class="fg"><label for="lg-email">E-mail</label><input id="lg-email" type="email" autocomplete="username"></div>
+<div class="card" id="login-card"><h2>Entrar</h2><div class="fg"><label for="lg-email">E-mail</label><input id="lg-email" type="email" autocomplete="username"></div>
 <div class="fg"><label for="lg-pw">Senha</label><input id="lg-pw" type="password" autocomplete="current-password"></div>
-<p id="lg-msg" class="muted" role="alert"></p><button class="teal" id="lg-btn">Entrar</button></div></div></div>
+<p id="lg-msg" class="muted" role="alert"></p><button class="teal" id="lg-btn">Entrar</button>
+<button class="sm sec" type="button" id="lg-forgot" style="margin-top:10px;width:100%">Esqueci minha senha</button>
+<p class="muted" style="margin-bottom:0">Sua sessão será mantida neste aparelho. Em dispositivos compartilhados, saia da conta ao terminar.</p></div>
+<div class="card hidden" id="recover-card"><h2>Recuperar senha</h2><p class="muted">Informe o e-mail cadastrado. Enviaremos um link para criar uma nova senha.</p><div class="fg"><label for="rc-email">E-mail</label><input id="rc-email" type="email" autocomplete="email"></div><p id="rc-msg" class="muted" role="alert"></p><button class="teal" id="rc-send">Enviar link</button><button class="sm sec" id="rc-back" style="margin-top:8px;width:100%">Voltar ao login</button></div>
+<div class="card hidden" id="newpass-card"><h2>Criar nova senha</h2><div class="fg"><label for="np-pw">Nova senha</label><input id="np-pw" type="password" autocomplete="new-password" minlength="6"></div><div class="fg"><label for="np-pw2">Confirmar nova senha</label><input id="np-pw2" type="password" autocomplete="new-password" minlength="6"></div><p id="np-msg" class="muted" role="alert"></p><button class="teal" id="np-save">Salvar nova senha</button></div>
+</div></div>
 <div id="toast" role="status"></div>
 
 <script>
@@ -446,7 +451,7 @@ async function solEnviar(copiar){
 Viatura: ${solV}
 Data: ${agora()}
 
-`+it.map(r=>`• ${r.nome} — ${r.qtd} un (${r.motivo})`).join('\\n')+(obs?`
+`+it.map(r=>`• ${r.nome} — ${r.qtd} un (${r.motivo})`).join('\n')+(obs?`
 
 Obs: ${obs}`:'');
   const S=ld(K_SOL,[]);
@@ -533,31 +538,89 @@ async function api(path,o={}){
   return t?JSON.parse(t):null;
 }
 
+async function carregarPerfil(user){
+  const{data:p,error}=await sb.from('perfis').select('*').eq('id',user.id).maybeSingle();
+  if(error)throw new Error('Falha ao consultar a tabela perfis: '+error.message);
+  if(!p)throw new Error('Este e-mail está autenticado, mas ainda não possui cadastro na tabela perfis. O administrador precisa criar o perfil com o mesmo ID do usuário no Supabase Auth.');
+  perfil=p;sv('fs_perfil',perfil);
+  return p;
+}
+
 async function entrar(){
   const email=$('lg-email').value.trim();
   const password=$('lg-pw').value;
   const m=$('lg-msg');
   if(!email||!password){m.textContent='Informe e-mail e senha.';return}
   if(!cloudOn){m.textContent='Nuvem não configurada.';return}
-  m.textContent='Entrando...';
+  m.textContent='Entrando...';$('lg-btn').disabled=true;
   try{
     const{data,error}=await sb.auth.signInWithPassword({email,password});
-    if(error||!data.session)throw new Error(error?.message||'login');
+    if(error)throw error;
+    if(!data.session)throw new Error('O Supabase não retornou uma sessão.');
     setSessFromAuth(data.session);
-    const{data:p,error:errPerfil}=await sb.from('perfis').select('*').eq('id',data.user.id).single();
-    if(errPerfil||!p){
+    await carregarPerfil(data.user);
+    $('lg-pw').value='';m.textContent='';iniciar();
+  }catch(e){
+    m.textContent=e.message||'Não foi possível entrar. Confira o e-mail, a senha e a conexão.';
+    if(e.message&&/Invalid login credentials/i.test(e.message))m.textContent='E-mail ou senha incorretos. Confirme também se esse usuário foi criado e está confirmado no Supabase Auth.';
+    sess=null;perfil=null;localStorage.removeItem('fs_sess');localStorage.removeItem('fs_perfil');
+    try{await sb.auth.signOut()}catch(_){}
+  }finally{$('lg-btn').disabled=false}
+}
+
+function mostrarRecuperacao(tela){
+  ['login-card','recover-card','newpass-card'].forEach(id=>$(id).classList.toggle('hidden',id!==tela));
+}
+
+async function recuperarSenha(){
+  const email=$('rc-email').value.trim(),m=$('rc-msg');
+  if(!email){m.textContent='Informe seu e-mail.';return}
+  m.textContent='Enviando...';$('rc-send').disabled=true;
+  try{
+    const redirectTo=window.location.origin+window.location.pathname;
+    const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo});
+    if(error)throw error;
+    m.textContent='Se o endereço estiver cadastrado, você receberá um e-mail com o link para redefinir a senha. Verifique também o spam.';
+  }catch(e){m.textContent='Não foi possível enviar o link: '+(e.message||'verifique a configuração de e-mail do Supabase.');}
+  finally{$('rc-send').disabled=false}
+}
+
+async function salvarNovaSenha(){
+  const a=$('np-pw').value,b=$('np-pw2').value,m=$('np-msg');
+  if(a.length<6){m.textContent='A senha precisa ter pelo menos 6 caracteres.';return}
+  if(a!==b){m.textContent='As senhas não coincidem.';return}
+  m.textContent='Salvando...';
+  try{
+    const{error}=await sb.auth.updateUser({password:a});
+    if(error)throw error;
+    m.textContent='Senha atualizada. Entre novamente com a nova senha.';
+    await sb.auth.signOut();sess=null;perfil=null;
+    ['fs_sess','fs_perfil'].forEach(k=>localStorage.removeItem(k));
+    mostrarRecuperacao('login-card');$('lg-msg').textContent='Senha alterada com sucesso. Faça login.';
+    history.replaceState(null,'',window.location.pathname+window.location.search);
+  }catch(e){m.textContent='Não foi possível atualizar a senha: '+(e.message||'tente novamente pelo link recebido.');}
+}
+
+async function restaurarSessao(){
+  if(!cloudOn){$('login').classList.remove('hidden');$('lg-msg').textContent='Serviço de autenticação indisponível.';return}
+  try{
+    const{data,error}=await sb.auth.getSession();
+    if(error)throw error;
+    const session=data.session;
+    if(session){
+      setSessFromAuth(session);
+      await carregarPerfil(session.user);
+      iniciar();
+    }else{
       sess=null;perfil=null;
       localStorage.removeItem('fs_sess');localStorage.removeItem('fs_perfil');
-      m.textContent='Usuário sem perfil. Fale com o administrador.';
-      return;
+      $('login').classList.remove('hidden');
+      if(location.hash.includes('type=recovery'))mostrarRecuperacao('newpass-card');
     }
-    perfil=p;
-    sv('fs_perfil',perfil);
-    $('lg-pw').value='';
-    m.textContent='';
-    iniciar();
   }catch(e){
-    m.textContent='E-mail ou senha inválidos, ou sem internet.';
+    sess=null;perfil=null;localStorage.removeItem('fs_sess');localStorage.removeItem('fs_perfil');
+    $('login').classList.remove('hidden');
+    $('lg-msg').textContent=e.message||'Não foi possível restaurar a sessão. Faça login novamente.';
   }
 }
 
@@ -758,10 +821,15 @@ $('b-exp').onclick=exportar;
 $('b-imp').onclick=()=>$('b-file').click();
 $('b-file').onchange=e=>importar(e.target.files[0]);
 $('lg-btn').onclick=entrar;
+$('lg-forgot').onclick=()=>{ $('rc-email').value=$('lg-email').value.trim();$('rc-msg').textContent='';mostrarRecuperacao('recover-card') };
+$('rc-send').onclick=recuperarSenha;
+$('rc-back').onclick=()=>mostrarRecuperacao('login-card');
+$('np-save').onclick=salvarNovaSenha;
+sb?.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){ $('login').classList.remove('hidden');mostrarRecuperacao('newpass-card'); }});
 
 renderChecklist();
 atualizarDot();
-if(cloudOn&&!(sess&&perfil))$('login').classList.remove('hidden');else iniciar();
+restaurarSessao();
 </script>
 </body>
 </html>
