@@ -39,11 +39,14 @@ details.kit{border:1px solid var(--bd);border-radius:8px;margin-bottom:8px;backg
 details.kit>summary{cursor:pointer;padding:11px 12px;font-weight:700;font-size:.88rem;color:var(--teal-d);background:#f0fdfa;border-radius:8px;border-left:3px solid var(--teal)}
 details.kit[open]>summary{border-radius:8px 8px 0 0}
 details.kit>div.body{padding:6px 8px 10px}
-.it{display:grid;grid-template-columns:1fr 46px 56px 118px;gap:4px;align-items:center;padding:6px 0;border-bottom:1px solid #f1f5f9;font-size:.8rem}
+.it{display:grid;grid-template-columns:1fr 44px 54px 122px;gap:4px;align-items:center;padding:6px 0;border-bottom:1px solid #f1f5f9;font-size:.8rem}
 .it.h{font-weight:700;color:var(--navy);font-size:.72rem}
 .it input{padding:6px;font-size:.82rem;text-align:center}
 .it input[type=date]{font-size:.72rem;padding:5px 3px}
 .it .c{text-align:center;color:var(--muted)}
+.vl-box{display:flex;flex-direction:column;gap:3px}
+.vl-sel{font-size:.7rem;padding:3px 4px;border-radius:5px;border:1px solid var(--bd);background:#f8fafc;color:var(--navy);font-weight:600}
+.vl-ind{font-size:.7rem;color:var(--muted);font-weight:600;text-align:center;padding:4px 2px;background:#f1f5f9;border-radius:5px}
 .row{display:flex;gap:6px;margin-bottom:6px;align-items:center}
 .row .q{width:64px;flex:none}
 .sr{display:grid;grid-template-columns:24px 1fr 64px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:.85rem}
@@ -60,7 +63,7 @@ details.kit>div.body{padding:6px 8px 10px}
 
 /* Modal de impressão/PDF integrado */
 #pdf-modal{position:fixed;inset:0;background:#fff;z-index:25;overflow:auto;padding:16px}
-.pdf-bar{display:flex;gap:8px;justify-content:space-between;align-items:center;max-width:720px;margin:0 auto 14px;padding:10px;background:#f1f5f9;border-radius:8px;border:1px solid #cbd5e1}
+.pdf-bar{display:flex;gap:8px;justify-content:space-between;align-items:center;max-width:740px;margin:0 auto 14px;padding:10px;background:#f1f5f9;border-radius:8px;border:1px solid #cbd5e1}
 .pdf-sheet{max-width:720px;margin:0 auto;color:#1e293b;font-size:13px;background:#fff}
 .pdf-top{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #003366;padding-bottom:10px;margin-bottom:14px;gap:12px}
 .pdf-brand{font-size:22px;font-weight:800;color:#003366;white-space:nowrap}.pdf-brand span{color:#00a896}
@@ -78,6 +81,26 @@ details.kit>div.body{padding:6px 8px 10px}
 .pdf-sign{border-top:1px solid #334155;padding-top:6px;text-align:center;font-size:11.5px}
 .sig-tools{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:8px}
 .sig-hint{font-size:12px;color:#475569;font-weight:600}
+
+/* Modelo de Evolução Clínica / Registro de Enfermagem (Confiare) */
+.evo-sheet{max-width:740px;margin:0 auto;color:#1e293b;background:#fff;padding:6px}
+.evo-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;max-width:740px;margin:0 auto 12px;padding:10px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;font-size:12px}
+.evo-controls label{display:flex;align-items:center;gap:6px;margin:0;font-size:12px}
+.evo-controls select,.evo-controls input[type="text"]{width:auto;padding:6px 8px;font-size:12px}
+.evo-page{position:relative;border:1.5px solid #60a5fa;background:#fff;padding:14px 16px 18px;overflow:hidden}
+.evo-watermark{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);width:340px;height:260px;opacity:.14;pointer-events:none;z-index:0}
+.evo-inner{position:relative;z-index:1}
+.evo-top{display:grid;grid-template-columns:155px 1fr 84px;align-items:center;gap:10px;margin-bottom:8px}
+.evo-logo-sub{font-size:8px;letter-spacing:.04em;color:#475569;text-transform:uppercase;margin-top:2px}
+.evo-title{text-align:center;font-size:19px;font-weight:800;color:#2b6cb0;letter-spacing:.02em;line-height:1.15}
+.evo-date-line{text-align:right;font-size:11px;color:#334155;margin-top:4px}
+.evo-stamp{width:76px;height:76px;border:1.5px solid #94a3b8;border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;font-size:8.5px;font-weight:700;color:#475569;padding:6px;margin-left:auto;line-height:1.2}
+.evo-grid-hdr{display:grid;grid-template-columns:1.55fr 1fr;border:1.2px solid #3b82f6;border-bottom:none}
+.evo-cell-hdr{padding:4px 8px;font-size:11px;color:#334155;min-height:28px}
+.evo-cell-hdr:first-child{border-right:1.2px solid #3b82f6}
+.evo-cell-hdr b{display:block;font-size:9.5px;color:#2563eb;text-transform:uppercase;margin-bottom:1px}
+.evo-lined{position:relative;border:1.2px solid #3b82f6;min-height:660px;background-image:repeating-linear-gradient(to bottom,#3b82f6 0,#3b82f6 1px,transparent 1px,transparent 26px);background-position:0 25px}
+.evo-text{font-size:13px;line-height:26px;color:#0f172a;padding:3px 10px 6px;white-space:pre-wrap;word-break:break-word}
 
 @media print{
   body>*:not(#pdf-modal){display:none!important}
@@ -126,7 +149,7 @@ details.kit>div.body{padding:6px 8px 10px}
 <div class="card"><h2>1. Dados da remoção</h2>
 <div class="fg"><label for="r-viatura">Viatura</label><select id="r-viatura"></select></div>
 <div class="fg"><label for="r-nome">Paciente</label><input id="r-nome" autocomplete="off"></div>
-<div class="fg"><label for="r-conv">Convênio / tomador</label><input id="r-conv"></div>
+<div class="fg"><label for="r-conv">Convênio / tomador (opcional)</label><input id="r-conv" placeholder="Ex.: Unimed, Confiare, Particular ou deixe em branco"></div>
 <div class="fg"><label for="r-trajeto">Tipo de trajeto</label><select id="r-trajeto"><option>Ida e volta</option><option>Somente ida</option></select></div>
 <div class="fg"><label for="r-orig">Origem</label><input id="r-orig"></div>
 <div class="fg"><label for="r-dest">Destino</label><input id="r-dest"></div></div>
@@ -175,7 +198,7 @@ details.kit>div.body{padding:6px 8px 10px}
 </section>
 </div>
 
-<div id="pdf-modal" class="hidden" role="dialog" aria-modal="true" aria-label="Requisição para impressão ou PDF">
+<div id="pdf-modal" class="hidden" role="dialog" aria-modal="true" aria-label="Documento para impressão ou PDF">
   <div class="pdf-bar no-print">
     <button class="sm sec" type="button" onclick="fecharPdf()">← Voltar</button>
     <div style="display:flex;gap:6px">
@@ -198,7 +221,19 @@ details.kit>div.body{padding:6px 8px 10px}
 <div id="toast" role="status"></div>
 
 <script>
-const KITS0=[["🎒 Kit de Cateterismo (Sondagem)",[["Sonda Nasogástrica Longa Nº 08",1],["Sonda Nasogástrica Nº 16",2],["Sonda Nasogástrica Nº 12",2],["Sonda Nasogástrica Nº 14",2],["Sonda Nasogástrica Nº 18",2],["Sonda Nasogástrica Nº 20",2],["Sonda Uretral Nº 06",1],["Sonda Uretral Nº 08",1],["Sonda Uretral Nº 10",1],["Sonda Uretral Nº 12",1]]],["🛡️ Kit de EPI",[["Avental Descartável",3],["Máscara N95",3],["Óculos de Proteção",3]]],["🫁 Kit TQT (Traqueostomia)",[["Cânula de TQT Nº 3,0",1],["Cânula de TQT Nº 3,5",1],["Cânula de TQT Nº 4,0",1],["Cânula de TQT Nº 5,0",1],["Cânula de TQT Nº 6,0",1],["Cânula de TQT Nº 6,5",1],["Cânula de TQT Nº 7,0",2],["Cânula de TQT Nº 7,5",2],["Cânula de TQT Nº 8,0",2],["Cânula de TQT Nº 8,5",2],["Cânula de TQT Nº 9,0",1],["Cânula de TQT Nº 9,5",1],["Gaze Estéril",5],["Lidocaína Gel",1],["Luva Estéril",4],["Seringa 10 ml",4],["Seringa 20 ml",4]]],["👶 Kit Parto",[["Absorvente Hospitalar",1],["Avental em Falso Tecido",1],["Bracelete de Identificação",2],["Clamps Umbilicais em Plástico",2],["Compressa 10x15 cm",1],["Compressa 15x30 cm",1],["Fio Sutura Catgut Cromado",1],["Gaze Estéril",2],["Instrumental Cirúrgico",1],["Lâmina de Bisturi Nº 22 - Descartável",1],["Lençol Descartável",1],["Luva Estéril",2],["Manta Térmica",2],["Saco Plástico - Lixo Infectante",1],["Swab de Álcool",2]]],["💉 Kit de Punção Periférica",[["Agulha 25x7",5],["Agulha 40x12",5],["Algodão (Pacote)",1],["Atadura de Crepom 10 cm",2],["Atadura de Crepom 15 cm",2],["Equipo Macro Gotas",5],["Equipo Polifix 2 Vias",5],["Filme Transparente",5],["Garrote + Cuba Rim + Micropore",1],["Jelco Nº 18",3],["Jelco Nº 20",5],["Jelco Nº 22",5],["Jelco Nº 24",5],["Organizador com Etiquetas",1],["Scalp Nº 21",3],["Scalp Nº 25",3],["Seringa 01 ML",5],["Seringa 05 ML",5],["Seringa 10 ML",5],["Seringa 20 ML",5],["Soro Fisiológico 0,9% 10 ml Amp.",8]]],["🫁 Kit Drenagem Torácica",[["Avental Estéril Descartável",1],["Campo Fenestrado",1],["Fio Catgut 0",1],["Fio Nylon 3.0",1],["Fio Nylon 4.0",1],["Fio Nylon 5.0",1],["Gaze Estéril",2],["Instrumental Cirúrgico",1],["Lâmina de Bisturi Nº 22",1],["Lidocaína Injetável",1],["Luva Estéril",2],["Seringa c/Agulha 10 ml",1],["Seringa c/Agulha 20 ml",1]]],["🔒 Kit Contenção",[["MMSS",2],["Região Abdominal",1],["MMII",2]]],["💉 Kit Punção Central",[["Água Destilada 10 ml",2],["Agulha 13 x 4,5 cm",5],["Agulha 25 x 7 cm",5],["Atadura de Crepom 10 cm",1],["Atadura de Crepom 15 cm",1],["Avental Estéril Descartável",1],["Campo Fenestrado",1],["Cateter Mono Lúmen 16 GA - Pediátrico",1],["Cateter Mono Lúmen 14 GA - Adulto",2],["Clorexidina Alcoólica 0,5% 100 ml",1],["Clorexidina Dergemante 2% 100 ml",1],["Compressa Cirúrgica 45 x 45 cm",4],["Equipo Macrogotas",1],["Equipo Polifix 2 Vias",1],["Fio de Nylon Nº 2.0",2],["Fio de Nylon Nº 3.0",2],["Fio de Nylon Nº 4.0",2],["Gaze Estéril",5],["Instrumental Cirúrgico",1],["Lâmina de Bisturi Nº 15",1],["Lâmina de Bisturi Nº 22",1],["Lidocaína 2% S/V 5 ml",2],["Luva Estéril",2],["Seringa 10 ml",2],["Seringa 20 ml",2],["Sonda Uretral Nº 10",2],["Sonda Uretral Nº 12",2],["Sonda Uretral Nº 8",2],["Soro Fisiológico 0,9% 250 ml",1]]],["🎭 Kit Máscara Laríngea",[["Máscara Laríngea Nº 01",1],["Máscara Laríngea Nº 02",1],["Máscara Laríngea Nº 03",1],["Máscara Laríngea Nº 04",1],["Máscara Laríngea Nº 05",1]]],["💉 Bolsa de Ampolagem (Medicamentos Gerais)",[["AAS 100 mg",4],["Adenosina 3mg",2],["Adrenalina 1mg/ml",10],["Água Destilada 10ml",15],["Aminofilina 24 mg/ml",5],["Amiodarona (Ancoron) 50mg/ml",5],["Atropina 0,25mg/ml",10],["Atrovent (Brometo de Ipratrópio) 0,25mg/ml - 20ml",1],["Bicarbonato de Sódio 8,4% 250ml",1],["Bicarbonato de Sódio 8,4% 10ml",5],["Buscopan Composto 4mg/ml",2],["Buscopan Simples 20mg/ml",2],["Captopril 25 mg",2],["Cedilanide (Deslanol) 0,2mg/ml",2],["Cloreto de Potássio (KCl) 19,1%",2],["Cloreto de Sódio 10%",2],["Decadron (Dexametasona) 4mg/2,5ml",3],["Dipirona 500mg/ml",5],["Dipirona 500mg/ml 10ml - Gotas",1],["Dobutrex (Dobutamina) 250mg/20ml",1],["Dopamina 5mg/ml - 10ml",5],["Dramin B6 - 10ml",2],["Efortil (Etilefrina) 10mg/ml",1],["Fernegan (Prometazina) 50mg/2ml",2],["Fleet Enema - 130ml",1],["Glicose 50% 10ml",10],["Gluconato de Cálcio 10% - 10ml",2],["Heparina 5.000UI/5ml",1],["Hidrocortisona 100mg",5],["Hidrocortisona 500mg",5],["Isordil 10mg",2],["Isordil 5mg SL",2],["Lasix (Furosemida) 10mg/ml",5],["Methergin 0,2mg/ml",2],["Nitroprussiato de Sódio (Nipride) 50mg/2ml",1],["Noradrenalina 4mg - 1mg/ml",5],["Omeprazol 40mg + Diluente 10ml",2],["Ondansetrona (Zofran) 8mg/4ml",2],["Paracetamol 200mg/ml - 15ml Gotas",1],["Plamet (Bromoprida) 10mg/ml",2],["Plamet (Bromoprida) Gotas",1],["Solução Glicerinada - 500ml",1],["Soro Fisiológico 0,9% 100ml",3],["Soro Glicosado 5% 250ml",1],["Sulfato de Magnésio 10%",4],["Sulfato de Terbutalina (Bricanyl) 0,5mg/ml",3],["Vasopressina (Encrise) 20UI/ml",1],["Vitamina K 10mg/ml",2],["Xilocaína 2% S/V 2ml Amp",2]]],["🔒 Bolsa de Ampolagem - Controlados",[["Amplictil (Clorpromazina) 5mg/ml",2],["Diazepam 10mg/2ml",3],["Dormonid 5mg/ml - 10ml",2],["Dormonid 5mg/ml - 3ml",2],["Etomidato 2mg/ml",1],["Fenobarbital 200mg/ml (Gardenal)",2],["Fentanil 50mcg/ml - 10ml",2],["Flumazenil 0,5mg/5ml",2],["Haloperidol 5mg/ml - 1ml",1],["Hidantal (Fenitoína) 100mg",5],["Morfina (Dimorf) 10mg/1ml",2],["Naloxone (Narcan) 0,4mg/ml",2],["Nubain 10mg/ml",1],["Succinin (Suxametônio) 100mg",1],["Tramal 100mg/2ml",2],["Tramal 50mg/1ml",2]]]];
+const KITS0=[
+  ["🎒 Kit de Cateterismo (Sondagem)",[["Sonda Nasogástrica Longa Nº 08",1],["Sonda Nasogástrica Nº 16",2],["Sonda Nasogástrica Nº 12",2],["Sonda Nasogástrica Nº 14",2],["Sonda Nasogástrica Nº 18",2],["Sonda Nasogástrica Nº 20",2],["Sonda Uretral Nº 06",1],["Sonda Uretral Nº 08",1],["Sonda Uretral Nº 10",1],["Sonda Uretral Nº 12",1]]],
+  ["🛡️ Kit de EPI",[["Avental Descartável",3],["Máscara N95",3],["Óculos de Proteção",3]]],
+  ["🫁 Kit TQT (Traqueostomia)",[["Cânula de TQT Nº 3,0",1],["Cânula de TQT Nº 3,5",1],["Cânula de TQT Nº 4,0",1],["Cânula de TQT Nº 5,0",1],["Cânula de TQT Nº 6,0",1],["Cânula de TQT Nº 6,5",1],["Cânula de TQT Nº 7,0",2],["Cânula de TQT Nº 7,5",2],["Cânula de TQT Nº 8,0",2],["Cânula de TQT Nº 8,5",2],["Cânula de TQT Nº 9,0",1],["Cânula de TQT Nº 9,5",1],["Gaze Estéril",5],["Lidocaína Gel",1],["Luva Estéril",4],["Seringa 10 ml",4],["Seringa 20 ml",4]]],
+  ["👶 Kit Parto",[["Absorvente Hospitalar",1],["Avental em Falso Tecido",1],["Bracelete de Identificação",2],["Clamps Umbilicais em Plástico",2],["Compressa 10x15 cm",1],["Compressa 15x30 cm",1],["Fio Sutura Catgut Cromado",1],["Gaze Estéril",2],["Instrumental Cirúrgico",1],["Lâmina de Bisturi Nº 22 - Descartável",1],["Lençol Descartável",1],["Luva Estéril",2],["Manta Térmica",2],["Saco Plástico - Lixo Infectante",1],["Swab de Álcool",2]]],
+  ["💉 Kit de Punção Periférica",[["Agulha 25x7",5],["Agulha 40x12",5],["Algodão (Pacote)",1],["Atadura de Crepom 10 cm",2],["Atadura de Crepom 15 cm",2],["Equipo Macro Gotas",5],["Equipo Polifix 2 Vias",5],["Filme Transparente",5],["Garrote + Cuba Rim + Micropore",1],["Jelco Nº 18",3],["Jelco Nº 20",5],["Jelco Nº 22",5],["Jelco Nº 24",5],["Organizador com Etiquetas",1],["Scalp Nº 21",3],["Scalp Nº 25",3],["Seringa 01 ML",5],["Seringa 05 ML",5],["Seringa 10 ML",5],["Seringa 20 ML",5],["Soro Fisiológico 0,9% 10 ml Amp.",8]]],
+  ["🫁 Kit Drenagem Torácica",[["Avental Estéril Descartável",1],["Campo Fenestrado",1],["Fio Catgut 0",1],["Fio Nylon 3.0",1],["Fio Nylon 4.0",1],["Fio Nylon 5.0",1],["Gaze Estéril",2],["Instrumental Cirúrgico",1],["Lâmina de Bisturi Nº 22",1],["Lidocaína Injetável",1],["Luva Estéril",2],["Seringa c/Agulha 10 ml",1],["Seringa c/Agulha 20 ml",1]]],
+  ["🔒 Kit Contenção",[["MMSS",2],["Região Abdominal",1],["MMII",2]]],
+  ["💉 Kit Punção Central",[["Água Destilada 10 ml",2],["Agulha 13 x 4,5 cm",5],["Agulha 25 x 7 cm",5],["Atadura de Crepom 10 cm",1],["Atadura de Crepom 15 cm",1],["Avental Estéril Descartável",1],["Campo Fenestrado",1],["Cateter Mono Lúmen 16 GA - Pediátrico",1],["Cateter Mono Lúmen 14 GA - Adulto",2],["Clorexidina Alcoólica 0,5% 100 ml",1],["Clorexidina Dergemante 2% 100 ml",1],["Compressa Cirúrgica 45 x 45 cm",4],["Equipo Macrogotas",1],["Equipo Polifix 2 Vias",1],["Fio de Nylon Nº 2.0",2],["Fio de Nylon Nº 3.0",2],["Fio de Nylon Nº 4.0",2],["Gaze Estéril",5],["Instrumental Cirúrgico",1],["Lâmina de Bisturi Nº 15",1],["Lâmina de Bisturi Nº 22",1],["Lidocaína 2% S/V 5 ml",2],["Luva Estéril",2],["Seringa 10 ml",2],["Seringa 20 ml",2],["Sonda Uretral Nº 10",2],["Sonda Uretral Nº 12",2],["Sonda Uretral Nº 8",2],["Soro Fisiológico 0,9% 250 ml",1]]],
+  ["🎭 Kit Máscara Laríngea",[["Máscara Laríngea Nº 01",1],["Máscara Laríngea Nº 02",1],["Máscara Laríngea Nº 03",1],["Máscara Laríngea Nº 04",1],["Máscara Laríngea Nº 05",1]]],
+  ["💉 Bolsa de Ampolagem (Medicamentos Gerais)",[["AAS 100 mg",4],["Adenosina 3mg",2],["Adrenalina 1mg/ml",10],["Água Destilada 10ml",15],["Aminofilina 24 mg/ml",5],["Amiodarona (Ancoron) 50mg/ml",5],["Atropina 0,25mg/ml",10],["Atrovent (Brometo de Ipratrópio) 0,25mg/ml - 20ml",1],["Bicarbonato de Sódio 8,4% 250ml",1],["Bicarbonato de Sódio 8,4% 10ml",5],["Buscopan Composto 4mg/ml",2],["Buscopan Simples 20mg/ml",2],["Captopril 25 mg",2],["Cedilanide (Deslanol) 0,2mg/ml",2],["Cloreto de Potássio (KCl) 19,1%",2],["Cloreto de Sódio 10%",2],["Decadron (Dexametasona) 4mg/2,5ml",3],["Dipirona 500mg/ml",5],["Dipirona 500mg/ml 10ml - Gotas",1],["Dobutrex (Dobutamina) 250mg/20ml",1],["Dopamina 5mg/ml - 10ml",5],["Dramin B6 - 10ml",2],["Efortil (Etilefrina) 10mg/ml",1],["Fernegan (Prometazina) 50mg/2ml",2],["Fleet Enema - 130ml",1],["Glicose 50% 10ml",10],["Gluconato de Cálcio 10% - 10ml",2],["Heparina 5.000UI/5ml",1],["Hidrocortisona 100mg",5],["Hidrocortisona 500mg",5],["Isordil 10mg",2],["Isordil 5mg SL",2],["Lasix (Furosemida) 10mg/ml",5],["Methergin 0,2mg/ml",2],["Nitroprussiato de Sódio (Nipride) 50mg/2ml",1],["Noradrenalina 4mg - 1mg/ml",5],["Omeprazol 40mg + Diluente 10ml",2],["Ondansetrona (Zofran) 8mg/4ml",2],["Paracetamol 200mg/ml - 15ml Gotas",1],["Plamet (Bromoprida) 10mg/ml",2],["Plamet (Bromoprida) Gotas",1],["Solução Glicerinada - 500ml",1],["Soro Fisiológico 0,9% 100ml",3],["Soro Glicosado 5% 250ml",1],["Sulfato de Magnésio 10%",4],["Sulfato de Terbutalina (Bricanyl) 0,5mg/ml",3],["Vasopressina (Encrise) 20UI/ml",1],["Vitamina K 10mg/ml",2],["Xilocaína 2% S/V 2ml Amp",2]]],
+  ["🔒 Bolsa de Ampolagem - Controlados",[["Amplictil (Clorpromazina) 5mg/ml",2],["Diazepam 10mg/2ml",3],["Dormonid 5mg/ml - 10ml",2],["Dormonid 5mg/ml - 3ml",2],["Etomidato 2mg/ml",1],["Fenobarbital 200mg/ml (Gardenal)",2],["Fentanil 50mcg/ml - 10ml",2],["Flumazenil 0,5mg/5ml",2],["Haloperidol 5mg/ml - 1ml",1],["Hidantal (Fenitoína) 100mg",5],["Morfina (Dimorf) 10mg/1ml",2],["Naloxone (Narcan) 0,4mg/ml",2],["Nubain 10mg/ml",1],["Succinin (Suxametônio) 100mg",1],["Tramal 100mg/2ml",2],["Tramal 50mg/1ml",2]]]
+];
 
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -236,7 +271,7 @@ function setViaturaAtual(v){
 function status(i){
   const a=[];let lvl=0;
   if(i.atual<i.cota){a.push('Faltam '+(i.cota-i.atual)+' (cota '+i.cota+', atual '+i.atual+')');lvl=2}
-  if(i.validade){
+  if(!i.indeterminada && i.validade){
     const h=new Date();h.setHours(0,0,0,0);
     const d=Math.round((new Date(i.validade+'T00:00:00')-h)/864e5);
     if(d<0){a.push('Vencido em '+br(i.validade));lvl=2}
@@ -294,6 +329,17 @@ function chaveItemChk(kitNome,itemNome){
   return`${kitNome}||${itemNome}`;
 }
 
+function aplicarModoValidadeLinha(r){
+  const sel=r.querySelector('.vl-sel');
+  const inp=r.querySelector('.vl');
+  const tag=r.querySelector('.vl-ind');
+  if(!sel||!inp||!tag)return;
+  const ind=sel.value==='indeterminada';
+  inp.classList.toggle('hidden',ind);
+  inp.disabled=ind;
+  tag.classList.toggle('hidden',!ind);
+}
+
 function salvarRascunhoChk(){
   const v=$('chk-viatura')?.value||getViaturaAtual();
   const allDrafts=ld(K_CHK_DRAFTS,{});
@@ -304,9 +350,11 @@ function salvarRascunhoChk(){
     if(!k||!it)return;
     const atRaw=r.querySelector('.at')?.value??'';
     const vlRaw=r.querySelector('.vl')?.value??'';
+    const ind=r.querySelector('.vl-sel')?.value==='indeterminada';
     itensMap[chaveItemChk(k.nome,it.nome)]={
       atual:atRaw===''?it.cota:Math.max(0,parseInt(atRaw,10)||0),
-      validade:vlRaw
+      validade:ind?'':vlRaw,
+      indeterminada:ind
     };
   });
   allDrafts[v]={
@@ -337,7 +385,8 @@ function getBaseChecklistViatura(viatura){
     ultimo.itens.forEach(it=>{
       map[chaveItemChk(it.kit||'',it.nome)]={
         atual:it.atual,
-        validade:it.validade||''
+        validade:it.validade||'',
+        indeterminada:!!it.indeterminada
       };
     });
     return{itens:map,obs:'',fromDraft:false};
@@ -357,22 +406,44 @@ function renderChecklist(){
   $('kits').innerHTML=cfg.kits.map((k,ki)=>{
     const temAlteracao=k.itens.some(it=>{
       const sal=base.itens[chaveItemChk(k.nome,it.nome)]||base.itens[chaveItemChk('',it.nome)];
-      return sal&&(Number(sal.atual)!==Number(it.cota)||!!sal.validade);
+      return sal&&(Number(sal.atual)!==Number(it.cota)||!!sal.validade||!!sal.indeterminada);
     });
     return`<details class="kit"${temAlteracao?' open':''}><summary>${esc(k.nome)} (${k.itens.length})</summary><div class="body">
     <div class="it h"><span>Item</span><span class="c">Cota</span><span class="c">Atual</span><span class="c">Validade</span></div>
     ${k.itens.map((it,ii)=>{
       const sal=base.itens[chaveItemChk(k.nome,it.nome)]||base.itens[chaveItemChk('',it.nome)];
       const atualVal=sal&&sal.atual!==undefined?sal.atual:it.cota;
-      const valData=sal&&sal.validade?sal.validade:'';
-      return`<div class="it" data-k="${ki}" data-i="${ii}"><span>${esc(it.nome)}</span><span class="c">${it.cota}</span><input type="number" inputmode="numeric" min="0" class="at" value="${esc(atualVal)}" aria-label="Quantidade atual de ${esc(it.nome)}"><input type="date" class="vl" value="${esc(valData)}" aria-label="Validade de ${esc(it.nome)}"></div>`;
+      const isInd=!!(sal&&sal.indeterminada);
+      const valData=!isInd&&sal&&sal.validade?sal.validade:'';
+      return`<div class="it" data-k="${ki}" data-i="${ii}">
+        <span>${esc(it.nome)}</span>
+        <span class="c">${it.cota}</span>
+        <input type="number" inputmode="numeric" min="0" class="at" value="${esc(atualVal)}" aria-label="Quantidade atual de ${esc(it.nome)}">
+        <div class="vl-box">
+          <select class="vl-sel" aria-label="Tipo de validade de ${esc(it.nome)}">
+            <option value="data"${!isInd?' selected':''}>Data</option>
+            <option value="indeterminada"${isInd?' selected':''}>Indeterminada</option>
+          </select>
+          <input type="date" class="vl${isInd?' hidden':''}" value="${esc(valData)}"${isInd?' disabled':''} aria-label="Validade de ${esc(it.nome)}">
+          <span class="vl-ind${isInd?'':' hidden'}">Indeterminada</span>
+        </div>
+      </div>`;
     }).join('')}
     </div></details>`;
   }).join('');
 
-  document.querySelectorAll('#kits .it[data-k] .at, #kits .it[data-k] .vl').forEach(inp=>{
-    inp.addEventListener('input',salvarRascunhoChk);
-    inp.addEventListener('change',salvarRascunhoChk);
+  document.querySelectorAll('#kits .it[data-k]').forEach(r=>{
+    const at=r.querySelector('.at');
+    const vl=r.querySelector('.vl');
+    const sel=r.querySelector('.vl-sel');
+    at?.addEventListener('input',salvarRascunhoChk);
+    at?.addEventListener('change',salvarRascunhoChk);
+    vl?.addEventListener('input',salvarRascunhoChk);
+    vl?.addEventListener('change',salvarRascunhoChk);
+    sel?.addEventListener('change',()=>{
+      aplicarModoValidadeLinha(r);
+      salvarRascunhoChk();
+    });
   });
 
   dirty=false;
@@ -399,12 +470,14 @@ function salvarChecklist(){
   const itens=[];
   document.querySelectorAll('#kits .it[data-k]').forEach(r=>{
     const k=cfg.kits[r.dataset.k],it=k.itens[r.dataset.i];
+    const ind=r.querySelector('.vl-sel')?.value==='indeterminada';
     itens.push({
       kit:k.nome,
       nome:it.nome,
       cota:it.cota,
       atual:Math.max(0,parseInt(r.querySelector('.at').value)||0),
-      validade:r.querySelector('.vl').value
+      validade:ind?'':r.querySelector('.vl').value,
+      indeterminada:ind
     });
   });
   const L=ld(K_CHK,[]);
@@ -517,7 +590,7 @@ function renderHistorico(){
     <div class="acts"><button class="sm badx" onclick="apagar('${K_CHK}',${c.id})">Excluir</button></div></div>`;
   }).join(''):'<p class="muted">Nenhum checklist registrado para esta seleção.</p>';
 
-  $('h-rem').innerHTML=M.length?M.map(m=>`<div class="rec"><div style="display:flex;justify-content:space-between;gap:8px"><strong>${esc(m.nome)}</strong><span class="badge b-warn" style="background:#e0f2fe;color:#0369a1">${esc(m.convenio||'—')}</span></div>
+  $('h-rem').innerHTML=M.length?M.map(m=>`<div class="rec"><div style="display:flex;justify-content:space-between;gap:8px"><strong>${esc(m.nome)}</strong><span class="badge b-warn" style="background:#e0f2fe;color:#0369a1">${esc(formatarConvenioExibicao(m.convenio))}</span></div>
   <p class="muted" style="margin:6px 0">📍 ${esc(m.origem)} ➔ ${esc(m.destino)}<br>🚑 ${esc(m.viatura||'—')} • 🚗 ${m.totalKm} km (${esc(m.trajeto)})<br>🕒 ${esc(m.data)}${m.editadoEm?'<br>✏️ editada em '+esc(m.editadoEm):''}</p>
   <div style="background:#fff;padding:8px;border-radius:4px;border:1px solid #e2e8f0;font-size:.82rem">💬 <i>${esc(m.relato||'Sem relato.')}</i></div>
   <div class="acts"><button class="sm teal" onclick="editarRemocao(${m.id})">✏️ Editar</button><button class="sm sec" onclick="compartilhar(${m.id})">Compartilhar</button><button class="sm badx" onclick="apagar('${K_REM}',${m.id})">Excluir</button></div></div>`).join(''):'<p class="muted">Nenhuma remoção registrada para esta seleção.</p>';
@@ -542,7 +615,13 @@ async function compartilharTexto(t){
 
 async function compartilhar(id){
   const m=ld(K_REM,[]).find(x=>x.id===id);if(!m)return;
-  const t=`Remoção ${m.data}\nPaciente: ${m.nome}\nConvênio: ${m.convenio||'—'}\nViatura: ${m.viatura||'—'}\nRota: ${m.origem} > ${m.destino} (${m.trajeto})\nDistância: ${m.totalKm} km\nRelato: ${m.relato||'—'}`;
+  const t=`Remoção ${m.data}
+Paciente: ${m.nome}
+Convênio: ${formatarConvenioExibicao(m.convenio)}
+Viatura: ${m.viatura||'—'}
+Rota: ${m.origem} > ${m.destino} (${m.trajeto})
+Distância: ${m.totalKm} km
+Relato: ${m.relato||'—'}`;
   await compartilharTexto(t);
 }
 
@@ -596,7 +675,7 @@ function importar(f){
 function qtdSol(i){
   const falta=Math.max(0,i.cota-i.atual);let troca=0;const m=[];
   if(falta)m.push('falta');
-  if(i.validade&&i.atual>0){
+  if(!i.indeterminada&&i.validade&&i.atual>0){
     const h=new Date();h.setHours(0,0,0,0);
     const d=Math.round((new Date(i.validade+'T00:00:00')-h)/864e5);
     if(d<=30){troca=i.atual;m.push(d<0?'vencido':'vence em '+d+' d')}
@@ -618,7 +697,15 @@ function abrirSolViatura(v){
 }
 
 function formatarTextoSol(s){
-  return`📦 SOLICITAÇÃO DE MATERIAL\nProtocolo: #${s.id}\nViatura: ${s.viatura}\nData: ${s.data}\n\n`+s.itens.map(r=>`• ${r.nome} — ${r.qtd} un (${r.motivo||'Reposição'})`).join('\n')+(s.obs?`\n\nObs: ${s.obs}`:'');
+  return`📦 SOLICITAÇÃO DE MATERIAL
+Protocolo: #${s.id}
+Viatura: ${s.viatura}
+Data: ${s.data}
+
+`+s.itens.map(r=>`• ${r.nome} — ${r.qtd} un (${r.motivo||'Reposição'})`).join('
+')+(s.obs?`
+
+Obs: ${s.obs}`:'');
 }
 
 async function solEnviar(copiar){
@@ -764,7 +851,7 @@ function limparAssinatura(canvasId){
   if(c&&typeof c._clearSig==='function')c._clearSig();
 }
 
-let currentPdfSol=null;
+let currentPdfDoc={prefix:'requisicao-fluxsaude-',id:''};
 
 function formatarItemPdf(nome){
   return esc(String(nome||'')).replace(/(N[ºo°]\s*\d+(?:[.,]\d+)?)/gi,'<span style="white-space:nowrap">$1</span>');
@@ -773,7 +860,7 @@ function formatarItemPdf(nome){
 function solPdf(id){
   const s=ld(K_SOL,[]).find(x=>x.id===id);
   if(!s)return;
-  currentPdfSol=s;
+  currentPdfDoc={prefix:'requisicao-fluxsaude-',id:s.id};
   const boxCheck='<span style="display:inline-block;width:13px;height:13px;border:1.5px solid #334155;border-radius:2px;vertical-align:middle"></span>';
   const rows=s.itens.map((i,idx)=>`<tr><td style="text-align:center">${idx+1}</td><td>${formatarItemPdf(i.nome)}</td><td>${esc(i.motivo||'Reposição')}</td><td style="text-align:center"><b>${i.qtd}</b></td><td style="text-align:center">${boxCheck}</td></tr>`).join('');
   $('pdf-content').innerHTML=`
@@ -848,8 +935,8 @@ function blobToBase64(blob){
 
 async function gerarECompartilharPdf(compartilhar){
   const el=$('pdf-printable-area');
-  if(!el||!currentPdfSol)return;
-  const nomeArquivo='requisicao-fluxsaude-'+currentPdfSol.id+'.pdf';
+  if(!el||!currentPdfDoc)return;
+  const nomeArquivo=currentPdfDoc.prefix+currentPdfDoc.id+'.pdf';
   toast('Gerando PDF...');
 
   const prevWidth=el.style.width;
@@ -879,7 +966,7 @@ async function gerarECompartilharPdf(compartilhar){
         directory:'CACHE'
       });
       await Capacitor.Plugins.Share.share({
-        title:'Requisição FluxSaúde #'+currentPdfSol.id,
+        title:'Documento FluxSaúde #'+currentPdfDoc.id,
         url:saved.uri
       });
       return;
@@ -889,7 +976,7 @@ async function gerarECompartilharPdf(compartilhar){
     if(compartilhar&&navigator.canShare&&navigator.canShare({files:[pdfFile]})){
       await navigator.share({
         files:[pdfFile],
-        title:'Requisição FluxSaúde #'+currentPdfSol.id
+        title:'Documento FluxSaúde #'+currentPdfDoc.id
       });
       return;
     }
@@ -921,6 +1008,96 @@ async function gerarECompartilharPdf(compartilhar){
 function solStatus(id){
   const S=ld(K_SOL,[]),s=S.find(x=>x.id===id);
   if(s){s.status=s.status==='recebida'?'pendente':'recebida';sv(K_SOL,S);renderSolHist($('hist-viatura')?.value||getViaturaAtual())}
+}
+
+/* Modelo de Evolução Clínica / Registro de Enfermagem (Supervisão) */
+let ultimoPainelRms=[];
+
+function formatarConvenioExibicao(convenio){
+  const c=String(convenio||'').trim();
+  if(!c||c==='—'||c==='-')return'Sem convênio';
+  return c;
+}
+
+function detectarModeloPorConvenio(convenio){
+  const c=String(convenio||'').trim().toLowerCase();
+  if(!c||c==='—'||c==='-'||c.includes('sem conv')||c.includes('particular'))return'clinica';
+  if(c.includes('enfermagem')||c.includes('registro'))return'enfermagem';
+  return'clinica';
+}
+
+function logoConfiareSvg(className=''){
+  return`<svg class="${className}" viewBox="0 0 240 150" fill="none" aria-hidden="true">
+    <path d="M120 42C96 18 52 24 38 56C25 86 48 118 82 126C62 108 58 80 74 62C88 46 110 46 120 58C130 46 152 46 166 62C182 80 178 108 158 126C192 118 215 86 202 56C188 24 144 18 120 42Z" fill="#2b6cb0"/>
+    <circle cx="92" cy="76" r="10" fill="#2b6cb0"/>
+    <circle cx="148" cy="76" r="10" fill="#2b6cb0"/>
+    <path d="M74 96C94 114 146 114 166 96" stroke="#2b6cb0" stroke-width="7" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function abrirEvolucaoModelo(remId,modeloForcado){
+  const r=ultimoPainelRms.find(x=>String(x.local_id||x.dados?.id)===String(remId));
+  const m=r?(r.dados||{}):null;
+  if(!m){toast('Dados da remoção não encontrados.');return}
+
+  const modelo=modeloForcado||detectarModeloPorConvenio(m.convenio);
+  const titulo=modelo==='enfermagem'?'REGISTRO DE ENFERMAGEM':'EVOLUÇÃO CLÍNICA';
+  const dataCurta=(m.data||agora()).split(',')[0].trim();
+  const convLabel=formatarConvenioExibicao(m.convenio);
+  const prontuarioPadrao=m.prontuario||`${convLabel}${m.viatura?' • '+m.viatura:''}`;
+
+  $('pdf-content').innerHTML=`
+    <div class="evo-controls no-print">
+      <label>Modelo:
+        <select id="evo-tipo-sel" onchange="abrirEvolucaoModelo('${esc(remId)}', this.value)">
+          <option value="clinica"${modelo==='clinica'?' selected':''}>Evolução Clínica</option>
+          <option value="enfermagem"${modelo==='enfermagem'?' selected':''}>Registro de Enfermagem</option>
+        </select>
+      </label>
+      <label>Prontuário / Convênio:
+        <input type="text" id="evo-pront-inp" value="${esc(prontuarioPadrao)}" oninput="$('evo-pront-val').textContent=this.value">
+      </label>
+      <label>Data:
+        <input type="text" id="evo-data-inp" value="${esc(dataCurta)}" style="width:94px" oninput="$('evo-data-val').textContent=this.value">
+      </label>
+    </div>
+
+    <div id="pdf-printable-area" class="evo-sheet">
+      <div class="evo-page">
+        ${logoConfiareSvg('evo-watermark')}
+        <div class="evo-inner">
+          <div class="evo-top">
+            <div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div style="width:44px;height:30px">${logoConfiareSvg('')}</div>
+                <span style="font-weight:800;font-size:15px;color:#1e3a8a">Confiare</span>
+              </div>
+              <div class="evo-logo-sub">Assistência Domiciliar</div>
+            </div>
+            <div>
+              <div class="evo-title">${esc(titulo)}</div>
+              <div class="evo-date-line">Data: <span id="evo-data-val">${esc(dataCurta)}</span></div>
+            </div>
+            <div class="evo-stamp">${esc(convLabel)}</div>
+          </div>
+
+          <div class="evo-grid-hdr">
+            <div class="evo-cell-hdr"><b>Paciente</b>${esc(m.nome||'')}</div>
+            <div class="evo-cell-hdr"><b>Prontuário</b><span id="evo-pront-val">${esc(prontuarioPadrao)}</span></div>
+          </div>
+
+          <div class="evo-lined">
+            <div class="evo-text">${esc(m.relato||'')}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  currentPdfDoc={prefix:'evolucao-fluxsaude-',id:m.id||Date.now()};
+  $('pdf-share-btn').onclick=()=>gerarECompartilharPdf(true);
+  $('pdf-print-btn').onclick=()=>gerarECompartilharPdf(false);
+  $('pdf-modal').classList.remove('hidden');
+  $('pdf-modal').scrollTop=0;
 }
 
 /* Nuvem (Supabase): login, sincronização, painel, viaturas e agenda */
@@ -1252,9 +1429,10 @@ setInterval(sync,60000);
 async function renderPainel(){
   $('pn').innerHTML='<div class="card"><p class="muted">Carregando...</p></div>';
   try{
-    const R=await api('/rest/v1/registros?select=tipo,dados,editado_em,historico&order=criado_em.desc&limit=150');
+    const R=await api('/rest/v1/registros?select=local_id,tipo,dados,editado_em,historico&order=criado_em.desc&limit=150');
     const por=t=>R.filter(r=>r.tipo===t).map(r=>r.dados);
-    const ck=por('checklist'),rm=R.filter(r=>r.tipo==='remocao').slice(0,15),so=por('solicitacao').slice(0,15);
+    const ck=por('checklist'),rm=R.filter(r=>r.tipo==='remocao').slice(0,25),so=por('solicitacao').slice(0,15);
+    ultimoPainelRms=rm;
     const vs=[...new Set([...cfg.viaturas,...ck.map(c=>c.viatura)].filter(Boolean))];
     $('pn').innerHTML=`<div class="card"><h2>🔔 Situação das viaturas</h2>${vs.length?vs.map(v=>{
       const c=ck.find(x=>x.viatura===v);
@@ -1264,7 +1442,8 @@ async function renderPainel(){
     }).join(''):'<p class="muted">Nenhuma viatura cadastrada.</p>'}</div>
     <div class="card"><h2>🚑 Remoções recentes</h2>${rm.length?rm.map(r=>{
       const m=r.dados;
-      return`<div class="rec"><strong>${esc(m.nome)}</strong> <span class="badge b-warn" style="background:#e0f2fe;color:#0369a1">${esc(m.convenio||'—')}</span><p class="muted" style="margin:6px 0 0">📍 ${esc(m.origem)} ➔ ${esc(m.destino)}<br>🚑 ${esc(m.viatura||'—')} • 🚗 ${esc(m.totalKm)} km • 🕒 ${esc(m.data)}<br>💬 ${esc(m.relato||'Sem relato.')}</p>${ed(r)}</div>`;
+      const recKey=r.local_id||(m&&m.id)||'';
+      return`<div class="rec"><strong>${esc(m.nome)}</strong> <span class="badge b-warn" style="background:#e0f2fe;color:#0369a1">${esc(formatarConvenioExibicao(m.convenio))}</span><p class="muted" style="margin:6px 0 0">📍 ${esc(m.origem)} ➔ ${esc(m.destino)}<br>🚑 ${esc(m.viatura||'—')} • 🚗 ${esc(m.totalKm)} km • 🕒 ${esc(m.data)}<br>💬 ${esc(m.relato||'Sem relato.')}</p><div class="acts"><button class="sm teal" type="button" onclick="abrirEvolucaoModelo('${esc(recKey)}')">🖨️ Imprimir evolução</button></div>${ed(r)}</div>`;
     }).join(''):'<p class="muted">Nenhuma remoção.</p>'}</div>
     <div class="card"><h2>📦 Solicitações à farmácia</h2>${so.length?so.map(s=>`<div class="rec"><strong>${esc(s.viatura)}</strong> <span class="muted">${esc(s.data)}</span>${s.itens.map(i=>`<div style="font-size:.8rem">• ${esc(i.nome)} — <b>${esc(i.qtd)}</b></div>`).join('')}</div>`).join(''):'<p class="muted">Nenhuma solicitação.</p>'}</div>`;
   }catch(e){
