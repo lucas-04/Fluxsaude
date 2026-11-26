@@ -195,6 +195,7 @@ details.kit>div.body{padding:6px 8px 10px}
 <div class="card"><h2>🚐 Viaturas disponíveis</h2><p class="muted" id="viat-readonly-list"></p></div>
 <div class="card"><h2>🎒 Kits, itens e cotas</h2><div id="aj-kits"></div>
 <div class="acts"><button class="sm teal" id="add-kit">+ Kit</button><button class="sm sec" id="reset-cfg">Restaurar padrão</button></div></div></div>
+<footer style="text-align:center;margin-top:14px;padding-bottom:8px;font-size:.75rem;color:var(--muted)">v.1.1.2</footer>
 </section>
 </div>
 
@@ -697,15 +698,7 @@ function abrirSolViatura(v){
 }
 
 function formatarTextoSol(s){
-  return`📦 SOLICITAÇÃO DE MATERIAL
-Protocolo: #${s.id}
-Viatura: ${s.viatura}
-Data: ${s.data}
-
-`+s.itens.map(r=>`• ${r.nome} — ${r.qtd} un (${r.motivo||'Reposição'})`).join('
-')+(s.obs?`
-
-Obs: ${s.obs}`:'');
+  return`📦 SOLICITAÇÃO DE MATERIAL\nProtocolo: #${s.id}\nViatura: ${s.viatura}\nData: ${s.data}\n\n`+s.itens.map(r=>`• ${r.nome} — ${r.qtd} un (${r.motivo||'Reposição'})`).join('\n')+(s.obs?`\n\nObs: ${s.obs}`:'');
 }
 
 async function solEnviar(copiar){
