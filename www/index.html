@@ -28,11 +28,12 @@ input,select,textarea{width:100%;padding:10px;border:1px solid var(--bd);border-
 input:focus,select:focus,textarea:focus,button:focus-visible,summary:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
 button{background:var(--navy);color:#fff;border:0;padding:13px 18px;font-size:.95rem;font-weight:600;border-radius:8px;cursor:pointer;width:100%}
 button:hover{background:var(--navy-d)}
+button:disabled{opacity:.6;cursor:not-allowed}
 .teal{background:var(--teal)}.teal:hover{background:var(--teal-d)}
 .sec{background:#e2e8f0;color:var(--navy)}.sec:hover{background:#cbd5e1}
 .sm{padding:6px 10px;font-size:.75rem;width:auto}
 .badx{background:var(--bad-bg);color:var(--bad)}.badx:hover{background:#fecaca}
-.hidden{display:none}
+.hidden{display:none!important}
 details.kit{border:1px solid var(--bd);border-radius:8px;margin-bottom:8px;background:#fff}
 details.kit>summary{cursor:pointer;padding:11px 12px;font-weight:700;font-size:.88rem;color:var(--teal-d);background:#f0fdfa;border-radius:8px;border-left:3px solid var(--teal)}
 details.kit[open]>summary{border-radius:8px 8px 0 0}
@@ -53,8 +54,35 @@ details.kit>div.body{padding:6px 8px 10px}
 .muted{color:var(--muted);font-size:.85rem}
 .metric{font-size:1.15rem;font-weight:700;color:var(--teal-d)}
 .acts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
-#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--navy-d);color:#fff;padding:11px 18px;border-radius:8px;font-size:.88rem;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;z-index:9}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--navy-d);color:#fff;padding:11px 18px;border-radius:8px;font-size:.88rem;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;z-index:30}
 #toast.show{opacity:1}
+
+/* Modal de impressão/PDF integrado (não trava o WebView/APK) */
+#pdf-modal{position:fixed;inset:0;background:#fff;z-index:25;overflow:auto;padding:16px}
+.pdf-bar{display:flex;gap:8px;justify-content:space-between;align-items:center;max-width:720px;margin:0 auto 14px;padding:10px;background:#f1f5f9;border-radius:8px;border:1px solid #cbd5e1}
+.pdf-sheet{max-width:720px;margin:0 auto;color:#1e293b;font-size:13px}
+.pdf-top{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #003366;padding-bottom:10px;margin-bottom:16px}
+.pdf-brand{font-size:22px;font-weight:800;color:#003366}.pdf-brand span{color:#00a896}
+.pdf-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#f8fafc;border:1px solid #cbd5e1;padding:10px;border-radius:6px;margin-bottom:16px}
+.pdf-sheet table{width:100%;border-collapse:collapse;margin-bottom:16px}
+.pdf-sheet th,.pdf-sheet td{border:1px solid #cbd5e1;padding:8px;text-align:left}
+.pdf-sheet th{background:#003366;color:#fff;font-size:12px}
+.pdf-obs{border:1px solid #cbd5e1;padding:10px;border-radius:6px;min-height:42px;margin-bottom:24px}
+.pdf-signs{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px}
+.pdf-sign-box{display:flex;flex-direction:column;gap:6px}
+.sig-canvas{width:100%;height:110px;border:1px dashed #94a3b8;border-radius:6px;background:#f8fafc;touch-action:none;cursor:crosshair}
+.sig-img{width:100%;max-height:110px;object-fit:contain;border:1px solid #cbd5e1;border-radius:6px;background:#fff}
+.pdf-sign{border-top:1px solid #334155;padding-top:6px;text-align:center;font-size:12px}
+.sig-tools{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.sig-hint{font-size:11px;color:#64748b}
+
+@media print{
+  body>*:not(#pdf-modal){display:none!important}
+  #pdf-modal{position:static!important;padding:0!important;overflow:visible!important}
+  .no-print{display:none!important}
+  .sig-canvas{display:none!important}
+  .sig-img{display:block!important;border:0!important;background:transparent!important}
+}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -142,6 +170,17 @@ details.kit>div.body{padding:6px 8px 10px}
 </section>
 </div>
 
+<div id="pdf-modal" class="hidden" role="dialog" aria-modal="true" aria-label="Requisição para impressão ou PDF">
+  <div class="pdf-bar no-print">
+    <button class="sm sec" type="button" onclick="fecharPdf()">← Voltar</button>
+    <div style="display:flex;gap:6px">
+      <button class="sm sec" type="button" id="pdf-share-btn">Compartilhar</button>
+      <button class="sm teal" type="button" onclick="imprimirPdf()">🖨️ Imprimir / PDF</button>
+    </div>
+  </div>
+  <div id="pdf-content" class="pdf-sheet"></div>
+</div>
+
 <div id="login" class="hidden" style="position:fixed;inset:0;background:var(--bg);z-index:20;padding:24px;overflow:auto"><div class="container"><header><div class="brand"><h1><span class="fl">Flux</span><span class="sa">Saúde</span></h1></div></header>
 <div class="card" id="login-card"><h2>Entrar</h2><div class="fg"><label for="lg-email">E-mail</label><input id="lg-email" type="email" autocomplete="username"></div>
 <div class="fg"><label for="lg-pw">Senha</label><input id="lg-pw" type="password" autocomplete="current-password"></div>
@@ -165,7 +204,7 @@ const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch
 const defCfg=()=>({viaturas:['UTI-15'],kits:KITS0.map(([n,i])=>({nome:n,itens:i.map(([a,b])=>({nome:a,cota:b}))}))});
 
 let cfg=ld('fs_cfg',null);
-if(!cfg||!cfg.kits)cfg=defCfg();
+if(!cfg||!Array.isArray(cfg.kits)||!cfg.kits.length||!Array.isArray(cfg.viaturas)||!cfg.viaturas.length)cfg=defCfg();
 
 const K_CHK='checklists_fluxsaude',K_REM='missoes_fluxsaude',K_SOL='solicitacoes_fluxsaude';
 let dirty=true;
@@ -360,20 +399,18 @@ function apagar(k,id){
 
 const nat=()=>window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform();
 
-async function compartilhar(id){
-  const m=ld(K_REM,[]).find(x=>x.id===id);if(!m)return;
-  const t=`Remoção ${m.data}
-Paciente: ${m.nome}
-Convênio: ${m.convenio||'—'}
-Viatura: ${m.viatura||'—'}
-Rota: ${m.origem} > ${m.destino} (${m.trajeto})
-Distância: ${m.totalKm} km
-Relato: ${m.relato||'—'}`;
+async function compartilharTexto(t){
   try{
     if(nat())await Capacitor.Plugins.Share.share({text:t});
     else if(navigator.share)await navigator.share({text:t});
-    else{await navigator.clipboard.writeText(t);toast('Resumo copiado.')}
+    else{await navigator.clipboard.writeText(t);toast('Texto copiado.')}
   }catch(e){}
+}
+
+async function compartilhar(id){
+  const m=ld(K_REM,[]).find(x=>x.id===id);if(!m)return;
+  const t=`Remoção ${m.data}\nPaciente: ${m.nome}\nConvênio: ${m.convenio||'—'}\nViatura: ${m.viatura||'—'}\nRota: ${m.origem} > ${m.destino} (${m.trajeto})\nDistância: ${m.totalKm} km\nRelato: ${m.relato||'—'}`;
+  await compartilharTexto(t);
 }
 
 async function exportar(){
@@ -443,21 +480,20 @@ function abrirSol(idx){
   $('sol').scrollIntoView({behavior:'smooth'});
 }
 
+function formatarTextoSol(s){
+  return`📦 SOLICITAÇÃO DE MATERIAL\nProtocolo: #${s.id}\nViatura: ${s.viatura}\nData: ${s.data}\n\n`+s.itens.map(r=>`• ${r.nome} — ${r.qtd} un (${r.motivo||'Reposição'})`).join('\n')+(s.obs?`\n\nObs: ${s.obs}`:'');
+}
+
 async function solEnviar(copiar){
   const it=solRows.filter(r=>r.on);
   if(!it.length){toast('Marque ao menos um item.');return}
   const obs=$('sol-obs').value.trim();
-  const t=`📦 SOLICITAÇÃO DE MATERIAL
-Viatura: ${solV}
-Data: ${agora()}
-
-`+it.map(r=>`• ${r.nome} — ${r.qtd} un (${r.motivo})`).join('\n')+(obs?`
-
-Obs: ${obs}`:'');
   const S=ld(K_SOL,[]);
-  S.unshift({id:Date.now(),data:agora(),viatura:solV,itens:it.map(r=>({nome:r.nome,qtd:r.qtd,motivo:r.motivo})),obs,status:'pendente'});
+  const novo={id:Date.now(),data:agora(),viatura:solV,itens:it.map(r=>({nome:r.nome,qtd:r.qtd,motivo:r.motivo})),obs,status:'pendente'};
+  S.unshift(novo);
   if(!sv(K_SOL,S))return;
-  enviar('solicitacao',S[0]);
+  enviar('solicitacao',novo);
+  const t=formatarTextoSol(novo);
   try{
     if(!copiar&&nat())await Capacitor.Plugins.Share.share({text:t});
     else if(!copiar&&navigator.share)await navigator.share({text:t});
@@ -474,14 +510,144 @@ function renderSolHist(){
   }).join(''):'<p class="muted">Nenhuma solicitação.</p>';
 }
 
+function initSignatureCanvas(canvasId, imgId, solId, fieldKey){
+  const canvas=$(canvasId);
+  const img=$(imgId);
+  if(!canvas||!img)return;
+  const ctx=canvas.getContext('2d');
+  let drawing=false;
+
+  function resize(){
+    const rect=canvas.getBoundingClientRect();
+    const w=Math.max(200,Math.round(rect.width||260));
+    const h=Math.max(90,Math.round(rect.height||110));
+    if(canvas.width!==w||canvas.height!==h){
+      const prev=canvas.toDataURL('image/png');
+      const hadStroke=canvas.dataset.signed==='1';
+      canvas.width=w;
+      canvas.height=h;
+      ctx.lineCap='round';
+      ctx.lineJoin='round';
+      ctx.lineWidth=2.5;
+      ctx.strokeStyle='#0f172a';
+      if(hadStroke){
+        const im=new Image();
+        im.onload=()=>ctx.drawImage(im,0,0,w,h);
+        im.src=prev;
+      }
+    }
+  }
+
+  function getPos(e){
+    const r=canvas.getBoundingClientRect();
+    const t=e.touches&&e.touches[0];
+    const cx=t?t.clientX:e.clientX;
+    const cy=t?t.clientY:e.clientY;
+    return{x:(cx-r.left)*(canvas.width/(r.width||1)),y:(cy-r.top)*(canvas.height/(r.height||1))};
+  }
+
+  function persistSig(){
+    const dataUrl=canvas.dataset.signed==='1'?canvas.toDataURL('image/png'):'';
+    img.src=dataUrl;
+    img.classList.toggle('hidden',!dataUrl);
+    const S=ld(K_SOL,[]);
+    const idx=S.findIndex(x=>x.id===solId);
+    if(idx>=0){
+      S[idx][fieldKey]=dataUrl;
+      sv(K_SOL,S);
+    }
+  }
+
+  function start(e){
+    e.preventDefault();
+    resize();
+    drawing=true;
+    canvas.dataset.signed='1';
+    const p=getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x,p.y);
+  }
+
+  function move(e){
+    if(!drawing)return;
+    e.preventDefault();
+    const p=getPos(e);
+    ctx.lineTo(p.x,p.y);
+    ctx.stroke();
+  }
+
+  function end(e){
+    if(!drawing)return;
+    if(e)e.preventDefault();
+    drawing=false;
+    ctx.closePath();
+    persistSig();
+  }
+
+  resize();
+  const S=ld(K_SOL,[]);
+  const cur=S.find(x=>x.id===solId);
+  if(cur&&cur[fieldKey]){
+    const saved=new Image();
+    saved.onload=()=>{
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(saved,0,0,canvas.width,canvas.height);
+      canvas.dataset.signed='1';
+      img.src=cur[fieldKey];
+      img.classList.remove('hidden');
+    };
+    saved.src=cur[fieldKey];
+  }
+
+  if(window.PointerEvent){
+    canvas.addEventListener('pointerdown',start,{passive:false});
+    canvas.addEventListener('pointermove',move,{passive:false});
+    canvas.addEventListener('pointerup',end,{passive:false});
+    canvas.addEventListener('pointercancel',end,{passive:false});
+  }else{
+    canvas.addEventListener('touchstart',start,{passive:false});
+    canvas.addEventListener('touchmove',move,{passive:false});
+    canvas.addEventListener('touchend',end,{passive:false});
+    canvas.addEventListener('mousedown',start);
+    window.addEventListener('mousemove',move);
+    window.addEventListener('mouseup',end);
+  }
+
+  canvas._clearSig=()=>{
+    resize();
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    canvas.dataset.signed='0';
+    persistSig();
+  };
+}
+
+function limparAssinatura(canvasId){
+  const c=$(canvasId);
+  if(c&&typeof c._clearSig==='function')c._clearSig();
+}
+
 function solPdf(id){
   const s=ld(K_SOL,[]).find(x=>x.id===id);
   if(!s)return;
   const rows=s.itens.map((i,idx)=>`<tr><td style="text-align:center">${idx+1}</td><td>${esc(i.nome)}</td><td>${esc(i.motivo||'Reposição')}</td><td style="text-align:center"><b>${i.qtd}</b></td><td style="text-align:center">☐</td></tr>`).join('');
-  const doc=`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Requisição Farmácia - ${esc(s.viatura)}</title><style>body{font-family:Arial,sans-serif;color:#1e293b;margin:24px;font-size:13px}.top{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #003366;padding-bottom:10px;margin-bottom:16px}.brand{font-size:22px;font-weight:800;color:#003366}.brand span{color:#00a896}.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#f8fafc;border:1px solid #cbd5e1;padding:10px;border-radius:6px;margin-bottom:16px}table{width:100%;border-collapse:collapse;margin-bottom:16px}th,td{border:1px solid #cbd5e1;padding:8px;text-align:left}th{background:#003366;color:#fff;font-size:12px}.obs{border:1px solid #cbd5e1;padding:10px;border-radius:6px;min-height:42px;margin-bottom:28px}.signs{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:40px}.sign{border-top:1px solid #334155;padding-top:6px;text-align:center;font-size:12px}@media print{body{margin:12px}}</style></head><body><div class="top"><div class="brand">Flux<span>Saúde</span></div><div style="text-align:right"><strong>REQUISIÇÃO DE MATERIAL / FARMÁCIA</strong><br><span style="color:#64748b;font-size:11px">Protocolo #${s.id}</span></div></div><div class="meta"><div><b>Viatura:</b> ${esc(s.viatura)}</div><div><b>Data/Hora:</b> ${esc(s.data)}</div><div><b>Status:</b> ${s.status==='recebida'?'Recebida':'Pendente'}</div><div><b>Total de itens:</b> ${s.itens.length}</div></div><table><thead><tr><th style="width:36px;text-align:center">#</th><th>Material / Medicamento</th><th>Motivo</th><th style="width:70px;text-align:center">Qtd.</th><th style="width:65px;text-align:center">Conferido</th></tr></thead><tbody>${rows}</tbody></table><div class="obs"><b>Observações:</b> ${esc(s.obs||'Nenhuma.')}</div><div class="signs"><div class="sign">Solicitante (Enfermagem / Operação)</div><div class="sign">Dispensação (Farmácia / Almoxarifado)</div></div><script>window.onload=()=>window.print()<\/script></body></html>`;
-  const w=window.open('','_blank');
-  if(w){w.document.write(doc);w.document.close()}
-  else{toast('Permita pop-ups para gerar o PDF.')}
+  $('pdf-content').innerHTML=`<div class="pdf-top"><div class="pdf-brand">Flux<span>Saúde</span></div><div style="text-align:right"><strong>REQUISIÇÃO DE MATERIAL / FARMÁCIA</strong><br><span style="color:#64748b;font-size:11px">Protocolo #${s.id}</span></div></div><div class="pdf-meta"><div><b>Viatura:</b> ${esc(s.viatura)}</div><div><b>Data/Hora:</b> ${esc(s.data)}</div><div><b>Status:</b> ${s.status==='recebida'?'Recebida':'Pendente'}</div><div><b>Total de itens:</b> ${s.itens.length}</div></div><table><thead><tr><th style="width:36px;text-align:center">#</th><th>Material / Medicamento</th><th>Motivo</th><th style="width:70px;text-align:center">Qtd.</th><th style="width:65px;text-align:center">Conferido</th></tr></thead><tbody>${rows}</tbody></table><div class="pdf-obs"><b>Observações:</b> ${esc(s.obs||'Nenhuma.')}</div><div class="pdf-signs"><div class="pdf-sign-box"><canvas id="sig-sol-canvas" class="sig-canvas no-print" aria-label="Assinar como solicitante"></canvas><img id="sig-sol-img" class="sig-img hidden" alt="Assinatura do solicitante"><div class="sig-tools no-print"><span class="sig-hint">Assine no quadro</span><button class="sm sec" type="button" onclick="limparAssinatura('sig-sol-canvas')">Limpar</button></div><div class="pdf-sign">Solicitante (Enfermagem / Operação)</div></div><div class="pdf-sign-box"><canvas id="sig-disp-canvas" class="sig-canvas no-print" aria-label="Assinar como dispensação"></canvas><img id="sig-disp-img" class="sig-img hidden" alt="Assinatura da dispensação"><div class="sig-tools no-print"><span class="sig-hint">Assine no quadro</span><button class="sm sec" type="button" onclick="limparAssinatura('sig-disp-canvas')">Limpar</button></div><div class="pdf-sign">Dispensação (Farmácia / Almoxarifado)</div></div></div>`;
+  initSignatureCanvas('sig-sol-canvas','sig-sol-img',s.id,'assinaturaSolicitante');
+  initSignatureCanvas('sig-disp-canvas','sig-disp-img',s.id,'assinaturaDispensacao');
+  $('pdf-share-btn').onclick=()=>compartilharTexto(formatarTextoSol(s));
+  $('pdf-modal').classList.remove('hidden');
+  $('pdf-modal').scrollTop=0;
+}
+
+function fecharPdf(){
+  $('pdf-modal').classList.add('hidden');
+}
+
+function imprimirPdf(){
+  try{
+    window.print();
+  }catch(e){
+    toast('Impressão direta indisponível neste dispositivo. Use Compartilhar ou abra no navegador.');
+  }
 }
 
 function solStatus(id){
@@ -491,7 +657,7 @@ function solStatus(id){
 
 /* Nuvem (Supabase): login, sincronização, painel e agenda */
 const SB_URL="https://esoujnlijfmqjxdziesa.supabase.co";
-const SB_KEY="sb_publishable_Si90uy9oqXOQU-B5AZHBNQ_I6tn_T23";
+const SB_KEY="Sb_publishable_Si90uy9oqXOQU-B5AZHBNQ_I6tn_T23";
 const sb=(window.supabase&&/^https:\/\//.test(SB_URL))?window.supabase.createClient(SB_URL,SB_KEY):null;
 const cloudOn=!!sb;
 
@@ -500,7 +666,7 @@ let perfil=ld('fs_perfil',null);
 let agId=null,agData=[];
 let editId=null,agEd=null;
 
-const sup=()=>!!perfil&&perfil.papel==='supervisor';
+const sup=()=>!!perfil&&String(perfil.papel||'').trim().toLowerCase()==='supervisor';
 
 function setSessFromAuth(session){
   if(!session){sess=null;localStorage.removeItem('fs_sess');return}
@@ -541,7 +707,7 @@ async function api(path,o={}){
 async function carregarPerfil(user){
   const{data:p,error}=await sb.from('perfis').select('*').eq('id',user.id).maybeSingle();
   if(error)throw new Error('Falha ao consultar a tabela perfis: '+error.message);
-  if(!p)throw new Error('Este e-mail está autenticado, mas ainda não possui cadastro na tabela perfis. O administrador precisa criar o perfil com o mesmo ID do usuário no Supabase Auth.');
+  if(!p)throw new Error('Este e-mail está autenticado, mas ainda não possui cadastro na tabela perfis.');
   perfil=p;sv('fs_perfil',perfil);
   return p;
 }
@@ -562,7 +728,7 @@ async function entrar(){
     $('lg-pw').value='';m.textContent='';iniciar();
   }catch(e){
     m.textContent=e.message||'Não foi possível entrar. Confira o e-mail, a senha e a conexão.';
-    if(e.message&&/Invalid login credentials/i.test(e.message))m.textContent='E-mail ou senha incorretos. Confirme também se esse usuário foi criado e está confirmado no Supabase Auth.';
+    if(e.message&&/Invalid login credentials/i.test(e.message))m.textContent='E-mail ou senha incorretos.';
     sess=null;perfil=null;localStorage.removeItem('fs_sess');localStorage.removeItem('fs_perfil');
     try{await sb.auth.signOut()}catch(_){}
   }finally{$('lg-btn').disabled=false}
@@ -580,8 +746,8 @@ async function recuperarSenha(){
     const redirectTo=window.location.origin+window.location.pathname;
     const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo});
     if(error)throw error;
-    m.textContent='Se o endereço estiver cadastrado, você receberá um e-mail com o link para redefinir a senha. Verifique também o spam.';
-  }catch(e){m.textContent='Não foi possível enviar o link: '+(e.message||'verifique a configuração de e-mail do Supabase.');}
+    m.textContent='Se o endereço estiver cadastrado, você receberá um e-mail com o link para redefinir a senha.';
+  }catch(e){m.textContent='Não foi possível enviar o link: '+(e.message||'verifique a configuração de e-mail.');}
   finally{$('rc-send').disabled=false}
 }
 
@@ -598,11 +764,11 @@ async function salvarNovaSenha(){
     ['fs_sess','fs_perfil'].forEach(k=>localStorage.removeItem(k));
     mostrarRecuperacao('login-card');$('lg-msg').textContent='Senha alterada com sucesso. Faça login.';
     history.replaceState(null,'',window.location.pathname+window.location.search);
-  }catch(e){m.textContent='Não foi possível atualizar a senha: '+(e.message||'tente novamente pelo link recebido.');}
+  }catch(e){m.textContent='Não foi possível atualizar a senha: '+(e.message||'tente novamente.');}
 }
 
 async function restaurarSessao(){
-  if(!cloudOn){$('login').classList.remove('hidden');$('lg-msg').textContent='Serviço de autenticação indisponível.';return}
+  if(!cloudOn){iniciar();return}
   try{
     const{data,error}=await sb.auth.getSession();
     if(error)throw error;
@@ -614,13 +780,13 @@ async function restaurarSessao(){
     }else{
       sess=null;perfil=null;
       localStorage.removeItem('fs_sess');localStorage.removeItem('fs_perfil');
-      $('login').classList.remove('hidden');
-      if(location.hash.includes('type=recovery'))mostrarRecuperacao('newpass-card');
+      if(location.hash.includes('type=recovery')){$('login').classList.remove('hidden');mostrarRecuperacao('newpass-card')}
+      else{$('login').classList.remove('hidden')}
     }
   }catch(e){
     sess=null;perfil=null;localStorage.removeItem('fs_sess');localStorage.removeItem('fs_perfil');
     $('login').classList.remove('hidden');
-    $('lg-msg').textContent=e.message||'Não foi possível restaurar a sessão. Faça login novamente.';
+    $('lg-msg').textContent=e.message||'Faça login para continuar.';
   }
 }
 
@@ -639,11 +805,11 @@ function iniciar(){
     b.classList.toggle('hidden',s?!(so||t==='config'):so);
   });
   $('cfg-op').classList.toggle('hidden',s);
-  $('ag-f').classList.toggle('hidden',s||!cloudOn);
+  $('ag-f').classList.toggle('hidden',s||!cloudOn||!sess);
   $('conta').classList.toggle('hidden',!cloudOn||!perfil);
-  if(perfil)$('conta-info').textContent=(perfil.nome||'')+' • '+(s?'Supervisor (somente leitura)':'Funcionário');
+  if(perfil)$('conta-info').textContent=[perfil.nome,s?'Supervisor':'Funcionário'].filter(Boolean).join(' • ');
   switchTab(s?'painel':'checklist');
-  if(!s){backfill();sync()}
+  if(!s&&sess){backfill();sync()}
 }
 
 function enviar(tipo,o){
@@ -712,6 +878,7 @@ async function renderPainel(){
 }
 
 async function renderAgenda(){
+  if(!sess)return;
   const box=sup()?$('ag-lista'):$('ag-lista-f');
   try{
     agData=await api('/rest/v1/agenda?select=*&status=eq.agendada&order=quando.asc');
