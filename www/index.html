@@ -105,15 +105,16 @@ details.kit>div.body{padding:6px 8px 10px}
 
 <section id="v-checklist" class="view">
 <div class="card"><h2>Checklist de maletas e viatura</h2>
-<div class="fg"><label for="chk-viatura">Viatura</label><select id="chk-viatura"></select></div>
+<div class="fg"><label for="chk-viatura">Viatura em operação</label><select id="chk-viatura"></select></div>
 <div class="fg"><input type="search" id="busca" placeholder="🔍 Buscar item ou medicamento" aria-label="Buscar item"></div>
 <div id="kits"></div>
-<div class="fg"><label for="chk-obs">Observações</label><textarea id="chk-obs" rows="2"></textarea></div>
+<div class="fg"><label for="chk-obs">Observações (<span id="chk-obs-v"></span>)</label><textarea id="chk-obs" rows="2"></textarea></div>
 <button class="teal" id="btn-chk">Salvar checklist</button></div>
 </section>
 
 <section id="v-avisos" class="view hidden"><div class="card"><h2>Avisos e pendências</h2>
-<p class="muted">Considera o último checklist de cada viatura: estoque abaixo da cota e validades em até 60 dias.</p><div id="avisos"></div></div>
+<div class="fg"><label for="av-viatura">Filtrar viatura</label><select id="av-viatura"></select></div>
+<p class="muted">Considera o último checklist da viatura: estoque abaixo da cota e validades em até 60 dias.</p><div id="avisos"></div></div>
 <div class="card hidden" id="sol"><h2>📦 Solicitar à farmácia — <span id="sol-v"></span></h2>
 <p class="muted">Ajuste as quantidades e desmarque o que não precisa.</p><div id="sol-list"></div>
 <div class="fg" style="margin-top:10px"><label for="sol-obs">Observações</label><textarea id="sol-obs" rows="2"></textarea></div>
@@ -140,10 +141,12 @@ details.kit>div.body{padding:6px 8px 10px}
 </section>
 
 <section id="v-history" class="view hidden">
+<div class="card"><h2>Filtro de histórico</h2>
+<div class="fg" style="margin-bottom:0"><label for="hist-viatura">Exibir registros da viatura</label><select id="hist-viatura"></select></div></div>
 <div class="card"><h2>🎒 Checklists realizados</h2><div id="h-chk"></div></div>
 <div class="card"><h2>🚑 Remoções concluídas</h2><div id="h-rem"></div></div>
 <div class="card"><h2>📦 Solicitações à farmácia</h2><div id="h-sol"></div></div>
-<div class="card"><h2>💾 Backup</h2><p class="muted">Seus dados ficam só neste aparelho. Exporte um backup com frequência.</p>
+<div class="card"><h2>💾 Backup</h2><p class="muted">Exporte ou restaure uma cópia de segurança dos dados deste aparelho.</p>
 <div class="acts"><button class="sm teal" id="b-exp">Exportar backup</button><button class="sm sec" id="b-imp">Importar backup</button></div>
 <input type="file" id="b-file" accept="application/json" class="hidden"></div>
 </section>
@@ -156,7 +159,7 @@ details.kit>div.body{padding:6px 8px 10px}
 <div class="fg"><label for="ag-orig">Origem</label><input id="ag-orig"></div>
 <div class="fg"><label for="ag-dest">Destino</label><input id="ag-dest"></div>
 <div class="fg"><label for="ag-quando">Data e hora</label><input type="datetime-local" id="ag-quando"></div>
-<div class="fg"><label for="ag-viat">Viatura (opcional)</label><input id="ag-viat"></div>
+<div class="fg"><label for="ag-viat">Viatura (opcional)</label><select id="ag-viat"></select></div>
 <div class="fg"><label for="ag-obs">Observações</label><textarea id="ag-obs" rows="2"></textarea></div>
 <button class="teal" id="ag-btn" onclick="agSalvar()">Agendar</button><button class="sec hidden" id="ag-ced" style="margin-top:8px" onclick="agCancelarEd()">Cancelar edição</button></div>
 <div class="card"><h2>📅 Próximas remoções</h2><div id="ag-lista"></div></div>
@@ -164,8 +167,9 @@ details.kit>div.body{padding:6px 8px 10px}
 
 <section id="v-config" class="view hidden">
 <div class="card hidden" id="conta"><h2>👤 Conta</h2><p id="conta-info" class="muted"></p><button class="sm sec" onclick="sair()">Sair</button></div>
+<div class="card hidden" id="cfg-viat-sup"><h2>🚐 Viaturas da empresa (Supervisão)</h2><p class="muted">Apenas a supervisão pode cadastrar, renomear ou remover viaturas. A equipe seleciona a viatura do plantão.</p><div id="aj-viat"></div><button class="sm teal" id="add-viat">+ Viatura</button></div>
 <div id="cfg-op">
-<div class="card"><h2>🚐 Viaturas</h2><div id="aj-viat"></div><button class="sm" id="add-viat">+ Viatura</button></div>
+<div class="card"><h2>🚐 Viaturas disponíveis</h2><p class="muted" id="viat-readonly-list"></p></div>
 <div class="card"><h2>🎒 Kits, itens e cotas</h2><div id="aj-kits"></div>
 <div class="acts"><button class="sm teal" id="add-kit">+ Kit</button><button class="sm sec" id="reset-cfg">Restaurar padrão</button></div></div></div>
 </section>
@@ -208,9 +212,26 @@ let cfg=ld('fs_cfg',null);
 if(!cfg||!Array.isArray(cfg.kits)||!cfg.kits.length||!Array.isArray(cfg.viaturas)||!cfg.viaturas.length)cfg=defCfg();
 
 const K_CHK='checklists_fluxsaude',K_REM='missoes_fluxsaude',K_SOL='solicitacoes_fluxsaude';
+const K_CHK_DRAFTS='fs_chk_drafts_by_viat';
+let viatAtiva=ld('fs_viat_ativa',cfg.viaturas[0]||'UTI-15');
 let dirty=true;
 const br=d=>d.split('-').reverse().join('/');
 const agora=()=>new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
+function getViaturaAtual(){
+  if(!cfg.viaturas.includes(viatAtiva))viatAtiva=cfg.viaturas[0]||'UTI-15';
+  return viatAtiva;
+}
+
+function setViaturaAtual(v){
+  if(!v)return;
+  viatAtiva=v;
+  sv('fs_viat_ativa',v);
+  ['chk-viatura','r-viatura','av-viatura','hist-viatura'].forEach(id=>{
+    const el=$(id);
+    if(el&&[...el.options].some(o=>o.value===v))el.value=v;
+  });
+}
 
 function status(i){
   const a=[];let lvl=0;
@@ -232,7 +253,7 @@ function switchTab(t){
     b.setAttribute('aria-selected',on);
   });
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('hidden',v.id!=='v-'+t));
-  if(t==='checklist'&&dirty)renderChecklist();
+  if(t==='checklist')renderChecklist();
   if(t==='avisos')renderAvisos();
   if(t==='history')renderHistorico();
   if(t==='config')renderAjustes();
@@ -242,21 +263,120 @@ function switchTab(t){
 }
 
 function fillViaturas(){
-  const o=cfg.viaturas.map(v=>`<option>${esc(v)}</option>`).join('');
+  const vSel=getViaturaAtual();
+  const o=cfg.viaturas.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
   ['chk-viatura','r-viatura'].forEach(id=>{
-    const s=$(id),c=s.value;
+    const s=$(id);
+    if(!s)return;
     s.innerHTML=o;
-    if(cfg.viaturas.includes(c))s.value=c;
+    s.value=vSel;
   });
+  const agV=$('ag-viat');
+  if(agV){
+    const curAg=agV.value;
+    agV.innerHTML=`<option value="">Qualquer viatura</option>`+o;
+    if(curAg&&cfg.viaturas.includes(curAg))agV.value=curAg;
+  }
+  const L=ld(K_CHK,[]),M=ld(K_REM,[]),S=ld(K_SOL,[]);
+  const todas=viaturasConhecidas(L,M,S);
+  const oAll=`<option value="__ALL__">Todas as viaturas</option>`+todas.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
+  ['av-viatura','hist-viatura'].forEach(id=>{
+    const s=$(id);
+    if(!s)return;
+    const prev=s.value;
+    s.innerHTML=oAll;
+    if(prev&&[...s.options].some(op=>op.value===prev))s.value=prev;
+    else s.value=vSel;
+  });
+}
+
+function chaveItemChk(kitNome,itemNome){
+  return`${kitNome}||${itemNome}`;
+}
+
+function salvarRascunhoChk(){
+  const v=$('chk-viatura')?.value||getViaturaAtual();
+  const allDrafts=ld(K_CHK_DRAFTS,{});
+  const itensMap={};
+  document.querySelectorAll('#kits .it[data-k]').forEach(r=>{
+    const k=cfg.kits[r.dataset.k];
+    const it=k&&k.itens[r.dataset.i];
+    if(!k||!it)return;
+    const atRaw=r.querySelector('.at')?.value??'';
+    const vlRaw=r.querySelector('.vl')?.value??'';
+    itensMap[chaveItemChk(k.nome,it.nome)]={
+      atual:atRaw===''?it.cota:Math.max(0,parseInt(atRaw,10)||0),
+      validade:vlRaw
+    };
+  });
+  allDrafts[v]={
+    itens:itensMap,
+    obs:$('chk-obs')?.value||''
+  };
+  sv(K_CHK_DRAFTS,allDrafts);
+}
+
+function limparRascunhoChk(viatura){
+  const allDrafts=ld(K_CHK_DRAFTS,{});
+  delete allDrafts[viatura];
+  sv(K_CHK_DRAFTS,allDrafts);
+}
+
+function getBaseChecklistViatura(viatura){
+  const allDrafts=ld(K_CHK_DRAFTS,{});
+  if(allDrafts[viatura]&&allDrafts[viatura].itens){
+    return{
+      itens:allDrafts[viatura].itens,
+      obs:allDrafts[viatura].obs||'',
+      fromDraft:true
+    };
+  }
+  const ultimo=ld(K_CHK,[]).find(c=>c.viatura===viatura);
+  if(ultimo&&Array.isArray(ultimo.itens)){
+    const map={};
+    ultimo.itens.forEach(it=>{
+      map[chaveItemChk(it.kit||'',it.nome)]={
+        atual:it.atual,
+        validade:it.validade||''
+      };
+    });
+    return{itens:map,obs:'',fromDraft:false};
+  }
+  return{itens:{},obs:'',fromDraft:false};
 }
 
 function renderChecklist(){
   fillViaturas();
-  $('kits').innerHTML=cfg.kits.map((k,ki)=>`<details class="kit"><summary>${esc(k.nome)} (${k.itens.length})</summary><div class="body">
-  <div class="it h"><span>Item</span><span class="c">Cota</span><span class="c">Atual</span><span class="c">Validade</span></div>
-  ${k.itens.map((it,ii)=>`<div class="it" data-k="${ki}" data-i="${ii}"><span>${esc(it.nome)}</span><span class="c">${it.cota}</span><input type="number" inputmode="numeric" min="0" class="at" value="${it.cota}" aria-label="Quantidade atual de ${esc(it.nome)}"><input type="date" class="vl" aria-label="Validade de ${esc(it.nome)}"></div>`).join('')}
-  </div></details>`).join('');
+  const viatura=$('chk-viatura').value||getViaturaAtual();
+  setViaturaAtual(viatura);
+  if($('chk-obs-v'))$('chk-obs-v').textContent=viatura;
+
+  const base=getBaseChecklistViatura(viatura);
+  $('chk-obs').value=base.obs||'';
+
+  $('kits').innerHTML=cfg.kits.map((k,ki)=>{
+    const temAlteracao=k.itens.some(it=>{
+      const sal=base.itens[chaveItemChk(k.nome,it.nome)]||base.itens[chaveItemChk('',it.nome)];
+      return sal&&(Number(sal.atual)!==Number(it.cota)||!!sal.validade);
+    });
+    return`<details class="kit"${temAlteracao?' open':''}><summary>${esc(k.nome)} (${k.itens.length})</summary><div class="body">
+    <div class="it h"><span>Item</span><span class="c">Cota</span><span class="c">Atual</span><span class="c">Validade</span></div>
+    ${k.itens.map((it,ii)=>{
+      const sal=base.itens[chaveItemChk(k.nome,it.nome)]||base.itens[chaveItemChk('',it.nome)];
+      const atualVal=sal&&sal.atual!==undefined?sal.atual:it.cota;
+      const valData=sal&&sal.validade?sal.validade:'';
+      return`<div class="it" data-k="${ki}" data-i="${ii}"><span>${esc(it.nome)}</span><span class="c">${it.cota}</span><input type="number" inputmode="numeric" min="0" class="at" value="${esc(atualVal)}" aria-label="Quantidade atual de ${esc(it.nome)}"><input type="date" class="vl" value="${esc(valData)}" aria-label="Validade de ${esc(it.nome)}"></div>`;
+    }).join('')}
+    </div></details>`;
+  }).join('');
+
+  document.querySelectorAll('#kits .it[data-k] .at, #kits .it[data-k] .vl').forEach(inp=>{
+    inp.addEventListener('input',salvarRascunhoChk);
+    inp.addEventListener('change',salvarRascunhoChk);
+  });
+
   dirty=false;
+  if($('busca')&&$('busca').value.trim())filtrar();
 }
 
 function filtrar(){
@@ -275,7 +395,7 @@ function filtrar(){
 
 function salvarChecklist(){
   const viatura=$('chk-viatura').value;
-  if(!viatura){toast('Cadastre uma viatura em Ajustes.');return}
+  if(!viatura){toast('Nenhuma viatura disponível. Peça à supervisão para cadastrar.');return}
   const itens=[];
   document.querySelectorAll('#kits .it[data-k]').forEach(r=>{
     const k=cfg.kits[r.dataset.k],it=k.itens[r.dataset.i];
@@ -291,13 +411,16 @@ function salvarChecklist(){
   L.unshift({id:Date.now(),data:agora(),viatura,itens,obs:$('chk-obs').value.trim()});
   if(!sv(K_CHK,L))return;
   enviar('checklist',L[0]);
+  limparRascunhoChk(viatura);
   $('chk-obs').value='';
   dirty=true;
-  toast('Checklist salvo.');
+  toast('Checklist de '+viatura+' salvo.');
   switchTab('avisos');
 }
 
-function viaturasConhecidas(L){return[...new Set([...cfg.viaturas,...L.map(c=>c.viatura)])]}
+function viaturasConhecidas(L=[],M=[],S=[]){
+  return[...new Set([...cfg.viaturas,...L.map(c=>c.viatura),...M.map(m=>m.viatura),...S.map(s=>s.viatura)].filter(Boolean))];
+}
 function pendencias(c){return c.itens.map(i=>({i,s:status(i)})).filter(x=>x.s.lvl>0)}
 
 function atualizarDot(){
@@ -310,17 +433,22 @@ function atualizarDot(){
 
 function renderAvisos(){
   $('sol').classList.add('hidden');
+  fillViaturas();
   const L=ld(K_CHK,[]);
+  const filtro=$('av-viatura')?.value||getViaturaAtual();
+  const todas=viaturasConhecidas(L);
+  const lista=filtro==='__ALL__'?todas:todas.filter(v=>v===filtro);
+
   if(!L.length){
     $('avisos').innerHTML='<p class="muted">Nenhum checklist salvo ainda. Faça o primeiro na aba Checklist.</p>';
     return;
   }
-  $('avisos').innerHTML=viaturasConhecidas(L).map((v,idx)=>{
+  $('avisos').innerHTML=lista.map(v=>{
     const c=L.find(x=>x.viatura===v);
-    if(!c)return`<div class="rec"><strong>${esc(v)}</strong><p class="muted" style="margin:4px 0 0">Sem checklist registrado.</p></div>`;
+    if(!c)return`<div class="rec"><strong>${esc(v)}</strong><p class="muted" style="margin:4px 0 0">Sem checklist registrado para esta viatura.</p></div>`;
     const p=pendencias(c);
     return`<div class="rec ${p.length?'bad':'ok'}"><strong>${esc(v)}</strong> <span class="muted">${esc(c.data)}</span><div style="margin-top:6px">${
-      p.length?p.map(x=>`<div style="margin-bottom:6px"><b>${esc(x.i.nome)}</b>${x.i.kit?' <span class="muted">('+esc(x.i.kit)+')</span>':''}<br>${x.s.a.map(t=>`<span class="badge ${x.s.lvl>1?'b-bad':'b-warn'}">${esc(t)}</span>`).join('')}</div>`).join(''):'<span class="badge b-ok">✅ Tudo em ordem</span>'}</div>${p.length?`<div class="acts"><button class="sm teal" onclick="abrirSol(${idx})">📦 Solicitar à farmácia</button></div>`:''}</div>`;
+      p.length?p.map(x=>`<div style="margin-bottom:6px"><b>${esc(x.i.nome)}</b>${x.i.kit?' <span class="muted">('+esc(x.i.kit)+')</span>':''}<br>${x.s.a.map(t=>`<span class="badge ${x.s.lvl>1?'b-bad':'b-warn'}">${esc(t)}</span>`).join('')}</div>`).join(''):'<span class="badge b-ok">✅ Tudo em ordem</span>'}</div>${p.length?`<div class="acts"><button class="sm teal" onclick="abrirSolViatura('${esc(v)}')">📦 Solicitar à farmácia</button></div>`:''}</div>`;
   }).join('');
   atualizarDot();
 }
@@ -374,8 +502,12 @@ function salvarRemocao(){
 }
 
 function renderHistorico(){
-  renderSolHist();
-  const L=ld(K_CHK,[]),M=ld(K_REM,[]);
+  fillViaturas();
+  const filtro=$('hist-viatura')?.value||getViaturaAtual();
+  const byV=arr=>filtro==='__ALL__'?arr:arr.filter(x=>x.viatura===filtro);
+
+  renderSolHist(filtro);
+  const L=byV(ld(K_CHK,[])),M=byV(ld(K_REM,[]));
   $('h-chk').innerHTML=L.length?L.map(c=>{
     const p=pendencias(c);
     return`<div class="rec ${p.length?'bad':'ok'}">
@@ -383,12 +515,12 @@ function renderHistorico(){
     <p class="muted" style="margin:4px 0">🕒 ${esc(c.data)}${c.obs?' • '+esc(c.obs):''}</p>
     ${p.map(x=>`<div style="font-size:.75rem;color:var(--bad)">• <b>${esc(x.i.nome)}:</b> ${esc(x.s.a.join(' | '))}</div>`).join('')}
     <div class="acts"><button class="sm badx" onclick="apagar('${K_CHK}',${c.id})">Excluir</button></div></div>`;
-  }).join(''):'<p class="muted">Nenhum checklist registrado.</p>';
+  }).join(''):'<p class="muted">Nenhum checklist registrado para esta seleção.</p>';
 
   $('h-rem').innerHTML=M.length?M.map(m=>`<div class="rec"><div style="display:flex;justify-content:space-between;gap:8px"><strong>${esc(m.nome)}</strong><span class="badge b-warn" style="background:#e0f2fe;color:#0369a1">${esc(m.convenio||'—')}</span></div>
   <p class="muted" style="margin:6px 0">📍 ${esc(m.origem)} ➔ ${esc(m.destino)}<br>🚑 ${esc(m.viatura||'—')} • 🚗 ${m.totalKm} km (${esc(m.trajeto)})<br>🕒 ${esc(m.data)}${m.editadoEm?'<br>✏️ editada em '+esc(m.editadoEm):''}</p>
   <div style="background:#fff;padding:8px;border-radius:4px;border:1px solid #e2e8f0;font-size:.82rem">💬 <i>${esc(m.relato||'Sem relato.')}</i></div>
-  <div class="acts"><button class="sm teal" onclick="editarRemocao(${m.id})">✏️ Editar</button><button class="sm sec" onclick="compartilhar(${m.id})">Compartilhar</button><button class="sm badx" onclick="apagar('${K_REM}',${m.id})">Excluir</button></div></div>`).join(''):'<p class="muted">Nenhuma remoção registrada.</p>';
+  <div class="acts"><button class="sm teal" onclick="editarRemocao(${m.id})">✏️ Editar</button><button class="sm sec" onclick="compartilhar(${m.id})">Compartilhar</button><button class="sm badx" onclick="apagar('${K_REM}',${m.id})">Excluir</button></div></div>`).join(''):'<p class="muted">Nenhuma remoção registrada para esta seleção.</p>';
 }
 
 function apagar(k,id){
@@ -441,7 +573,11 @@ function importar(f){
       const d=JSON.parse(r.result);
       if(!Array.isArray(d.checklists)||!Array.isArray(d.remocoes))throw 0;
       if(!confirm('Importar vai substituir os dados atuais. Continuar?'))return;
-      if(d.cfg&&d.cfg.kits)cfg=d.cfg;
+      if(d.cfg&&d.cfg.kits){
+        const viatAtual=cfg.viaturas;
+        cfg=d.cfg;
+        if(!sup())cfg.viaturas=viatAtual;
+      }
       sv('fs_cfg',cfg);
       sv(K_CHK,d.checklists);
       sv(K_REM,d.remocoes);
@@ -469,8 +605,8 @@ function qtdSol(i){
 }
 
 let solV='',solRows=[];
-function abrirSol(idx){
-  const L=ld(K_CHK,[]),v=viaturasConhecidas(L)[idx],c=L.find(x=>x.viatura===v);if(!c)return;
+function abrirSolViatura(v){
+  const L=ld(K_CHK,[]),c=L.find(x=>x.viatura===v);if(!c)return;
   solV=v;
   solRows=pendencias(c).map(x=>({nome:x.i.nome,...qtdSol(x.i),on:true})).filter(r=>r.qtd>0);
   if(!solRows.length){toast('Nada a solicitar para esta viatura.');return}
@@ -503,12 +639,13 @@ async function solEnviar(copiar){
   $('sol').classList.add('hidden');
 }
 
-function renderSolHist(){
-  const S=ld(K_SOL,[]);
+function renderSolHist(filtro='__ALL__'){
+  const allS=ld(K_SOL,[]);
+  const S=filtro==='__ALL__'?allS:allS.filter(x=>x.viatura===filtro);
   $('h-sol').innerHTML=S.length?S.map(s=>{
     const ok=s.status==='recebida';
     return`<div class="rec ${ok?'ok':'bad'}"><div style="display:flex;justify-content:space-between;gap:8px"><strong>${esc(s.viatura)}</strong><span class="badge ${ok?'b-ok':'b-warn'}">${ok?'✅ Recebida':'⏳ Pendente'}</span></div><p class="muted" style="margin:4px 0">🕒 ${esc(s.data)}</p>${s.itens.map(i=>`<div style="font-size:.8rem">• ${esc(i.nome)} — <b>${i.qtd}</b></div>`).join('')}${s.obs?`<p class="muted" style="margin:4px 0;font-size:.78rem">📝 ${esc(s.obs)}</p>`:''}<div class="acts"><button class="sm sec" onclick="solPdf(${s.id})">📄 PDF / Imprimir</button><button class="sm teal" onclick="solStatus(${s.id})">${ok?'Reabrir':'Marcar recebida'}</button><button class="sm badx" onclick="apagar('${K_SOL}',${s.id})">Excluir</button></div></div>`;
-  }).join(''):'<p class="muted">Nenhuma solicitação.</p>';
+  }).join(''):'<p class="muted">Nenhuma solicitação para esta seleção.</p>';
 }
 
 function initSignatureCanvas(canvasId, imgId, solId, fieldKey){
@@ -783,10 +920,10 @@ async function gerarECompartilharPdf(compartilhar){
 
 function solStatus(id){
   const S=ld(K_SOL,[]),s=S.find(x=>x.id===id);
-  if(s){s.status=s.status==='recebida'?'pendente':'recebida';sv(K_SOL,S);renderSolHist()}
+  if(s){s.status=s.status==='recebida'?'pendente':'recebida';sv(K_SOL,S);renderSolHist($('hist-viatura')?.value||getViaturaAtual())}
 }
 
-/* Nuvem (Supabase): login, sincronização, painel e agenda */
+/* Nuvem (Supabase): login, sincronização, painel, viaturas e agenda */
 const SB_URL="https://esoujnlijfmqjxdziesa.supabase.co";
 const SB_KEY="sb_publishable_Si90uy9oqXOQU-B5AZHBNQ_I6tn_T23";
 const sb=(window.supabase&&/^https:\/\//.test(SB_URL))?window.supabase.createClient(SB_URL,SB_KEY):null;
@@ -799,6 +936,40 @@ let editId=null,agEd=null;
 const notifDisparadas=new Set();
 
 const sup=()=>!!perfil&&String(perfil.papel||'').trim().toLowerCase()==='supervisor';
+
+async function carregarViaturasNuvem(){
+  if(!cloudOn||!sess||!perfil)return;
+  try{
+    const res=await api('/rest/v1/registros?select=dados&empresa_id=eq.'+perfil.empresa_id+'&tipo=eq.config_viaturas&limit=1');
+    if(Array.isArray(res)&&res[0]&&res[0].dados&&Array.isArray(res[0].dados.viaturas)&&res[0].dados.viaturas.length){
+      cfg.viaturas=res[0].dados.viaturas;
+      sv('fs_cfg',cfg);
+      if(!cfg.viaturas.includes(viatAtiva))viatAtiva=cfg.viaturas[0];
+      fillViaturas();
+      if($('viat-readonly-list'))$('viat-readonly-list').textContent='Viaturas cadastradas pela supervisão: '+cfg.viaturas.join(', ');
+    }
+  }catch(_){}
+}
+
+async function salvarViaturasNuvem(){
+  if(!cloudOn||!sess||!perfil||!sup())return;
+  try{
+    const ex=await api('/rest/v1/registros?select=id&empresa_id=eq.'+perfil.empresa_id+'&tipo=eq.config_viaturas&limit=1');
+    const body={viaturas:cfg.viaturas,atualizado_em:new Date().toISOString()};
+    if(Array.isArray(ex)&&ex[0]){
+      await api('/rest/v1/registros?id=eq.'+ex[0].id,{
+        method:'PATCH',h:{Prefer:'return=minimal'},body:{dados:body}
+      });
+    }else{
+      await api('/rest/v1/registros',{
+        method:'POST',h:{Prefer:'return=minimal'},
+        body:{empresa_id:perfil.empresa_id,tipo:'config_viaturas',local_id:'viaturas_empresa',dados:body}
+      });
+    }
+  }catch(_){
+    toast('Viaturas salvas localmente, mas sem conexão para sincronizar.');
+  }
+}
 
 function notifIdFromUUID(id){
   const nums=String(id??'').replace(/\D/g,'').slice(-8);
@@ -943,7 +1114,7 @@ async function entrar(){
     if(!data.session)throw new Error('O Supabase não retornou uma sessão.');
     setSessFromAuth(data.session);
     await carregarPerfil(data.user);
-    $('lg-pw').value='';m.textContent='';iniciar();
+    $('lg-pw').value='';m.textContent='';await iniciar();
   }catch(e){
     m.textContent=e.message||'Não foi possível entrar. Confira o e-mail, a senha e a conexão.';
     if(e.message&&/Invalid login credentials/i.test(e.message))m.textContent='E-mail ou senha incorretos.';
@@ -986,7 +1157,7 @@ async function salvarNovaSenha(){
 }
 
 async function restaurarSessao(){
-  if(!cloudOn){iniciar();return}
+  if(!cloudOn){await iniciar();return}
   try{
     const{data,error}=await sb.auth.getSession();
     if(error)throw error;
@@ -994,7 +1165,7 @@ async function restaurarSessao(){
     if(session){
       setSessFromAuth(session);
       await carregarPerfil(session.user);
-      iniciar();
+      await iniciar();
     }else{
       sess=null;perfil=null;
       localStorage.removeItem('fs_sess');localStorage.removeItem('fs_perfil');
@@ -1015,13 +1186,15 @@ async function sair(){
   location.reload();
 }
 
-function iniciar(){
+async function iniciar(){
   $('login').classList.add('hidden');
+  if(sess)await carregarViaturasNuvem();
   const s=sup();
   document.querySelectorAll('.tab').forEach(b=>{
     const t=b.dataset.t,so=['painel','agenda'].includes(t);
     b.classList.toggle('hidden',s?!(so||t==='config'):so);
   });
+  $('cfg-viat-sup').classList.toggle('hidden',!s);
   $('cfg-op').classList.toggle('hidden',s);
   $('ag-f').classList.toggle('hidden',s||!cloudOn||!sess);
   $('conta').classList.toggle('hidden',!cloudOn||!perfil);
@@ -1082,11 +1255,13 @@ async function renderPainel(){
     const R=await api('/rest/v1/registros?select=tipo,dados,editado_em,historico&order=criado_em.desc&limit=150');
     const por=t=>R.filter(r=>r.tipo===t).map(r=>r.dados);
     const ck=por('checklist'),rm=R.filter(r=>r.tipo==='remocao').slice(0,15),so=por('solicitacao').slice(0,15);
-    const vs=[...new Set(ck.map(c=>c.viatura))];
+    const vs=[...new Set([...cfg.viaturas,...ck.map(c=>c.viatura)].filter(Boolean))];
     $('pn').innerHTML=`<div class="card"><h2>🔔 Situação das viaturas</h2>${vs.length?vs.map(v=>{
-      const c=ck.find(x=>x.viatura===v),p=pendencias(c);
+      const c=ck.find(x=>x.viatura===v);
+      if(!c)return`<div class="rec"><strong>${esc(v)}</strong><p class="muted" style="margin:4px 0 0">Sem checklist enviado ainda.</p></div>`;
+      const p=pendencias(c);
       return`<div class="rec ${p.length?'bad':'ok'}"><strong>${esc(v)}</strong> <span class="muted">${esc(c.data)}</span><div style="margin-top:6px">${p.length?p.map(x=>`<div style="font-size:.8rem">• <b>${esc(x.i.nome)}</b> — ${esc(x.s.a.join(' | '))}</div>`).join(''):'<span class="badge b-ok">✅ Tudo em ordem</span>'}</div></div>`;
-    }).join(''):'<p class="muted">Nenhum checklist enviado ainda.</p>'}</div>
+    }).join(''):'<p class="muted">Nenhuma viatura cadastrada.</p>'}</div>
     <div class="card"><h2>🚑 Remoções recentes</h2>${rm.length?rm.map(r=>{
       const m=r.dados;
       return`<div class="rec"><strong>${esc(m.nome)}</strong> <span class="badge b-warn" style="background:#e0f2fe;color:#0369a1">${esc(m.convenio||'—')}</span><p class="muted" style="margin:6px 0 0">📍 ${esc(m.origem)} ➔ ${esc(m.destino)}<br>🚑 ${esc(m.viatura||'—')} • 🚗 ${esc(m.totalKm)} km • 🕒 ${esc(m.data)}<br>💬 ${esc(m.relato||'Sem relato.')}</p>${ed(r)}</div>`;
@@ -1099,6 +1274,7 @@ async function renderPainel(){
 
 async function renderAgenda(){
   if(!sess)return;
+  fillViaturas();
   const box=sup()?$('ag-lista'):$('ag-lista-f');
   try{
     agData=await api('/rest/v1/agenda?select=*&status=eq.agendada&order=quando.asc');
@@ -1136,11 +1312,12 @@ async function agSalvar(){
   const g=id=>$(id).value.trim(),q=$('ag-quando').value;
   if(!g('ag-nome')||!g('ag-orig')||!g('ag-dest')||!q){toast('Preencha paciente, origem, destino e data/hora.');return}
   try{
-    const dados={nome:g('ag-nome'),origem:g('ag-orig'),destino:g('ag-dest'),viatura:g('ag-viat'),obs:g('ag-obs')},quando=new Date(q).toISOString();
+    const dados={nome:g('ag-nome'),origem:g('ag-orig'),destino:g('ag-dest'),viatura:$('ag-viat').value,obs:g('ag-obs')},quando=new Date(q).toISOString();
     if(agEd)await api('/rest/v1/agenda?id=eq.'+agEd,{method:'PATCH',h:{Prefer:'return=minimal'},body:{quando,dados}});
     else await api('/rest/v1/agenda',{method:'POST',h:{Prefer:'return=minimal'},body:{empresa_id:perfil.empresa_id,quando,dados}});
     agCancelarEd();
-    ['ag-nome','ag-orig','ag-dest','ag-viat','ag-obs','ag-quando'].forEach(i=>$(i).value='');
+    ['ag-nome','ag-orig','ag-dest','ag-obs','ag-quando'].forEach(i=>$(i).value='');
+    $('ag-viat').value='';
     toast('Remoção agendada.');
     renderAgenda();
   }catch(e){toast('Erro ao agendar. Verifique a internet.')}
@@ -1156,7 +1333,9 @@ function agUsar(id){
   const a=agData.find(x=>x.id===id);if(!a)return;const d=a.dados||{};
   const atraso=formatarAtraso(a.quando);
   $('r-nome').value=d.nome||'';$('r-orig').value=d.origem||'';$('r-dest').value=d.destino||'';
-  if(d.viatura&&cfg.viaturas.includes(d.viatura))$('r-viatura').value=d.viatura;
+  if(d.viatura&&cfg.viaturas.includes(d.viatura)){
+    setViaturaAtual(d.viatura);
+  }
   agId=id;
   if(atraso){
     toast(`Atenção: remoção estava prevista para este horário (${atraso}).`);
@@ -1181,7 +1360,7 @@ function enviarEdicao(tipo,o){
 function editarRemocao(id){
   const m=ld(K_REM,[]).find(x=>x.id===id);if(!m)return;
   editId=id;agId=null;fillViaturas();
-  if(m.viatura&&!cfg.viaturas.includes(m.viatura))$('r-viatura').add(new Option(m.viatura));
+  if(m.viatura&&!cfg.viaturas.includes(m.viatura))$('r-viatura').add(new Option(m.viatura,m.viatura));
   $('r-viatura').value=m.viatura||'';
   $('r-nome').value=m.nome;$('r-conv').value=m.convenio||'';$('r-trajeto').value=m.trajeto;
   $('r-orig').value=m.origem;$('r-dest').value=m.destino;
@@ -1198,35 +1377,77 @@ function cancelarEdicao(){
 
 function agEditar(id){
   const a=agData.find(x=>x.id===id);if(!a)return;const d=a.dados;agEd=id;
+  fillViaturas();
   $('ag-nome').value=d.nome;$('ag-orig').value=d.origem;$('ag-dest').value=d.destino;$('ag-viat').value=d.viatura||'';$('ag-obs').value=d.obs||'';
   const t=new Date(a.quando);t.setMinutes(t.getMinutes()-t.getTimezoneOffset());$('ag-quando').value=t.toISOString().slice(0,16);
   $('ag-btn').textContent='Salvar alterações';$('ag-ced').classList.remove('hidden');window.scrollTo(0,0);
 }
 
 function agCancelarEd(){
-  agEd=null;['ag-nome','ag-orig','ag-dest','ag-viat','ag-obs','ag-quando'].forEach(i=>$(i).value='');
+  agEd=null;['ag-nome','ag-orig','ag-dest','ag-obs','ag-quando'].forEach(i=>$(i).value='');
+  if($('ag-viat'))$('ag-viat').value='';
   $('ag-btn').textContent='Agendar';$('ag-ced').classList.add('hidden');
 }
 
 /* Ajustes */
-function persist(){sv('fs_cfg',cfg);dirty=true;fillViaturas()}
+function persist(syncViat=false){
+  sv('fs_cfg',cfg);
+  dirty=true;
+  fillViaturas();
+  if(syncViat&&sup())salvarViaturasNuvem();
+}
+
 function renderAjustes(open){
-  $('aj-viat').innerHTML=cfg.viaturas.map((v,i)=>`<div class="row"><input value="${esc(v)}" aria-label="Nome da viatura" onchange="cfg.viaturas[${i}]=this.value.trim()||cfg.viaturas[${i}];persist()"><button class="sm badx" onclick="delViat(${i})">Remover</button></div>`).join('');
+  fillViaturas();
+  if($('viat-readonly-list')){
+    $('viat-readonly-list').textContent='Viaturas ativas: '+cfg.viaturas.join(', ');
+  }
+  if(sup()){
+    $('aj-viat').innerHTML=cfg.viaturas.map((v,i)=>`<div class="row"><input value="${esc(v)}" aria-label="Nome da viatura" onchange="cfg.viaturas[${i}]=this.value.trim()||cfg.viaturas[${i}];persist(true);renderAjustes()"><button class="sm badx" onclick="delViat(${i})">Remover</button></div>`).join('');
+  }
   $('aj-kits').innerHTML=cfg.kits.map((k,ki)=>`<details class="kit"${open===ki?' open':''}><summary>${esc(k.nome)} (${k.itens.length})</summary><div class="body">
-  <div class="row"><input value="${esc(k.nome)}" aria-label="Nome do kit" onchange="cfg.kits[${ki}].nome=this.value.trim()||cfg.kits[${ki}].nome;persist()"><button class="sm badx" onclick="delKit(${ki})">Excluir kit</button></div>
-  ${k.itens.map((it,ii)=>`<div class="row"><input value="${esc(it.nome)}" aria-label="Nome do item" onchange="cfg.kits[${ki}].itens[${ii}].nome=this.value.trim()||cfg.kits[${ki}].itens[${ii}].nome;persist()"><input class="q" type="number" min="0" inputmode="numeric" value="${it.cota}" aria-label="Cota" onchange="cfg.kits[${ki}].itens[${ii}].cota=Math.max(0,parseInt(this.value)||0);persist()"><button class="sm badx" aria-label="Remover item" onclick="delItem(${ki},${ii})">✕</button></div>`).join('')}
+  <div class="row"><input value="${esc(k.nome)}" aria-label="Nome do kit" onchange="cfg.kits[${ki}].nome=this.value.trim()||cfg.kits[${ki}].nome;persist(false)"><button class="sm badx" onclick="delKit(${ki})">Excluir kit</button></div>
+  ${k.itens.map((it,ii)=>`<div class="row"><input value="${esc(it.nome)}" aria-label="Nome do item" onchange="cfg.kits[${ki}].itens[${ii}].nome=this.value.trim()||cfg.kits[${ki}].itens[${ii}].nome;persist(false)"><input class="q" type="number" min="0" inputmode="numeric" value="${it.cota}" aria-label="Cota" onchange="cfg.kits[${ki}].itens[${ii}].cota=Math.max(0,parseInt(this.value)||0);persist(false)"><button class="sm badx" aria-label="Remover item" onclick="delItem(${ki},${ii})">✕</button></div>`).join('')}
   <button class="sm" onclick="addItem(${ki})">+ Item</button></div></details>`).join('');
 }
-function delViat(i){if(cfg.viaturas.length<2){toast('Mantenha ao menos uma viatura.');return}if(confirm('Remover esta viatura? O histórico dela é mantido.')){cfg.viaturas.splice(i,1);persist();renderAjustes()}}
-function addItem(ki){const n=prompt('Nome do item:');if(!n||!n.trim())return;const c=parseInt(prompt('Cota (quantidade mínima):','1'));cfg.kits[ki].itens.push({nome:n.trim(),cota:isNaN(c)?1:Math.max(0,c)});persist();renderAjustes(ki)}
-function delItem(ki,ii){cfg.kits[ki].itens.splice(ii,1);persist();renderAjustes(ki)}
-function delKit(ki){if(confirm('Excluir o kit inteiro?')){cfg.kits.splice(ki,1);persist();renderAjustes()}}
-$('add-viat').onclick=()=>{const n=prompt('Identificação da viatura:');if(n&&n.trim()&&!cfg.viaturas.includes(n.trim())){cfg.viaturas.push(n.trim());persist();renderAjustes()}};
-$('add-kit').onclick=()=>{const n=prompt('Nome do novo kit:');if(n&&n.trim()){cfg.kits.push({nome:n.trim(),itens:[]});persist();renderAjustes(cfg.kits.length-1)}};
-$('reset-cfg').onclick=()=>{if(confirm('Restaurar viaturas, kits e cotas para o padrão? O histórico é mantido.')){cfg=defCfg();persist();renderAjustes();toast('Padrão restaurado.')}};
+
+function delViat(i){
+  if(!sup()){toast('Apenas a supervisão pode remover viaturas.');return}
+  if(cfg.viaturas.length<2){toast('Mantenha ao menos uma viatura.');return}
+  if(confirm('Remover esta viatura? O histórico dela é mantido.')){
+    cfg.viaturas.splice(i,1);
+    persist(true);
+    renderAjustes();
+  }
+}
+
+function addItem(ki){const n=prompt('Nome do item:');if(!n||!n.trim())return;const c=parseInt(prompt('Cota (quantidade mínima):','1'));cfg.kits[ki].itens.push({nome:n.trim(),cota:isNaN(c)?1:Math.max(0,c)});persist(false);renderAjustes(ki)}
+function delItem(ki,ii){cfg.kits[ki].itens.splice(ii,1);persist(false);renderAjustes(ki)}
+function delKit(ki){if(confirm('Excluir o kit inteiro?')){cfg.kits.splice(ki,1);persist(false);renderAjustes()}}
+
+$('add-viat').onclick=()=>{
+  if(!sup()){toast('Apenas a supervisão pode adicionar viaturas.');return}
+  const n=prompt('Identificação da viatura (ex.: UTI-16):');
+  if(n&&n.trim()&&!cfg.viaturas.includes(n.trim())){
+    cfg.viaturas.push(n.trim());
+    persist(true);
+    renderAjustes();
+    toast('Viatura '+n.trim()+' adicionada.');
+  }
+};
+$('add-kit').onclick=()=>{const n=prompt('Nome do novo kit:');if(n&&n.trim()){cfg.kits.push({nome:n.trim(),itens:[]});persist(false);renderAjustes(cfg.kits.length-1)}};
+$('reset-cfg').onclick=()=>{if(confirm('Restaurar kits e cotas para o padrão? O histórico é mantido.')){const vAtual=cfg.viaturas;cfg=defCfg();if(!sup())cfg.viaturas=vAtual;persist(false);renderAjustes();toast('Padrão restaurado.')}};
 
 /* Eventos */
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>switchTab(b.dataset.t));
+$('chk-viatura').addEventListener('change',e=>{
+  setViaturaAtual(e.target.value);
+  renderChecklist();
+});
+$('chk-obs').addEventListener('input',salvarRascunhoChk);
+$('r-viatura').addEventListener('change',e=>setViaturaAtual(e.target.value));
+$('av-viatura').addEventListener('change',()=>renderAvisos());
+$('hist-viatura').addEventListener('change',()=>renderHistorico());
 $('busca').addEventListener('input',filtrar);
 $('btn-chk').onclick=salvarChecklist;
 $('btn-rem').onclick=salvarRemocao;
