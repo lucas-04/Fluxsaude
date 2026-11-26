@@ -1,5 +1,10 @@
 {
   "appId": "br.com.fluxsaude.app",
   "appName": "FluxSaúde",
-  "webDir": "www"
+  "webDir": "www",
+  "server": {
+    "url": "https://lucas-04.github.io/Fluxsaude/www/",
+    "cleartext": true
+  }
 }
+
