@@ -771,8 +771,95 @@ let sess=ld('fs_sess',null);
 let perfil=ld('fs_perfil',null);
 let agId=null,agData=[];
 let editId=null,agEd=null;
+const notifDisparadas=new Set();
 
 const sup=()=>!!perfil&&String(perfil.papel||'').trim().toLowerCase()==='supervisor';
+
+function notifIdFromUUID(id){
+  const nums=String(id??'').replace(/\D/g,'').slice(-8);
+  const n=parseInt(nums,10);
+  return Number.isFinite(n)&&n>0?n:Math.abs(String(id).split('').reduce((a,c)=>((a<<5)-a)+c.charCodeAt(0),0))%2147483647||1;
+}
+
+function getLocalNotifPlugin(){
+  return window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.LocalNotifications
+    ?Capacitor.Plugins.LocalNotifications
+    :null;
+}
+
+async function prepararNotificacoesLocais(){
+  const ln=getLocalNotifPlugin();
+  if(!ln)return;
+  try{
+    const perm=await ln.checkPermissions();
+    if(perm.display!=='granted'){
+      await ln.requestPermissions();
+    }
+  }catch(_){}
+}
+
+async function sincronizarNotificacoesAgenda(lista){
+  const ln=getLocalNotifPlugin();
+  if(!ln||!Array.isArray(lista))return;
+  try{
+    const perm=await ln.checkPermissions();
+    if(perm.display!=='granted')return;
+
+    const pendentes=await ln.getPending();
+    if(pendentes&&Array.isArray(pendentes.notifications)&&pendentes.notifications.length){
+      await ln.cancel({notifications:pendentes.notifications.map(x=>({id:x.id}))});
+    }
+
+    const agoraMs=Date.now();
+    const agendamentos=[];
+
+    for(const a of lista){
+      const d=a.dados||{};
+      const alvoMs=new Date(a.quando).getTime();
+      if(!Number.isFinite(alvoMs))continue;
+      const idNum=notifIdFromUUID(a.id);
+      const horaFmt=new Date(a.quando).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+
+      if(alvoMs<=agoraMs){
+        const chaveAtraso=`atraso_${a.id}`;
+        if(!notifDisparadas.has(chaveAtraso)){
+          notifDisparadas.add(chaveAtraso);
+          const atrasoTxt=formatarAtraso(a.quando)||'Remoção atrasada';
+          agendamentos.push({
+            id:idNum,
+            title:'⚠️ Remoção fora do prazo — '+(d.nome||'Paciente'),
+            body:`${atrasoTxt} (previsto ${horaFmt}) • ${d.origem||''} ➔ ${d.destino||''}`,
+            schedule:{at:new Date(Date.now()+1000)}
+          });
+        }
+      }else{
+        agendamentos.push({
+          id:idNum,
+          title:'🚑 Remoção agendada — '+(d.nome||'Paciente'),
+          body:`Horário: ${horaFmt} • ${d.origem||''} ➔ ${d.destino||''}${d.viatura?' ('+d.viatura+')':''}`,
+          schedule:{at:new Date(alvoMs)}
+        });
+      }
+    }
+
+    if(agendamentos.length){
+      await ln.schedule({notifications:agendamentos});
+    }
+  }catch(_){}
+}
+
+function formatarAtraso(quandoIso){
+  const diffMs=Date.now()-new Date(quandoIso).getTime();
+  if(!Number.isFinite(diffMs)||diffMs<=0)return null;
+  const totalMin=Math.floor(diffMs/60000);
+  if(totalMin<1)return 'Atrasada há menos de 1 min';
+  if(totalMin<60)return `Atrasada há ${totalMin} min`;
+  const horas=Math.floor(totalMin/60);
+  const min=totalMin%60;
+  if(horas<24)return min?`Atrasada há ${horas}h ${min}min`:`Atrasada há ${horas}h`;
+  const dias=Math.floor(horas/24);
+  return `Atrasada há ${dias}d`;
+}
 
 function setSessFromAuth(session){
   if(!session){sess=null;localStorage.removeItem('fs_sess');return}
@@ -916,6 +1003,8 @@ function iniciar(){
   if(perfil)$('conta-info').textContent=[perfil.nome,s?'Supervisor':'Funcionário'].filter(Boolean).join(' • ');
   switchTab(s?'painel':'checklist');
   if(!s&&sess){backfill();sync()}
+  prepararNotificacoesLocais();
+  if(sess)renderAgenda();
 }
 
 function enviar(tipo,o){
@@ -988,10 +1077,31 @@ async function renderAgenda(){
   const box=sup()?$('ag-lista'):$('ag-lista-f');
   try{
     agData=await api('/rest/v1/agenda?select=*&status=eq.agendada&order=quando.asc');
-    box.innerHTML=agData.length?agData.map(a=>{
-      const d=a.dados,q=new Date(a.quando).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-      return`<div class="rec"><strong>${esc(d.nome)}</strong> <span class="badge" style="background:#e0f2fe;color:#0369a1">${esc(q)}</span><p class="muted" style="margin:4px 0">📍 ${esc(d.origem)} ➔ ${esc(d.destino)}${d.viatura?'<br>🚑 '+esc(d.viatura):''}${d.obs?'<br>📝 '+esc(d.obs):''}</p><div class="acts">${sup()?`<button class="sm teal" onclick="agEditar('${esc(a.id)}')">✏️ Editar</button><button class="sm badx" onclick="agDel('${esc(a.id)}')">Cancelar</button>`:`<button class="sm teal" onclick="agUsar('${esc(a.id)}')">Iniciar remoção</button>`}</div></div>`;
-    }).join(''):'<p class="muted">Nenhuma remoção agendada.</p>';
+    sincronizarNotificacoesAgenda(agData);
+    if(!agData.length){
+      box.innerHTML='<p class="muted">Nenhuma remoção agendada.</p>';
+      return;
+    }
+    const ordenadas=[...agData].sort((a,b)=>{
+      const atA=new Date(a.quando).getTime()<Date.now()?0:1;
+      const atB=new Date(b.quando).getTime()<Date.now()?0:1;
+      if(atA!==atB)return atA-atB;
+      return new Date(a.quando).getTime()-new Date(b.quando).getTime();
+    });
+    box.innerHTML=ordenadas.map(a=>{
+      const d=a.dados||{};
+      const q=new Date(a.quando).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      const atraso=formatarAtraso(a.quando);
+      const classeCard=atraso?'rec bad':'rec';
+      const badgeAtraso=atraso?`<span class="badge b-bad">⚠️ ${esc(atraso)}</span>`:'';
+      return`<div class="${classeCard}">
+        <strong>${esc(d.nome)}</strong>
+        <span class="badge" style="background:#e0f2fe;color:#0369a1">${esc(q)}</span>
+        ${badgeAtraso}
+        <p class="muted" style="margin:4px 0">📍 ${esc(d.origem)} ➔ ${esc(d.destino)}${d.viatura?'<br>🚑 '+esc(d.viatura):''}${d.obs?'<br>📝 '+esc(d.obs):''}</p>
+        <div class="acts">${sup()?`<button class="sm teal" onclick="agEditar('${esc(a.id)}')">✏️ Editar</button><button class="sm badx" onclick="agDel('${esc(a.id)}')">Cancelar</button>`:`<button class="sm teal" onclick="agUsar('${esc(a.id)}')">Iniciar remoção</button>`}</div>
+      </div>`;
+    }).join('');
   }catch(e){
     box.innerHTML='<p class="muted">Agenda indisponível (sem internet).</p>';
   }
@@ -1018,10 +1128,17 @@ async function agDel(id){
 }
 
 function agUsar(id){
-  const a=agData.find(x=>x.id===id);if(!a)return;const d=a.dados;
-  $('r-nome').value=d.nome;$('r-orig').value=d.origem;$('r-dest').value=d.destino;
+  const a=agData.find(x=>x.id===id);if(!a)return;const d=a.dados||{};
+  const atraso=formatarAtraso(a.quando);
+  $('r-nome').value=d.nome||'';$('r-orig').value=d.origem||'';$('r-dest').value=d.destino||'';
   if(d.viatura&&cfg.viaturas.includes(d.viatura))$('r-viatura').value=d.viatura;
-  agId=id;toast('Dados carregados. Preencha o hodômetro.');$('r-ini').focus();
+  agId=id;
+  if(atraso){
+    toast(`Atenção: remoção estava prevista para este horário (${atraso}).`);
+  }else{
+    toast('Dados carregados. Preencha o hodômetro.');
+  }
+  $('r-ini').focus();
 }
 
 /* Edição */
