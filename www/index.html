@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#003366">
@@ -57,31 +58,31 @@ details.kit>div.body{padding:6px 8px 10px}
 #toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--navy-d);color:#fff;padding:11px 18px;border-radius:8px;font-size:.88rem;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;z-index:30}
 #toast.show{opacity:1}
 
-/* Modal de impressão/PDF integrado (não trava o WebView/APK) */
+/* Modal de impressão/PDF integrado */
 #pdf-modal{position:fixed;inset:0;background:#fff;z-index:25;overflow:auto;padding:16px}
 .pdf-bar{display:flex;gap:8px;justify-content:space-between;align-items:center;max-width:720px;margin:0 auto 14px;padding:10px;background:#f1f5f9;border-radius:8px;border:1px solid #cbd5e1}
-.pdf-sheet{max-width:720px;margin:0 auto;color:#1e293b;font-size:13px}
+.pdf-sheet{max-width:720px;margin:0 auto;color:#1e293b;font-size:13px;background:#fff}
 .pdf-top{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #003366;padding-bottom:10px;margin-bottom:16px}
 .pdf-brand{font-size:22px;font-weight:800;color:#003366}.pdf-brand span{color:#00a896}
 .pdf-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#f8fafc;border:1px solid #cbd5e1;padding:10px;border-radius:6px;margin-bottom:16px}
 .pdf-sheet table{width:100%;border-collapse:collapse;margin-bottom:16px}
 .pdf-sheet th,.pdf-sheet td{border:1px solid #cbd5e1;padding:8px;text-align:left}
 .pdf-sheet th{background:#003366;color:#fff;font-size:12px}
-.pdf-obs{border:1px solid #cbd5e1;padding:10px;border-radius:6px;min-height:42px;margin-bottom:24px}
-.pdf-signs{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px}
-.pdf-sign-box{display:flex;flex-direction:column;gap:6px}
-.sig-canvas{width:100%;height:110px;border:1px dashed #94a3b8;border-radius:6px;background:#f8fafc;touch-action:none;cursor:crosshair}
-.sig-img{width:100%;max-height:110px;object-fit:contain;border:1px solid #cbd5e1;border-radius:6px;background:#fff}
+.pdf-obs{border:1px solid #cbd5e1;padding:10px;border-radius:6px;min-height:42px;margin-bottom:20px}
+.pdf-sign-editor{background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:12px;margin-bottom:20px}
+.sig-canvas{width:100%;height:165px;border:1.5px dashed #94a3b8;border-radius:8px;background:#fff;touch-action:none;cursor:crosshair;display:block}
+.pdf-signs{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px;align-items:end}
+.pdf-sign-box{display:flex;flex-direction:column;justify-content:flex-end}
+.sig-slot{height:85px;display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+.sig-img{max-width:100%;max-height:85px;object-fit:contain}
 .pdf-sign{border-top:1px solid #334155;padding-top:6px;text-align:center;font-size:12px}
-.sig-tools{display:flex;justify-content:space-between;align-items:center;gap:6px}
-.sig-hint{font-size:11px;color:#64748b}
+.sig-tools{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:8px}
+.sig-hint{font-size:12px;color:#475569;font-weight:600}
 
 @media print{
   body>*:not(#pdf-modal){display:none!important}
   #pdf-modal{position:static!important;padding:0!important;overflow:visible!important}
   .no-print{display:none!important}
-  .sig-canvas{display:none!important}
-  .sig-img{display:block!important;border:0!important;background:transparent!important}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -174,8 +175,8 @@ details.kit>div.body{padding:6px 8px 10px}
   <div class="pdf-bar no-print">
     <button class="sm sec" type="button" onclick="fecharPdf()">← Voltar</button>
     <div style="display:flex;gap:6px">
-      <button class="sm sec" type="button" id="pdf-share-btn">Compartilhar</button>
-      <button class="sm teal" type="button" onclick="imprimirPdf()">🖨️ Imprimir / PDF</button>
+      <button class="sm sec" type="button" id="pdf-share-btn">📤 Compartilhar PDF</button>
+      <button class="sm teal" type="button" id="pdf-print-btn">🖨️ Imprimir / PDF</button>
     </div>
   </div>
   <div id="pdf-content" class="pdf-sheet"></div>
@@ -519,8 +520,8 @@ function initSignatureCanvas(canvasId, imgId, solId, fieldKey){
 
   function resize(){
     const rect=canvas.getBoundingClientRect();
-    const w=Math.max(200,Math.round(rect.width||260));
-    const h=Math.max(90,Math.round(rect.height||110));
+    const w=Math.max(260,Math.round(rect.width||320));
+    const h=Math.max(150,Math.round(rect.height||165));
     if(canvas.width!==w||canvas.height!==h){
       const prev=canvas.toDataURL('image/png');
       const hadStroke=canvas.dataset.signed==='1';
@@ -528,7 +529,7 @@ function initSignatureCanvas(canvasId, imgId, solId, fieldKey){
       canvas.height=h;
       ctx.lineCap='round';
       ctx.lineJoin='round';
-      ctx.lineWidth=2.5;
+      ctx.lineWidth=2.6;
       ctx.strokeStyle='#0f172a';
       if(hadStroke){
         const im=new Image();
@@ -626,14 +627,51 @@ function limparAssinatura(canvasId){
   if(c&&typeof c._clearSig==='function')c._clearSig();
 }
 
+let currentPdfSol=null;
+
 function solPdf(id){
   const s=ld(K_SOL,[]).find(x=>x.id===id);
   if(!s)return;
+  currentPdfSol=s;
   const rows=s.itens.map((i,idx)=>`<tr><td style="text-align:center">${idx+1}</td><td>${esc(i.nome)}</td><td>${esc(i.motivo||'Reposição')}</td><td style="text-align:center"><b>${i.qtd}</b></td><td style="text-align:center">☐</td></tr>`).join('');
-  $('pdf-content').innerHTML=`<div class="pdf-top"><div class="pdf-brand">Flux<span>Saúde</span></div><div style="text-align:right"><strong>REQUISIÇÃO DE MATERIAL / FARMÁCIA</strong><br><span style="color:#64748b;font-size:11px">Protocolo #${s.id}</span></div></div><div class="pdf-meta"><div><b>Viatura:</b> ${esc(s.viatura)}</div><div><b>Data/Hora:</b> ${esc(s.data)}</div><div><b>Status:</b> ${s.status==='recebida'?'Recebida':'Pendente'}</div><div><b>Total de itens:</b> ${s.itens.length}</div></div><table><thead><tr><th style="width:36px;text-align:center">#</th><th>Material / Medicamento</th><th>Motivo</th><th style="width:70px;text-align:center">Qtd.</th><th style="width:65px;text-align:center">Conferido</th></tr></thead><tbody>${rows}</tbody></table><div class="pdf-obs"><b>Observações:</b> ${esc(s.obs||'Nenhuma.')}</div><div class="pdf-signs"><div class="pdf-sign-box"><canvas id="sig-sol-canvas" class="sig-canvas no-print" aria-label="Assinar como solicitante"></canvas><img id="sig-sol-img" class="sig-img hidden" alt="Assinatura do solicitante"><div class="sig-tools no-print"><span class="sig-hint">Assine no quadro</span><button class="sm sec" type="button" onclick="limparAssinatura('sig-sol-canvas')">Limpar</button></div><div class="pdf-sign">Solicitante (Enfermagem / Operação)</div></div><div class="pdf-sign-box"><canvas id="sig-disp-canvas" class="sig-canvas no-print" aria-label="Assinar como dispensação"></canvas><img id="sig-disp-img" class="sig-img hidden" alt="Assinatura da dispensação"><div class="sig-tools no-print"><span class="sig-hint">Assine no quadro</span><button class="sm sec" type="button" onclick="limparAssinatura('sig-disp-canvas')">Limpar</button></div><div class="pdf-sign">Dispensação (Farmácia / Almoxarifado)</div></div></div>`;
+  $('pdf-content').innerHTML=`
+    <div class="pdf-sign-editor no-print">
+      <div class="sig-tools" style="margin-top:0;margin-bottom:8px">
+        <span class="sig-hint">✍️ Assinatura do Solicitante (desenhe abaixo)</span>
+        <button class="sm sec" type="button" onclick="limparAssinatura('sig-sol-canvas')">Limpar</button>
+      </div>
+      <canvas id="sig-sol-canvas" class="sig-canvas" aria-label="Assinar como solicitante"></canvas>
+    </div>
+    <div id="pdf-printable-area">
+      <div class="pdf-top">
+        <div class="pdf-brand">Flux<span>Saúde</span></div>
+        <div style="text-align:right"><strong>REQUISIÇÃO DE MATERIAL / FARMÁCIA</strong><br><span style="color:#64748b;font-size:11px">Protocolo #${s.id}</span></div>
+      </div>
+      <div class="pdf-meta">
+        <div><b>Viatura:</b> ${esc(s.viatura)}</div>
+        <div><b>Data/Hora:</b> ${esc(s.data)}</div>
+        <div><b>Status:</b> ${s.status==='recebida'?'Recebida':'Pendente'}</div>
+        <div><b>Total de itens:</b> ${s.itens.length}</div>
+      </div>
+      <table>
+        <thead><tr><th style="width:36px;text-align:center">#</th><th>Material / Medicamento</th><th>Motivo</th><th style="width:70px;text-align:center">Qtd.</th><th style="width:65px;text-align:center">Conferido</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="pdf-obs"><b>Observações:</b> ${esc(s.obs||'Nenhuma.')}</div>
+      <div class="pdf-signs">
+        <div class="pdf-sign-box">
+          <div class="sig-slot"><img id="sig-sol-img" class="sig-img hidden" alt="Assinatura do solicitante"></div>
+          <div class="pdf-sign">Solicitante (Enfermagem / Operação)</div>
+        </div>
+        <div class="pdf-sign-box">
+          <div class="sig-slot"></div>
+          <div class="pdf-sign">Dispensação (Farmácia / Almoxarifado)</div>
+        </div>
+      </div>
+    </div>`;
   initSignatureCanvas('sig-sol-canvas','sig-sol-img',s.id,'assinaturaSolicitante');
-  initSignatureCanvas('sig-disp-canvas','sig-disp-img',s.id,'assinaturaDispensacao');
-  $('pdf-share-btn').onclick=()=>compartilharTexto(formatarTextoSol(s));
+  $('pdf-share-btn').onclick=()=>gerarECompartilharPdf(true);
+  $('pdf-print-btn').onclick=()=>gerarECompartilharPdf(false);
   $('pdf-modal').classList.remove('hidden');
   $('pdf-modal').scrollTop=0;
 }
@@ -642,11 +680,74 @@ function fecharPdf(){
   $('pdf-modal').classList.add('hidden');
 }
 
-function imprimirPdf(){
+function blobToBase64(blob){
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();
+    r.onloadend=()=>resolve(String(r.result).split(',')[1]);
+    r.onerror=reject;
+    r.readAsDataURL(blob);
+  });
+}
+
+async function gerarECompartilharPdf(compartilhar){
+  const el=$('pdf-printable-area');
+  if(!el||!currentPdfSol)return;
+  const nomeArquivo='requisicao-fluxsaude-'+currentPdfSol.id+'.pdf';
+  toast('Gerando PDF...');
+
   try{
-    window.print();
+    if(typeof window.html2pdf==='undefined')throw new Error('html2pdf indisponivel');
+    const opt={
+      margin:10,
+      filename:nomeArquivo,
+      image:{type:'jpeg',quality:0.98},
+      html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff'},
+      jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
+    };
+    const pdfBlob=await window.html2pdf().set(opt).from(el).outputPdf('blob');
+
+    if(nat()){
+      const base64=await blobToBase64(pdfBlob);
+      const saved=await Capacitor.Plugins.Filesystem.writeFile({
+        path:nomeArquivo,
+        data:base64,
+        directory:'CACHE'
+      });
+      await Capacitor.Plugins.Share.share({
+        title:'Requisição FluxSaúde #'+currentPdfSol.id,
+        url:saved.uri
+      });
+      return;
+    }
+
+    const pdfFile=new File([pdfBlob],nomeArquivo,{type:'application/pdf'});
+    if(compartilhar&&navigator.canShare&&navigator.canShare({files:[pdfFile]})){
+      await navigator.share({
+        files:[pdfFile],
+        title:'Requisição FluxSaúde #'+currentPdfSol.id
+      });
+      return;
+    }
+
+    const url=URL.createObjectURL(pdfBlob);
+    if(!compartilhar){
+      const win=window.open(url,'_blank');
+      if(win)return;
+    }
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=nomeArquivo;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    toast('PDF salvo no aparelho. Abra para imprimir ou enviar.');
+    setTimeout(()=>URL.revokeObjectURL(url),15000);
   }catch(e){
-    toast('Impressão direta indisponível neste dispositivo. Use Compartilhar ou abra no navegador.');
+    if(e&&e.name==='AbortError')return;
+    if(!compartilhar){
+      try{window.print();return}catch(_){}
+    }
+    toast('Não foi possível gerar o PDF. Verifique a conexão.');
   }
 }
 
