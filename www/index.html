@@ -62,9 +62,9 @@ details.kit>div.body{padding:6px 8px 10px}
 #toast.show{opacity:1}
 
 /* Modal de impressão/PDF integrado */
-#pdf-modal{position:fixed;inset:0;background:#fff;z-index:25;overflow:auto;padding:16px}
-.pdf-bar{display:flex;gap:8px;justify-content:space-between;align-items:center;max-width:740px;margin:0 auto 14px;padding:10px;background:#f1f5f9;border-radius:8px;border:1px solid #cbd5e1}
-.pdf-sheet{max-width:720px;margin:0 auto;color:#1e293b;font-size:13px;background:#fff}
+#pdf-modal{position:fixed;inset:0;background:#e2e8f0;z-index:25;overflow:auto;padding:12px}
+.pdf-bar{display:flex;gap:8px;justify-content:space-between;align-items:center;max-width:740px;margin:0 auto 12px;padding:10px;background:#fff;border-radius:10px;border:1px solid #cbd5e1;box-shadow:0 2px 6px rgba(0,51,102,.08)}
+.pdf-sheet{max-width:720px;margin:0 auto;color:#1e293b;font-size:13px;background:transparent}
 .pdf-top{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #003366;padding-bottom:10px;margin-bottom:14px;gap:12px}
 .pdf-brand{font-size:22px;font-weight:800;color:#003366;white-space:nowrap}.pdf-brand span{color:#00a896}
 .pdf-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;background:#f8fafc;border:1px solid #cbd5e1;padding:10px 12px;border-radius:6px;margin-bottom:14px;font-size:12px}
@@ -82,29 +82,35 @@ details.kit>div.body{padding:6px 8px 10px}
 .sig-tools{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:8px}
 .sig-hint{font-size:12px;color:#475569;font-weight:600}
 
-/* Modelo de Evolução Clínica / Registro de Enfermagem (Confiare) */
-.evo-sheet{max-width:740px;margin:0 auto;color:#1e293b;background:#fff;padding:6px}
-.evo-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;max-width:740px;margin:0 auto 12px;padding:10px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;font-size:12px}
-.evo-controls label{display:flex;align-items:center;gap:6px;margin:0;font-size:12px}
-.evo-controls select,.evo-controls input[type="text"]{width:auto;padding:6px 8px;font-size:12px}
-.evo-page{position:relative;border:1.5px solid #60a5fa;background:#fff;padding:14px 16px 18px;overflow:hidden}
-.evo-watermark{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);width:340px;height:260px;opacity:.14;pointer-events:none;z-index:0}
+/* Modelo de Evolução Clínica / Registro de Enfermagem (FluxSaúde) */
+.evo-sheet{max-width:740px;margin:0 auto;color:#1e293b;background:#fff;border-radius:10px;box-shadow:0 6px 18px rgba(15,23,42,.08);padding:10px}
+.evo-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;max-width:740px;margin:0 auto 12px;padding:10px;background:#fff;border:1px solid #cbd5e1;border-radius:10px;font-size:12px}
+.evo-controls label{display:flex;flex-direction:column;gap:4px;margin:0;font-size:11.5px;color:#003366}
+.evo-controls select,.evo-controls input[type="text"]{width:100%;padding:7px 8px;font-size:12.5px;border-radius:6px}
+.evo-page{position:relative;border:1.5px solid #93c5fd;border-radius:6px;background:#fff;padding:14px 14px 16px}
+.evo-watermark{position:absolute;left:50%;top:55%;transform:translate(-50%,-50%);width:220px;height:190px;opacity:.09;pointer-events:none;z-index:0}
 .evo-inner{position:relative;z-index:1}
-.evo-top{display:grid;grid-template-columns:155px 1fr 90px;align-items:center;gap:10px;margin-bottom:8px}
-.evo-logo-sub{font-size:8px;letter-spacing:.04em;color:#475569;text-transform:uppercase;margin-top:2px}
-.evo-title{text-align:center;font-size:19px;font-weight:800;color:#2b6cb0;letter-spacing:.02em;line-height:1.15}
-.evo-date-line{text-align:right;font-size:11px;color:#334155;margin-top:4px}
-.evo-stamp{width:82px;height:82px;border:1.8px solid #2b6cb0;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:space-between;text-align:center;font-size:9.5px;font-weight:800;color:#2b6cb0;padding:6px 4px;margin-left:auto;line-height:1.05;letter-spacing:.03em}
-.evo-grid-hdr{display:grid;grid-template-columns:1.55fr 1fr;border:1.2px solid #3b82f6;border-bottom:none}
-.evo-cell-hdr{padding:4px 8px;font-size:11px;color:#334155;min-height:28px}
-.evo-cell-hdr:first-child{border-right:1.2px solid #3b82f6}
-.evo-cell-hdr b{display:block;font-size:9.5px;color:#2563eb;text-transform:uppercase;margin-bottom:1px}
-.evo-lined{position:relative;border:1.2px solid #3b82f6;min-height:660px;background-image:repeating-linear-gradient(to bottom,#3b82f6 0,#3b82f6 1px,transparent 1px,transparent 26px);background-position:0 25px}
-.evo-text{font-size:13px;line-height:26px;color:#0f172a;padding:3px 10px 6px;white-space:pre-wrap;word-break:break-word}
+.evo-top{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:1.5px solid #dbeafe}
+.evo-brand-box{display:flex;flex-direction:column;align-items:flex-start}
+.evo-brand-row{display:flex;align-items:center;gap:7px}
+.evo-brand-name{font-weight:800;font-size:15px;letter-spacing:-.02em;line-height:1}
+.evo-logo-sub{font-size:8.5px;font-weight:600;letter-spacing:.04em;color:#64748b;text-transform:uppercase;margin-top:3px}
+.evo-title{text-align:center;font-size:16px;font-weight:800;color:#003366;letter-spacing:.02em;line-height:1.15}
+.evo-date-line{text-align:center;font-size:11px;color:#475569;margin-top:3px}
+.evo-stamp{width:76px;height:76px;border:1.8px solid #003366;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;font-size:8.5px;font-weight:800;color:#003366;padding:5px;line-height:1;letter-spacing:.03em;background:rgba(255,255,255,.85)}
+.evo-grid-hdr{display:grid;grid-template-columns:1.35fr 1fr;border:1.2px solid #93c5fd;border-bottom:none;border-radius:4px 4px 0 0;overflow:hidden}
+.evo-cell-hdr{padding:5px 8px;font-size:11.5px;color:#0f172a;min-height:34px;background:rgba(248,250,252,.75)}
+.evo-cell-hdr:first-child{border-right:1.2px solid #93c5fd}
+.evo-cell-hdr b{display:block;font-size:9px;color:#003366;text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px}
+.evo-lined{position:relative;border:1.2px solid #93c5fd;border-radius:0 0 4px 4px;min-height:650px;background:transparent}
+.evo-lines-layer{position:absolute;inset:0;pointer-events:none;z-index:0;display:flex;flex-direction:column}
+.evo-line-row{height:26px;border-bottom:1px solid #bfdbfe;flex:0 0 26px}
+.evo-text{position:relative;z-index:1;font-size:12.5px;line-height:26px;color:#0f172a;padding:0 8px;white-space:pre-wrap;word-break:break-word}
 
 @media print{
   body>*:not(#pdf-modal){display:none!important}
-  #pdf-modal{position:static!important;padding:0!important;overflow:visible!important}
+  #pdf-modal{position:static!important;padding:0!important;overflow:visible!important;background:#fff!important}
+  .evo-sheet{box-shadow:none!important;padding:0!important}
   .no-print{display:none!important}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -149,7 +155,7 @@ details.kit>div.body{padding:6px 8px 10px}
 <div class="card"><h2>1. Dados da remoção</h2>
 <div class="fg"><label for="r-viatura">Viatura</label><select id="r-viatura"></select></div>
 <div class="fg"><label for="r-nome">Paciente</label><input id="r-nome" autocomplete="off"></div>
-<div class="fg"><label for="r-conv">Convênio / tomador (opcional)</label><input id="r-conv" placeholder="Ex.: IRH, IASSEPE, Unimed, Confiare ou deixe em branco"></div>
+<div class="fg"><label for="r-conv">Convênio / tomador (opcional)</label><input id="r-conv" placeholder="Ex.: IRH, IASSEPE, Unimed ou deixe em branco"></div>
 <div class="fg"><label for="r-trajeto">Tipo de trajeto</label><select id="r-trajeto"><option>Ida e volta</option><option>Somente ida</option></select></div>
 <div class="fg"><label for="r-orig">Origem</label><input id="r-orig"></div>
 <div class="fg"><label for="r-dest">Destino</label><input id="r-dest"></div></div>
@@ -195,7 +201,7 @@ details.kit>div.body{padding:6px 8px 10px}
 <div class="card"><h2>🚐 Viaturas disponíveis</h2><p class="muted" id="viat-readonly-list"></p></div>
 <div class="card"><h2>🎒 Kits, itens e cotas</h2><div id="aj-kits"></div>
 <div class="acts"><button class="sm teal" id="add-kit">+ Kit</button><button class="sm sec" id="reset-cfg">Restaurar padrão</button></div></div></div>
-<footer style="text-align:center;margin-top:14px;padding-bottom:8px;font-size:.75rem;color:var(--muted)">v.1.1.3</footer>
+<footer style="text-align:center;margin-top:14px;padding-bottom:8px;font-size:.75rem;color:var(--muted)">v.1.1.5</footer>
 </section>
 </div>
 
@@ -210,7 +216,9 @@ details.kit>div.body{padding:6px 8px 10px}
   <div id="pdf-content" class="pdf-sheet"></div>
 </div>
 
-<div id="login" class="hidden" style="position:fixed;inset:0;background:var(--bg);z-index:20;padding:24px;overflow:auto"><div class="container"><header><div class="brand"><h1><span class="fl">Flux</span><span class="sa">Saúde</span></h1></div></header>
+<div id="login" class="hidden" style="position:fixed;inset:0;background:var(--bg);z-index:20;padding:24px;overflow:auto"><div class="container"><header><div class="brand">
+<svg width="46" height="42" viewBox="0 0 120 105" fill="none" aria-hidden="true"><circle cx="43" cy="14" r="4.5" fill="#003366"/><circle cx="55" cy="14" r="4.5" fill="#003366"/><path d="M43 14C22 14 14 34 22 54C29 71 58 92 60 93C62 92 84 76 94 61" stroke="#003366" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M55 14C62 14 66 20 67 24C72 17 82 14 91 17C104 21 108 37 101 51" stroke="#003366" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="96" cy="56" r="11" fill="#fff" stroke="#003366" stroke-width="6.5"/><circle cx="96" cy="56" r="3.5" fill="#003366"/><path d="M32 52H48L54 34L62 68L69 47L73 52H81" stroke="#00a896" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<h1><span class="fl">Flux</span><span class="sa">Saúde</span></h1></div></header>
 <div class="card" id="login-card"><h2>Entrar</h2><div class="fg"><label for="lg-email">E-mail</label><input id="lg-email" type="email" autocomplete="username"></div>
 <div class="fg"><label for="lg-pw">Senha</label><input id="lg-pw" type="password" autocomplete="current-password"></div>
 <p id="lg-msg" class="muted" role="alert"></p><button class="teal" id="lg-btn">Entrar</button>
@@ -223,17 +231,381 @@ details.kit>div.body{padding:6px 8px 10px}
 
 <script>
 const KITS0=[
-  ["🎒 Kit de Cateterismo (Sondagem)",[["Sonda Nasogástrica Longa Nº 08",1],["Sonda Nasogástrica Nº 16",2],["Sonda Nasogástrica Nº 12",2],["Sonda Nasogástrica Nº 14",2],["Sonda Nasogástrica Nº 18",2],["Sonda Nasogástrica Nº 20",2],["Sonda Uretral Nº 06",1],["Sonda Uretral Nº 08",1],["Sonda Uretral Nº 10",1],["Sonda Uretral Nº 12",1]]],
-  ["🛡️ Kit de EPI",[["Avental Descartável",3],["Máscara N95",3],["Óculos de Proteção",3]]],
-  ["🫁 Kit TQT (Traqueostomia)",[["Cânula de TQT Nº 3,0",1],["Cânula de TQT Nº 3,5",1],["Cânula de TQT Nº 4,0",1],["Cânula de TQT Nº 5,0",1],["Cânula de TQT Nº 6,0",1],["Cânula de TQT Nº 6,5",1],["Cânula de TQT Nº 7,0",2],["Cânula de TQT Nº 7,5",2],["Cânula de TQT Nº 8,0",2],["Cânula de TQT Nº 8,5",2],["Cânula de TQT Nº 9,0",1],["Cânula de TQT Nº 9,5",1],["Gaze Estéril",5],["Lidocaína Gel",1],["Luva Estéril",4],["Seringa 10 ml",4],["Seringa 20 ml",4]]],
-  ["👶 Kit Parto",[["Absorvente Hospitalar",1],["Avental em Falso Tecido",1],["Bracelete de Identificação",2],["Clamps Umbilicais em Plástico",2],["Compressa 10x15 cm",1],["Compressa 15x30 cm",1],["Fio Sutura Catgut Cromado",1],["Gaze Estéril",2],["Instrumental Cirúrgico",1],["Lâmina de Bisturi Nº 22 - Descartável",1],["Lençol Descartável",1],["Luva Estéril",2],["Manta Térmica",2],["Saco Plástico - Lixo Infectante",1],["Swab de Álcool",2]]],
-  ["💉 Kit de Punção Periférica",[["Agulha 25x7",5],["Agulha 40x12",5],["Algodão (Pacote)",1],["Atadura de Crepom 10 cm",2],["Atadura de Crepom 15 cm",2],["Equipo Macro Gotas",5],["Equipo Polifix 2 Vias",5],["Filme Transparente",5],["Garrote + Cuba Rim + Micropore",1],["Jelco Nº 18",3],["Jelco Nº 20",5],["Jelco Nº 22",5],["Jelco Nº 24",5],["Organizador com Etiquetas",1],["Scalp Nº 21",3],["Scalp Nº 25",3],["Seringa 01 ML",5],["Seringa 05 ML",5],["Seringa 10 ML",5],["Seringa 20 ML",5],["Soro Fisiológico 0,9% 10 ml Amp.",8]]],
-  ["🫁 Kit Drenagem Torácica",[["Avental Estéril Descartável",1],["Campo Fenestrado",1],["Fio Catgut 0",1],["Fio Nylon 3.0",1],["Fio Nylon 4.0",1],["Fio Nylon 5.0",1],["Gaze Estéril",2],["Instrumental Cirúrgico",1],["Lâmina de Bisturi Nº 22",1],["Lidocaína Injetável",1],["Luva Estéril",2],["Seringa c/Agulha 10 ml",1],["Seringa c/Agulha 20 ml",1]]],
-  ["🔒 Kit Contenção",[["MMSS",2],["Região Abdominal",1],["MMII",2]]],
-  ["💉 Kit Punção Central",[["Água Destilada 10 ml",2],["Agulha 13 x 4,5 cm",5],["Agulha 25 x 7 cm",5],["Atadura de Crepom 10 cm",1],["Atadura de Crepom 15 cm",1],["Avental Estéril Descartável",1],["Campo Fenestrado",1],["Cateter Mono Lúmen 16 GA - Pediátrico",1],["Cateter Mono Lúmen 14 GA - Adulto",2],["Clorexidina Alcoólica 0,5% 100 ml",1],["Clorexidina Dergemante 2% 100 ml",1],["Compressa Cirúrgica 45 x 45 cm",4],["Equipo Macrogotas",1],["Equipo Polifix 2 Vias",1],["Fio de Nylon Nº 2.0",2],["Fio de Nylon Nº 3.0",2],["Fio de Nylon Nº 4.0",2],["Gaze Estéril",5],["Instrumental Cirúrgico",1],["Lâmina de Bisturi Nº 15",1],["Lâmina de Bisturi Nº 22",1],["Lidocaína 2% S/V 5 ml",2],["Luva Estéril",2],["Seringa 10 ml",2],["Seringa 20 ml",2],["Sonda Uretral Nº 10",2],["Sonda Uretral Nº 12",2],["Sonda Uretral Nº 8",2],["Soro Fisiológico 0,9% 250 ml",1]]],
-  ["🎭 Kit Máscara Laríngea",[["Máscara Laríngea Nº 01",1],["Máscara Laríngea Nº 02",1],["Máscara Laríngea Nº 03",1],["Máscara Laríngea Nº 04",1],["Máscara Laríngea Nº 05",1]]],
-  ["💉 Bolsa de Ampolagem (Medicamentos Gerais)",[["AAS 100 mg",4],["Adenosina 3mg",2],["Adrenalina 1mg/ml",10],["Água Destilada 10ml",15],["Aminofilina 24 mg/ml",5],["Amiodarona (Ancoron) 50mg/ml",5],["Atropina 0,25mg/ml",10],["Atrovent (Brometo de Ipratrópio) 0,25mg/ml - 20ml",1],["Bicarbonato de Sódio 8,4% 250ml",1],["Bicarbonato de Sódio 8,4% 10ml",5],["Buscopan Composto 4mg/ml",2],["Buscopan Simples 20mg/ml",2],["Captopril 25 mg",2],["Cedilanide (Deslanol) 0,2mg/ml",2],["Cloreto de Potássio (KCl) 19,1%",2],["Cloreto de Sódio 10%",2],["Decadron (Dexametasona) 4mg/2,5ml",3],["Dipirona 500mg/ml",5],["Dipirona 500mg/ml 10ml - Gotas",1],["Dobutrex (Dobutamina) 250mg/20ml",1],["Dopamina 5mg/ml - 10ml",5],["Dramin B6 - 10ml",2],["Efortil (Etilefrina) 10mg/ml",1],["Fernegan (Prometazina) 50mg/2ml",2],["Fleet Enema - 130ml",1],["Glicose 50% 10ml",10],["Gluconato de Cálcio 10% - 10ml",2],["Heparina 5.000UI/5ml",1],["Hidrocortisona 100mg",5],["Hidrocortisona 500mg",5],["Isordil 10mg",2],["Isordil 5mg SL",2],["Lasix (Furosemida) 10mg/ml",5],["Methergin 0,2mg/ml",2],["Nitroprussiato de Sódio (Nipride) 50mg/2ml",1],["Noradrenalina 4mg - 1mg/ml",5],["Omeprazol 40mg + Diluente 10ml",2],["Ondansetrona (Zofran) 8mg/4ml",2],["Paracetamol 200mg/ml - 15ml Gotas",1],["Plamet (Bromoprida) 10mg/ml",2],["Plamet (Bromoprida) Gotas",1],["Solução Glicerinada - 500ml",1],["Soro Fisiológico 0,9% 100ml",3],["Soro Glicosado 5% 250ml",1],["Sulfato de Magnésio 10%",4],["Sulfato de Terbutalina (Bricanyl) 0,5mg/ml",3],["Vasopressina (Encrise) 20UI/ml",1],["Vitamina K 10mg/ml",2],["Xilocaína 2% S/V 2ml Amp",2]]],
-  ["🔒 Bolsa de Ampolagem - Controlados",[["Amplictil (Clorpromazina) 5mg/ml",2],["Diazepam 10mg/2ml",3],["Dormonid 5mg/ml - 10ml",2],["Dormonid 5mg/ml - 3ml",2],["Etomidato 2mg/ml",1],["Fenobarbital 200mg/ml (Gardenal)",2],["Fentanil 50mcg/ml - 10ml",2],["Flumazenil 0,5mg/5ml",2],["Haloperidol 5mg/ml - 1ml",1],["Hidantal (Fenitoína) 100mg",5],["Morfina (Dimorf) 10mg/1ml",2],["Naloxone (Narcan) 0,4mg/ml",2],["Nubain 10mg/ml",1],["Succinin (Suxametônio) 100mg",1],["Tramal 100mg/2ml",2],["Tramal 50mg/1ml",2]]]
+  ["🗄️ Parte Externa do Armário",[
+    ["Álcool 70% 500 - 1000 ml (Borrifador)",1],
+    ["Álcool Gel",1],
+    ["Ambú Adulto com Máscara e Reservatório",2],
+    ["Ambú Pediátrico com Máscara e Reservatório",1],
+    ["Aparadeira",1],
+    ["Bombona com Germe Rio",1],
+    ["Caixa de Pérfuro Cortante",1],
+    ["Cateter Tipo Óculos - Neo",1],
+    ["Cateter Tipo Óculos Longo - Adulto",2],
+    ["Circuito de Respirador",2],
+    ["Colar Cervical G",1],
+    ["Colar Cervical M",1],
+    ["Colar Cervical P",1],
+    ["Colar Cervical PP",1],
+    ["Copo Aspirador",2],
+    ["Eletrodos",5],
+    ["Equipo Parenteral BIC Fotossensível",1],
+    ["Equipo Parenteral Cristal BIC",1],
+    ["Espaço Morto",1],
+    ["Fita Tubular",1],
+    ["Frasco Umidificador",3],
+    ["Gel para ECG 100g",1],
+    ["Guarda-Chuva",1],
+    ["Kit de Drenagem Torácica Nº 28 - Pediátrico",1],
+    ["Kit de Drenagem Torácica Nº 34 - Adulto",1],
+    ["Kit de Lençol de Tecido",3],
+    ["Kit Venturi",2],
+    ["Lençol de Papel (Rolo)",1],
+    ["Luva de Procedimento - Caixa 50 Unid",1],
+    ["Manta Térmica",1],
+    ["Máscara de Micronebulização - Adulto",2],
+    ["Máscara de Micronebulização - Pediátrico",2],
+    ["Máscara de Venturi para TQT - Adulto",1],
+    ["Máscara de Venturi para TQT - Pediátrico",1],
+    ["Máscara Descartável - Caixa 50 Unid",1],
+    ["Máscara Não Reinalante - Adulto",1],
+    ["Máscara Não Reinalante - Pediátrico",1],
+    ["Pano Multiuso Perfex Descartável - Rolo",1],
+    ["Papagaio",1],
+    ["Saco de Lixo Branco (Pacote)",1],
+    ["Saco de Lixo Preto (Pacote)",1],
+    ["Sonda de Aspiração Nº 12",2],
+    ["Touca Descartável - Pacote com 100 Unid",1],
+    ["Tubo Extensor Estéril 2m para Aspiração",2]
+  ]],
+  ["🫁 Kit de Intubação",[
+    ["Avental Descartável",2],
+    ["Cabo Laringo Adulto - com Pilhas",1],
+    ["Cabo Laringo Infantil - com Pilhas",1],
+    ["Cadarço",2],
+    ["Cânula de Guedel Nº 0",1],
+    ["Cânula de Guedel Nº 1,0",1],
+    ["Cânula de Guedel Nº 2,0",1],
+    ["Cânula de Guedel Nº 3,0",1],
+    ["Cânula de Guedel Nº 4,0",1],
+    ["Cânula de Guedel Nº 5,0",1],
+    ["Fio Guia - Adulto",1],
+    ["Fio Guia - Infantil",1],
+    ["Gaze Estéril",5],
+    ["Lâmina Laringo Curva Nº 1",1],
+    ["Lâmina Laringo Curva Nº 2",1],
+    ["Lâmina Laringo Curva Nº 3",1],
+    ["Lâmina Laringo Curva Nº 4",1],
+    ["Lâmina Laringo Reta Nº 1",1],
+    ["Lâmina Laringo Reta Nº 2",1],
+    ["Lâmina Laringo Reta Nº 3",1],
+    ["Lâmina Laringo Reta Nº 4",1],
+    ["Lidocaína Gel",1],
+    ["Luva Estéril",3],
+    ["Óculos de Proteção",1],
+    ["Pilha Reserva C",2],
+    ["Pilha Reserva Média AA",2],
+    ["Pinça Magyl",1],
+    ["Seringa de 10 ml",1],
+    ["Seringa de 20 ml",1],
+    ["Sonda de Aspiração Nº 06",3],
+    ["Sonda de Aspiração Nº 08",3],
+    ["Sonda de Aspiração Nº 10",3],
+    ["Sonda de Aspiração Nº 12",3],
+    ["Tubo Endotraqueal Nº 2,0",1],
+    ["Tubo Endotraqueal Nº 2,5",1],
+    ["Tubo Endotraqueal Nº 3,0",1],
+    ["Tubo Endotraqueal Nº 3,5",1],
+    ["Tubo Endotraqueal Nº 4,0",1],
+    ["Tubo Endotraqueal Nº 4,5",1],
+    ["Tubo Endotraqueal Nº 5,0",1],
+    ["Tubo Endotraqueal Nº 5,5",1],
+    ["Tubo Endotraqueal Nº 6,0",1],
+    ["Tubo Endotraqueal Nº 6,5",1],
+    ["Tubo Endotraqueal Nº 7,0",2],
+    ["Tubo Endotraqueal Nº 7,5",2],
+    ["Tubo Endotraqueal Nº 8,0",2],
+    ["Tubo Endotraqueal Nº 8,5",2],
+    ["Tubo Endotraqueal Nº 9,0",1],
+    ["Tubo Endotraqueal Nº 9,5",1]
+  ]],
+  ["🩺 Equipamentos",[
+    ["Bomba de Infusão - Validade Calibração",1],
+    ["Cadeira de Rodas",1],
+    ["Caixa Térmica com Termômetro - Calibração",1],
+    ["Cardioversor - Validade Calibração",1],
+    ["Chave de Torpedo",2],
+    ["Cilindro de Oxigênio Portátil",1],
+    ["Colchão",1],
+    ["Conexão T",1],
+    ["Escadinha",2],
+    ["Fluxômetro",1],
+    ["Imobilizadores de Cabeça (Adulto e Infantil)",1],
+    ["KED",1],
+    ["Lixeira com Pedal (Lixo Infectado)",1],
+    ["Maca",1],
+    ["Manômetro",1],
+    ["Otoscópio - com Pilha Reserva",1],
+    ["Oxímetro Portátil Recarregável - Validade",1],
+    ["Prancha para Resgate - com Cinto",1],
+    ["Respirador - Validade Calibração",2],
+    ["Torpedo de Oxigênio - 4 ou 6 m³",1],
+    ["Válvula Redutora",1]
+  ]],
+  ["💧 Kit Soluções",[
+    ["Água Destilada de 500ml",5],
+    ["Soro Fisiológico 0,9% de 500 ml",5],
+    ["Soro Glicosado 5% de 500 ml",5],
+    ["Soro Ringer Lactado de 500 ml",5]
+  ]],
+  ["🩹 Kit Evisceração",[
+    ["Atadura 15 cm",2],
+    ["Atadura 30 cm",1],
+    ["Compressa Estéril",3],
+    ["Esparadrapo",1],
+    ["Gaze Estéril",3],
+    ["Luva Estéril",3],
+    ["Manta Térmica",1],
+    ["Protetor para Eviscerado",1],
+    ["Soro Fisiológico 0,9% 500 ml",2],
+    ["Transofix",1]
+  ]],
+  ["🎒 Kit de Cateterismo (Sondagem)",[
+    ["Água Destilada 10ml Ampola",4],
+    ["Clorexidina Aquosa 0,2% 100 ml",1],
+    ["Coletor de Urina Sistema Aberto",1],
+    ["Coletor de Urina Sistema Fechado",2],
+    ["Compressa Estéril",2],
+    ["Dispositivo Urinário",2],
+    ["Gaze Estéril",4],
+    ["Lidocaína Gel",1],
+    ["Luva Estéril",4],
+    ["Seringa de 20 ml",2],
+    ["Sonda Foley Nº 12",2],
+    ["Sonda Foley Nº 14",2],
+    ["Sonda Foley Nº 16",2],
+    ["Sonda Foley Nº 18",2],
+    ["Sonda Foley Nº 20",2],
+    ["Sonda Foley Nº 22",2],
+    ["Sonda Foley Nº 24",2],
+    ["Sonda Foley Três Vias Nº 24",1],
+    ["Sonda Nasoenteral 120 cm - Adulto",1],
+    ["Sonda Nasoenteral 60 cm - Infantil",1],
+    ["Sonda Nasogástrica Longa Nº 06",1],
+    ["Sonda Nasogástrica Longa Nº 08",1],
+    ["Sonda Nasogástrica Nº 12",2],
+    ["Sonda Nasogástrica Nº 14",2],
+    ["Sonda Nasogástrica Nº 16",2],
+    ["Sonda Nasogástrica Nº 18",2],
+    ["Sonda Nasogástrica Nº 20",2],
+    ["Sonda Uretral Nº 06",1],
+    ["Sonda Uretral Nº 08",1],
+    ["Sonda Uretral Nº 10",1],
+    ["Sonda Uretral Nº 12",1]
+  ]],
+  ["🧰 Kit Acessórios",[
+    ["Estetoscópio",1],
+    ["Fitas Medidor Glicemia",10],
+    ["Garrote ou Vacuette",1],
+    ["Glicosímetro",1],
+    ["Lancetas",10],
+    ["Tensiómetro Adulto",1],
+    ["Tensiómetro Infantil",1],
+    ["Tensiómetro Neonatal",1],
+    ["Tensiómetro Obeso",1],
+    ["Termômetro Digital",1],
+    ["Tesoura",1]
+  ]],
+  ["🛡️ Kit de EPI",[
+    ["Avental Descartável",3],
+    ["Máscara N95",3],
+    ["Óculos de Proteção",3]
+  ]],
+  ["🫁 Kit TQT",[
+    ["Cânula de TQT Nº 3,0",1],
+    ["Cânula de TQT Nº 3,5",1],
+    ["Cânula de TQT Nº 4,0",1],
+    ["Cânula de TQT Nº 5,0",1],
+    ["Cânula de TQT Nº 6,0",1],
+    ["Cânula de TQT Nº 6,5",1],
+    ["Cânula de TQT Nº 7,0",2],
+    ["Cânula de TQT Nº 7,5",2],
+    ["Cânula de TQT Nº 8,0",2],
+    ["Cânula de TQT Nº 8,5",2],
+    ["Cânula de TQT Nº 9,0",1],
+    ["Cânula de TQT Nº 9,5",1],
+    ["Gaze Estéril",5],
+    ["Lidocaína Gel",1],
+    ["Luva Estéril",4],
+    ["Seringa 10 ml",4],
+    ["Seringa 20 ml",4]
+  ]],
+  ["👶 Kit Parto",[
+    ["Absorvente Hospitalar",1],
+    ["Avental em Falso Tecido",1],
+    ["Bracelete de Identificação",2],
+    ["Clamps Umbilicais em Plástico",2],
+    ["Compressa 10x15 cm",1],
+    ["Compressa 15x30 cm",1],
+    ["Fio Sutura Catgut Cromado",1],
+    ["Gaze Estéril",2],
+    ["Instrumental Cirúrgico",1],
+    ["Lâmina de Bisturi com Cabo Nº 22 - Descartável",1],
+    ["Lençol Descartável",1],
+    ["Luva Estéril",2],
+    ["Manta Térmica",2],
+    ["Saco Plástico - Lixo Infectante",1],
+    ["Swab de Álcool",2]
+  ]],
+  ["💉 Kit Punção Central",[
+    ["Água Destilada 10 ml",2],
+    ["Agulha 13 x 4,5 cm",5],
+    ["Agulha 25 x 7 cm",5],
+    ["Atadura de Crepom 10 cm",1],
+    ["Atadura de Crepom 15 cm",1],
+    ["Avental Estéril Descartável",1],
+    ["Campo Fenestrado",1],
+    ["Cateter Mono Lúmen 16 GA - Pediátrico",1],
+    ["Cateter Mono Lúmen 14 GA - Adulto",2],
+    ["Clorexidina Alcoólica 0,5% 100 ml",1],
+    ["Clorexidina Dergemante 2% 100 ml",1],
+    ["Compressa Cirúrgica 45 x 45 cm",4],
+    ["Equipo Macrogotas",1],
+    ["Equipo Polifix 2 Vias",1],
+    ["Fio de Nylon Nº 2.0",2],
+    ["Fio de Nylon Nº 3.0",2],
+    ["Fio de Nylon Nº 4.0",2],
+    ["Gaze Estéril",5],
+    ["Instrumental Cirúrgico",1],
+    ["Lâmina de Bisturi Nº 15",1],
+    ["Lâmina de Bisturi Nº 22",1],
+    ["Lidocaína 2% S/V 5 ml",2],
+    ["Luva Estéril",2],
+    ["Seringa 10 ml",2],
+    ["Seringa 20 ml",2],
+    ["Sonda Uretral Nº 10",2],
+    ["Sonda Uretral Nº 12",2],
+    ["Sonda Uretral Nº 8",2],
+    ["Soro Fisiológico 0,9% 250 ml",1]
+  ]],
+  ["💉 Kit de Punção Periférica",[
+    ["Agulha 25x7",5],
+    ["Agulha 40x12",5],
+    ["Algodão (Pacote)",1],
+    ["Atadura de Crepom 10 cm",2],
+    ["Atadura de Crepom 15 cm",2],
+    ["Equipo Macro Gotas",5],
+    ["Equipo Polifix 2 Vias",5],
+    ["Filme Transparente",5],
+    ["Garrote + Cuba Rim + Micropore - Cada",1],
+    ["Jelco Nº 18",3],
+    ["Jelco Nº 20",5],
+    ["Jelco Nº 22",5],
+    ["Jelco Nº 24",5],
+    ["Organizador com Etiquetas",1],
+    ["Scalp Nº 21",3],
+    ["Scalp Nº 25",3],
+    ["Seringa 01 ml",5],
+    ["Seringa 05 ml",5],
+    ["Seringa 10 ml",5],
+    ["Seringa 20 ml",5],
+    ["Soro Fisiológico 0,9% 10 ml Amp.",8]
+  ]],
+  ["🫁 Kit Drenagem Torácica",[
+    ["Avental Estéril Descartável",1],
+    ["Campo Fenestrado",1],
+    ["Fio Catgut 0",1],
+    ["Fio Nylon 3.0",1],
+    ["Fio Nylon 4.0",1],
+    ["Fio Nylon 5.0",1],
+    ["Gaze Estéril",2],
+    ["Instrumental Cirúrgico",1],
+    ["Lâmina de Bisturi Nº 22",1],
+    ["Lidocaína Injetável",1],
+    ["Luva Estéril",2],
+    ["Seringa c/Agulha 10 ml",1],
+    ["Seringa c/Agulha 20 ml",1]
+  ]],
+  ["🔒 Kit Contenção",[
+    ["MMSS",2],
+    ["Região Abdominal",1],
+    ["MMII",2]
+  ]],
+  ["🎭 Kit Máscara Laríngea",[
+    ["Máscara Laríngea Nº 01",1],
+    ["Máscara Laríngea Nº 02",1],
+    ["Máscara Laríngea Nº 03",1],
+    ["Máscara Laríngea Nº 04",1],
+    ["Máscara Laríngea Nº 05",1]
+  ]],
+  ["💉 Bolsa de Ampolagem",[
+    ["AAS 100 mg",4],
+    ["Adenosina 3mg",2],
+    ["Adrenalina 1mg/ml",10],
+    ["Água Destilada 10ml",15],
+    ["Aminofilina 24 mg/ml",5],
+    ["Amiodarona (Ancoron) 50mg/ml",5],
+    ["Atropina 0,25 mg/ml",10],
+    ["Atrovent (Brometo de Ipratrópio) 0,25mg/ml - 20 ml",1],
+    ["Bicarbonato de Sódio 8,4 % 250 ml",1],
+    ["Bicarbonato de Sódio 8,4% 10ml",5],
+    ["Buscopan Composto 04mg/ml",2],
+    ["Buscopan Simples 20mg/ml (Butilbrometo de Escopolamina) Inj.",2],
+    ["Captopril 25 mg",2],
+    ["Cedilanide (Deslanol) 0,2mg/ml",2],
+    ["Cloreto de Potássio (KCL) 19,1%",2],
+    ["Cloreto de Sódio 10%",2],
+    ["Decadron (Dexametasona) 4mg/2,5 ml",3],
+    ["Dipirona 500mg/ml",5],
+    ["Dipirona 500mg/ml 10 ml - Gotas.",1],
+    ["Dobutrex (Dobutamina) 250mg/20ml",1],
+    ["Dopamina 05mg/ml - 10ml",5],
+    ["Dramin B6 - 10 ml",2],
+    ["Efortil (Etilefrina) 10mg/ml",1],
+    ["Fernegan (Cloridrato de Prometazina) 50mg/2ml",2],
+    ["Fleet Enema - 130 ml",1],
+    ["Glicose 50% 10 ml",10],
+    ["Gluconato de Cálcio 10% - 10ml",2],
+    ["Heparina 5.000UI/5 ml",1],
+    ["Hidrocortisona 100 mg",5],
+    ["Hidrocortisona 500 mg",5],
+    ["Isordil 10 mg",2],
+    ["Isordil 5 mg SL",2],
+    ["Lasix (Furosemida) 10 mg/ml",5],
+    ["Methergin 0,2mg/ml",2],
+    ["Nitroprussiato de Sódio (Nipride) 50mg/2ml",1],
+    ["Noradrenalina 4mg - 1mg/ml",5],
+    ["Omeprazol Frasco 40mg + Diluente 10 ml",2],
+    ["Ondansetrona (Zofran) 8mg/4ml",2],
+    ["Paracetamol 200mg/ml - 15 ml - Gotas",1],
+    ["Plamet (Bromoprida) 10mg/ml",2],
+    ["Plamet (Bromoprida) Gotas",1],
+    ["Solução Glicerinada - 500 ml",1],
+    ["Soro Fisiológico 0,9% 100 ml",3],
+    ["Soro Glicosado 5% 250 ml",1],
+    ["Sulfato de Magnésio 10%",4],
+    ["Sulfato de Terbutalina (Bricanyl) 0,5mg/ml",3],
+    ["Vasopressina (Encrise) 20U/ml",1],
+    ["Vitamina K 10mg/ml",2],
+    ["Xilocaína 2% s/v 2ml amp",2]
+  ]],
+  ["🔒 Bolsa de Ampolagem - Controlados",[
+    ["Amplictil (Cloridrato de Clorpromazina) 5mg/ml",2],
+    ["Diazepam 10 mg/2ml.",3],
+    ["Dormonid 5mg/ml - 10ml",2],
+    ["Dormonid 5mg/ml - 3ml",2],
+    ["Etomidato 2mg/ml",1],
+    ["Fenobarbital 200mg/ml (Gardenal)",2],
+    ["Fentanil 50mcg/ml - 10ml",2],
+    ["Flumazenil 0,5mg/5ml",2],
+    ["Haloperidol 5mg/ml - 1ml",1],
+    ["Hidantal (Fenitoína) 100 mg",5],
+    ["Morfina (Dimorf) 10mg/1ml",2],
+    ["Naloxone (Narcan) 0,4mg/ml",2],
+    ["Nubain 10mg/ml",1],
+    ["Succinin (Cloreto Suxametônio) 100mg",1],
+    ["Tramal 100 mg/2ml",2],
+    ["Tramal 50 mg/1ml",2]
+  ]]
 ];
 
 const $=id=>document.getElementById(id);
@@ -1003,7 +1375,7 @@ function solStatus(id){
   if(s){s.status=s.status==='recebida'?'pendente':'recebida';sv(K_SOL,S);renderSolHist($('hist-viatura')?.value||getViaturaAtual())}
 }
 
-/* Modelo de Evolução Clínica / Registro de Enfermagem (Supervisão) */
+/* Modelo de Evolução Clínica / Registro de Enfermagem (FluxSaúde) */
 let ultimoPainelRms=[];
 
 function formatarConvenioExibicao(convenio){
@@ -1049,13 +1421,20 @@ function atualizarBolinhaConvenioNaTela(valorConv){
   el.innerHTML=`<span>${esc(b.topo)}</span><span>${esc(b.base)}</span>`;
 }
 
-function logoConfiareSvg(className=''){
-  return`<svg class="${className}" viewBox="0 0 240 150" fill="none" aria-hidden="true">
-    <path d="M120 42C96 18 52 24 38 56C25 86 48 118 82 126C62 108 58 80 74 62C88 46 110 46 120 58C130 46 152 46 166 62C182 80 178 108 158 126C192 118 215 86 202 56C188 24 144 18 120 42Z" fill="#2b6cb0"/>
-    <circle cx="92" cy="76" r="10" fill="#2b6cb0"/>
-    <circle cx="148" cy="76" r="10" fill="#2b6cb0"/>
-    <path d="M74 96C94 114 146 114 166 96" stroke="#2b6cb0" stroke-width="7" stroke-linecap="round"/>
+function logoFluxSaudeSvg(className='', w=40, h=36){
+  return`<svg class="${className}" width="${w}" height="${h}" viewBox="0 0 120 105" fill="none" aria-hidden="true">
+    <circle cx="43" cy="14" r="4.5" fill="#003366"/>
+    <circle cx="55" cy="14" r="4.5" fill="#003366"/>
+    <path d="M43 14C22 14 14 34 22 54C29 71 58 92 60 93C62 92 84 76 94 61" stroke="#003366" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M55 14C62 14 66 20 67 24C72 17 82 14 91 17C104 21 108 37 101 51" stroke="#003366" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="96" cy="56" r="11" fill="#fff" stroke="#003366" stroke-width="6.5"/>
+    <circle cx="96" cy="56" r="3.5" fill="#003366"/>
+    <path d="M32 52H48L54 34L62 68L69 47L73 52H81" stroke="#00a896" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>`;
+}
+
+function renderLinhasEvolucaoHtml(totalLinhas=25){
+  return Array.from({length:totalLinhas},()=>'<div class="evo-line-row"></div>').join('');
 }
 
 function abrirEvolucaoModelo(remId,modeloForcado){
@@ -1071,34 +1450,34 @@ function abrirEvolucaoModelo(remId,modeloForcado){
 
   $('pdf-content').innerHTML=`
     <div class="evo-controls no-print">
-      <label>Modelo:
+      <label>Modelo
         <select id="evo-tipo-sel" onchange="abrirEvolucaoModelo('${esc(remId)}', this.value)">
           <option value="clinica"${modelo==='clinica'?' selected':''}>Evolução Clínica</option>
           <option value="enfermagem"${modelo==='enfermagem'?' selected':''}>Registro de Enfermagem</option>
         </select>
       </label>
-      <label>Prontuário:
+      <label>Prontuário
         <input type="text" id="evo-pront-inp" value="${esc(prontAtual)}" placeholder="Em branco" oninput="$('evo-pront-val').textContent=this.value">
       </label>
-      <label>Convênio:
+      <label>Convênio
         <input type="text" id="evo-conv-inp" value="${esc(convAtual)}" placeholder="Ex.: IRH, IASSEPE ou em branco" oninput="atualizarBolinhaConvenioNaTela(this.value)">
       </label>
-      <label>Data:
-        <input type="text" id="evo-data-inp" value="${esc(dataCurta)}" style="width:94px" oninput="$('evo-data-val').textContent=this.value">
+      <label>Data
+        <input type="text" id="evo-data-inp" value="${esc(dataCurta)}" oninput="$('evo-data-val').textContent=this.value">
       </label>
     </div>
 
     <div id="pdf-printable-area" class="evo-sheet">
       <div class="evo-page">
-        ${logoConfiareSvg('evo-watermark')}
+        ${logoFluxSaudeSvg('evo-watermark',220,190)}
         <div class="evo-inner">
           <div class="evo-top">
-            <div>
-              <div style="display:flex;align-items:center;gap:6px">
-                <div style="width:44px;height:30px">${logoConfiareSvg('')}</div>
-                <span style="font-weight:800;font-size:15px;color:#1e3a8a">Confiare</span>
+            <div class="evo-brand-box">
+              <div class="evo-brand-row">
+                ${logoFluxSaudeSvg('',34,30)}
+                <span class="evo-brand-name"><span class="fl">Flux</span><span class="sa">Saúde</span></span>
               </div>
-              <div class="evo-logo-sub">Assistência Domiciliar</div>
+              <div class="evo-logo-sub">Assistência e Remoção</div>
             </div>
             <div>
               <div class="evo-title">${esc(titulo)}</div>
@@ -1113,6 +1492,7 @@ function abrirEvolucaoModelo(remId,modeloForcado){
           </div>
 
           <div class="evo-lined">
+            <div class="evo-lines-layer" aria-hidden="true">${renderLinhasEvolucaoHtml(25)}</div>
             <div class="evo-text">${esc(m.relato||'')}</div>
           </div>
         </div>
