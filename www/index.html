@@ -37,6 +37,14 @@ button:disabled{opacity:.6;cursor:not-allowed}
 .sm{padding:6px 10px;font-size:.75rem;width:auto}
 .badx{background:var(--bad-bg);color:var(--bad)}.badx:hover{background:#fecaca}
 .hidden{display:none!important}
+.plantao-bar{background:#fff;border:1px solid #cbd5e1;border-left:4px solid var(--teal);border-radius:10px;padding:10px 12px;margin-bottom:14px;box-shadow:0 2px 5px rgba(0,51,102,.04)}
+.plantao-bar.off{border-left-color:var(--warn);background:#fffbeb}
+.plantao-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.plantao-info{font-size:.82rem;color:var(--text);line-height:1.35}
+.plantao-acts{display:flex;gap:6px;flex-wrap:wrap}
+.plantao-start-row{display:flex;gap:6px;align-items:center;margin-top:8px}
+.plantao-start-row select{padding:7px 8px;font-size:.84rem;flex:1}
+.chk-tip{font-size:.78rem;color:var(--muted);margin:-4px 0 10px;line-height:1.35}
 details.kit{border:1px solid var(--bd);border-radius:8px;margin-bottom:8px;background:#fff}
 details.kit>summary{cursor:pointer;padding:11px 12px;font-weight:700;font-size:.88rem;color:var(--teal-d);background:#f0fdfa;border-radius:8px;border-left:3px solid var(--teal)}
 details.kit[open]>summary{border-radius:8px 8px 0 0}
@@ -114,10 +122,10 @@ details.kit>div.body{padding:6px 8px 10px}
 .evo-sign-area{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;break-inside:avoid;page-break-inside:avoid}
 
 /* Carimbo retangular profissional no PDF e na pré-visualização */
-.carimbo-box{width:100%;max-width:265px;background:#ffffff;color:#0f172a;padding:7px 10px;line-height:1.3;break-inside:avoid;page-break-inside:avoid}
+.carimbo-box{width:100%;max-width:245px;background:#ffffff;color:#0f172a;padding:7px 10px;line-height:1.3;break-inside:avoid;page-break-inside:avoid}
 .carimbo-box.st-simples{border:1.5px solid #003366;border-radius:6px}
 .carimbo-box.st-dupla{border:3px double #003366;border-radius:6px}
-.carimbo-box.st-compacto{border:1.2px solid #1e293b;border-radius:3px;padding:6px 8px;max-width:245px}
+.carimbo-box.st-compacto{border:1.2px solid #1e293b;border-radius:3px;padding:6px 8px;max-width:225px}
 .carimbo-box.al-centro{text-align:center}
 .carimbo-box.al-esquerda{text-align:left}
 .carimbo-nome{font-size:10.5px;font-weight:800;color:#003366;text-transform:uppercase;letter-spacing:.01em;word-break:break-word}
@@ -140,6 +148,8 @@ details.kit>div.body{padding:6px 8px 10px}
 <svg width="46" height="42" viewBox="0 0 120 105" fill="none" aria-hidden="true"><circle cx="43" cy="14" r="4.5" fill="#003366"/><circle cx="55" cy="14" r="4.5" fill="#003366"/><path d="M43 14C22 14 14 34 22 54C29 71 58 92 60 93C62 92 84 76 94 61" stroke="#003366" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M55 14C62 14 66 20 67 24C72 17 82 14 91 17C104 21 108 37 101 51" stroke="#003366" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="96" cy="56" r="11" fill="#fff" stroke="#003366" stroke-width="6.5"/><circle cx="96" cy="56" r="3.5" fill="#003366"/><path d="M32 52H48L54 34L62 68L69 47L73 52H81" stroke="#00a896" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
 <h1><span class="fl">Flux</span><span class="sa">Saúde</span></h1></div></header>
 
+<div id="plantao-box" class="plantao-bar hidden"></div>
+
 <nav class="tabs">
 <button class="tab on" data-t="checklist">📋 Checklist</button>
 <button class="tab" data-t="avisos">🔔 Avisos<span id="dot" class="dot"></span></button>
@@ -152,6 +162,7 @@ details.kit>div.body{padding:6px 8px 10px}
 
 <section id="v-checklist" class="view">
 <div class="card"><h2>Checklist de maletas e viatura</h2>
+<p class="chk-tip"><b>Validade:</b> se houver mais de uma unidade, informe sempre a data mais próxima de vencer.</p>
 <div class="fg"><label for="chk-viatura">Viatura em operação</label><select id="chk-viatura"></select></div>
 <div class="fg"><input type="search" id="busca" placeholder="🔍 Buscar item ou medicamento" aria-label="Buscar item"></div>
 <div id="kits"></div>
@@ -194,7 +205,7 @@ details.kit>div.body{padding:6px 8px 10px}
 <p>Distância: <span class="metric" id="r-km">0 km</span></p></div>
 
 <div class="card"><h2>3. Insumos / materiais utilizados (opcional)</h2>
-<p class="muted" style="margin-top:0">Registre apenas os itens gastos no atendimento para controle e cobrança/reposição.</p>
+<p class="muted" style="margin-top:0">Ao finalizar a remoção, os itens lançados aqui são descontados automaticamente da maleta da viatura.</p>
 <div class="ins-add">
   <input id="r-ins-nome" list="dl-insumos" placeholder="Ex.: Jelco Nº 20, Soro Fisiológico..." autocomplete="off">
   <input id="r-ins-qtd" type="number" inputmode="numeric" min="1" value="1" aria-label="Quantidade do insumo">
@@ -237,9 +248,16 @@ details.kit>div.body{padding:6px 8px 10px}
 <section id="v-config" class="view hidden">
 <div class="card hidden" id="conta"><h2>👤 Conta e sigilo (LGPD)</h2><p id="conta-info" class="muted"></p><div id="conta-carimbo-preview" style="margin-bottom:10px"></div><p class="muted" style="font-size:.78rem">Dados sensíveis de saúde ficam protegidos por sigilo profissional e são removidos deste aparelho ao sair.</p><button class="sm sec" onclick="sair()">Sair e verificar pendências</button></div>
 
+<div class="card hidden" id="cfg-viat-padrao">
+  <h2>🚑 Viatura padrão do meu perfil</h2>
+  <p class="muted" style="margin-top:0">Defina se você trabalha fixo em uma viatura (ex.: UTI-15) ou em rodízio entre as viaturas da base.</p>
+  <div class="fg" style="margin-bottom:0">
+    <select id="sel-viat-padrao"></select>
+  </div>
+</div>
+
 <div class="card hidden" id="cfg-carimbos-sup">
   <h2>🪪 Carimbos Profissionais (Supervisão)</h2>
-  <p class="muted">Apenas a supervisão define o estilo visual e cadastra carimbos da equipe para emissão padronizada no PDF da evolução.</p>
   <div class="g2">
     <div class="fg">
       <label for="cb-estilo">Estilo visual do carimbo</label>
@@ -260,10 +278,10 @@ details.kit>div.body{padding:6px 8px 10px}
   <div id="cb-lista"></div>
   <div style="border-top:1px solid #e2e8f0;padding-top:10px;margin-top:10px">
     <label style="margin-bottom:6px">Adicionar novo carimbo</label>
-    <div class="fg"><input id="cb-novo-nome" placeholder="Nome completo (ex.: Lucas Alves Clemente de Araujo)"></div>
+    <div class="fg"><input id="cb-novo-nome" placeholder="Nome completo"></div>
     <div class="g2">
       <div class="fg"><input id="cb-novo-cat" placeholder="Categoria (ex.: Enfermeiro)"></div>
-      <div class="fg"><input id="cb-novo-reg" placeholder="Registro (ex.: COREN-PE 123456)"></div>
+      <div class="fg"><input id="cb-novo-reg" placeholder="Registro (ex.: COREN-PE)"></div>
     </div>
     <button class="sm teal" type="button" id="add-carimbo">+ Salvar carimbo</button>
   </div>
@@ -274,7 +292,7 @@ details.kit>div.body{padding:6px 8px 10px}
 <div class="card"><h2>🚐 Viaturas disponíveis</h2><p class="muted" id="viat-readonly-list"></p></div>
 <div class="card"><h2>🎒 Kits, itens e cotas</h2><div id="aj-kits"></div>
 <div class="acts"><button class="sm teal" id="add-kit">+ Kit</button><button class="sm sec" id="reset-cfg">Restaurar padrão</button></div></div></div>
-<footer style="text-align:center;margin-top:14px;padding-bottom:8px;font-size:.75rem;color:var(--muted)">v.1.1.6</footer>
+<footer style="text-align:center;margin-top:14px;padding-bottom:8px;font-size:.75rem;color:var(--muted)">v.1.1.7</footer>
 </section>
 </div>
 
@@ -696,13 +714,29 @@ if(!cfg.carimbos||!Array.isArray(cfg.carimbos.lista))cfg.carimbos=defCarimbosCfg
 
 const K_CHK='checklists_fluxsaude',K_REM='missoes_fluxsaude',K_SOL='solicitacoes_fluxsaude';
 const K_CHK_DRAFTS='fs_chk_drafts_by_viat';
-let viatAtiva=ld('fs_viat_ativa',cfg.viaturas[0]||'UTI-15');
+const K_PLANTAO='fs_plantao_ativo';
+const K_VIAT_PADRAO='fs_viatura_padrao_perfil';
+
+let plantaoAtivo=ld(K_PLANTAO,null);
+let viaturaPadraoPerfil=ld(K_VIAT_PADRAO,'');
+let viatAtiva=(plantaoAtivo&&plantaoAtivo.viatura)||viaturaPadraoPerfil||ld('fs_viat_ativa',cfg.viaturas[0]||'UTI-15');
 let dirty=true;
 let insumosRemocao=[];
 const br=d=>d.split('-').reverse().join('/');
 const agora=()=>new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
 
+function getViaturaPadraoEfetiva(){
+  const pViat=String(perfil?.viatura_padrao||viaturaPadraoPerfil||'').trim();
+  return cfg.viaturas.includes(pViat)?pViat:'';
+}
+
 function getViaturaAtual(){
+  if(plantaoAtivo&&plantaoAtivo.viatura&&cfg.viaturas.includes(plantaoAtivo.viatura)){
+    viatAtiva=plantaoAtivo.viatura;
+    return viatAtiva;
+  }
+  const padrao=getViaturaPadraoEfetiva();
+  if(padrao&&!cfg.viaturas.includes(viatAtiva))viatAtiva=padrao;
   if(!cfg.viaturas.includes(viatAtiva))viatAtiva=cfg.viaturas[0]||'UTI-15';
   return viatAtiva;
 }
@@ -715,6 +749,123 @@ function setViaturaAtual(v){
     const el=$(id);
     if(el&&[...el.options].some(o=>o.value===v))el.value=v;
   });
+}
+
+/* Controle de Plantão (Iniciar, Trocar Viatura em caso de engano e Finalizar) */
+function renderPlantaoBar(){
+  const box=$('plantao-box');
+  if(!box)return;
+  if(sup()){
+    box.classList.add('hidden');
+    return;
+  }
+  box.classList.remove('hidden');
+  if(plantaoAtivo&&plantaoAtivo.viatura){
+    box.classList.remove('off');
+    box.innerHTML=`<div class="plantao-top">
+      <div class="plantao-info">
+        🟢 <b>Plantão ativo:</b> <span class="badge b-ok" style="margin:0 4px">${esc(plantaoAtivo.viatura)}</span>
+        <span class="muted" style="font-size:.76rem">Início: ${esc(plantaoAtivo.inicio)}</span>
+      </div>
+      <div class="plantao-acts">
+        <button class="sm sec" type="button" onclick="abrirTrocaViaturaPlantao()">🔄 Trocar viatura</button>
+        <button class="sm badx" type="button" onclick="finalizarPlantao()">Encerrar</button>
+      </div>
+    </div>
+    <div id="plantao-troca-area" class="hidden" style="margin-top:8px;padding-top:8px;border-top:1px dashed #cbd5e1">
+      <div class="plantao-start-row" style="margin-top:0">
+        <select id="sel-troca-viat" aria-label="Nova viatura do plantão">
+          ${cfg.viaturas.map(v=>`<option value="${esc(v)}"${v===plantaoAtivo.viatura?' selected':''}>${esc(v)}</option>`).join('')}
+        </select>
+        <button class="sm teal" type="button" onclick="confirmarTrocaViaturaPlantao()">Confirmar</button>
+        <button class="sm sec" type="button" onclick="$('plantao-troca-area').classList.add('hidden')">Cancelar</button>
+      </div>
+    </div>`;
+  }else{
+    box.classList.add('off');
+    const padrao=getViaturaPadraoEfetiva()||getViaturaAtual();
+    box.innerHTML=`<div class="plantao-top">
+      <div class="plantao-info">
+        🟡 <b>Nenhum plantão iniciado</b>${getViaturaPadraoEfetiva()?` • Padrão: <b>${esc(getViaturaPadraoEfetiva())}</b>`:' • Selecione a viatura do turno'}
+      </div>
+    </div>
+    <div class="plantao-start-row">
+      <select id="sel-inicio-plantao" aria-label="Viatura para iniciar plantão">
+        ${cfg.viaturas.map(v=>`<option value="${esc(v)}"${v===padrao?' selected':''}>${esc(v)}</option>`).join('')}
+      </select>
+      <button class="sm teal" type="button" onclick="iniciarPlantao()">Iniciar plantão</button>
+    </div>`;
+  }
+}
+
+function iniciarPlantao(){
+  const sel=$('sel-inicio-plantao');
+  const v=sel?sel.value:getViaturaAtual();
+  if(!v){toast('Selecione uma viatura.');return}
+  plantaoAtivo={
+    viatura:v,
+    inicio:agora(),
+    profissional:perfil?.nome||''
+  };
+  sv(K_PLANTAO,plantaoAtivo);
+  setViaturaAtual(v);
+  renderPlantaoBar();
+  renderChecklist();
+  toast('🟢 Plantão iniciado na viatura '+v+'.');
+}
+
+function abrirTrocaViaturaPlantao(){
+  const area=$('plantao-troca-area');
+  if(area)area.classList.toggle('hidden');
+}
+
+function confirmarTrocaViaturaPlantao(){
+  if(!plantaoAtivo)return;
+  const novaViat=$('sel-troca-viat')?.value;
+  const antigaViat=plantaoAtivo.viatura;
+  if(!novaViat||novaViat===antigaViat){
+    $('plantao-troca-area')?.classList.add('hidden');
+    return;
+  }
+  const drafts=ld(K_CHK_DRAFTS,{});
+  if(drafts[antigaViat]){
+    if(confirm(`Há um rascunho de checklist em aberto na ${antigaViat}. Deseja transferir esse preenchimento para a ${novaViat}?`)){
+      drafts[novaViat]=drafts[antigaViat];
+      delete drafts[antigaViat];
+      sv(K_CHK_DRAFTS,drafts);
+    }
+  }
+  plantaoAtivo.viatura=novaViat;
+  plantaoAtivo.trocadoDe=antigaViat;
+  plantaoAtivo.trocadoEm=agora();
+  sv(K_PLANTAO,plantaoAtivo);
+  setViaturaAtual(novaViat);
+  renderPlantaoBar();
+  renderChecklist();
+  toast(`🔄 Plantão alterado de ${antigaViat} para ${novaViat}.`);
+}
+
+async function finalizarPlantao(){
+  if(!plantaoAtivo)return;
+  const v=plantaoAtivo.viatura;
+  const fila=ld('fs_out',[]);
+  if(fila.length&&navigator.onLine&&sess&&perfil){
+    try{await sync()}catch(_){}
+  }
+  const filaRest=ld('fs_out',[]);
+  const drafts=ld(K_CHK_DRAFTS,{});
+  const temDraft=!!drafts[v];
+  let msg=`Encerrar o plantão na viatura ${v}?`;
+  if(filaRest.length||temDraft){
+    msg=`Atenção: há ${filaRest.length} envio(s) pendente(s)${temDraft?' e rascunho de checklist em aberto':''}. Encerrar o plantão da ${v} mesmo assim?`;
+  }
+  if(!confirm(msg))return;
+  plantaoAtivo=null;
+  localStorage.removeItem(K_PLANTAO);
+  const padrao=getViaturaPadraoEfetiva();
+  if(padrao)setViaturaAtual(padrao);
+  renderPlantaoBar();
+  toast('Plantão encerrado.');
 }
 
 function atualizarSugestoesInsumos(){
@@ -757,6 +908,68 @@ function removerInsumoRemocao(idx){
   renderInsumosRemocao();
 }
 
+/* Desconto automático de insumos na maleta/checklist da viatura */
+function aplicarMovimentoInsumosMaleta(viatura, listaInsumos, multiplicador=-1){
+  if(!viatura||!Array.isArray(listaInsumos)||!listaInsumos.length)return 0;
+  const L=ld(K_CHK,[]);
+  const idxChk=L.findIndex(c=>c.viatura===viatura);
+  const allDrafts=ld(K_CHK_DRAFTS,{});
+  let totalAjustado=0;
+
+  listaInsumos.forEach(ins=>{
+    const nomeBusca=String(ins.nome||'').trim().toLowerCase();
+    const qtd=Math.max(0,parseInt(ins.qtd,10)||0);
+    if(!nomeBusca||!qtd)return;
+    const delta=qtd*multiplicador;
+    let encontrouNoChk=false;
+
+    if(idxChk>=0&&Array.isArray(L[idxChk].itens)){
+      const itemChk=L[idxChk].itens.find(it=>String(it.nome||'').trim().toLowerCase()===nomeBusca);
+      if(itemChk){
+        itemChk.atual=Math.max(0,(Number(itemChk.atual)||0)+delta);
+        encontrouNoChk=true;
+        totalAjustado++;
+      }
+    }
+
+    if(allDrafts[viatura]&&allDrafts[viatura].itens){
+      for(const k of Object.keys(allDrafts[viatura].itens)){
+        const nomeChave=k.split('||').pop().trim().toLowerCase();
+        if(nomeChave===nomeBusca){
+          const cur=allDrafts[viatura].itens[k];
+          cur.atual=Math.max(0,(Number(cur.atual)||0)+delta);
+          if(!encontrouNoChk)totalAjustado++;
+        }
+      }
+    }else if(!encontrouNoChk){
+      for(const kit of cfg.kits){
+        const itCfg=kit.itens.find(x=>String(x.nome||'').trim().toLowerCase()===nomeBusca);
+        if(itCfg){
+          if(!allDrafts[viatura])allDrafts[viatura]={itens:{},obs:''};
+          const chave=chaveItemChk(kit.nome,itCfg.nome);
+          const baseQtd=allDrafts[viatura].itens[chave]?.atual??itCfg.cota;
+          allDrafts[viatura].itens[chave]={
+            atual:Math.max(0,(Number(baseQtd)||0)+delta),
+            validade:allDrafts[viatura].itens[chave]?.validade||'',
+            indeterminada:!!allDrafts[viatura].itens[chave]?.indeterminada
+          };
+          totalAjustado++;
+          break;
+        }
+      }
+    }
+  });
+
+  if(idxChk>=0&&totalAjustado>0){
+    L[idxChk].data=agora();
+    sv(K_CHK,L);
+    enviarEdicao('checklist',L[idxChk]);
+  }
+  sv(K_CHK_DRAFTS,allDrafts);
+  atualizarDot();
+  return totalAjustado;
+}
+
 function status(i){
   const a=[];let lvl=0;
   if(i.atual<i.cota){a.push('Faltam '+(i.cota-i.atual)+' (cota '+i.cota+', atual '+i.atual+')');lvl=2}
@@ -764,6 +977,7 @@ function status(i){
     const h=new Date();h.setHours(0,0,0,0);
     const d=Math.round((new Date(i.validade+'T00:00:00')-h)/864e5);
     if(d<0){a.push('Vencido em '+br(i.validade));lvl=2}
+    else if(d===0){a.push('Vence hoje');lvl=2}
     else if(d<=30){a.push('Vence em '+d+' d');lvl=2}
     else if(d<=60){a.push('Vence em '+d+' d');lvl=Math.max(lvl,1)}
   }
@@ -978,6 +1192,7 @@ function salvarChecklist(){
   limparRascunhoChk(viatura);
   $('chk-obs').value='';
   dirty=true;
+  sincronizarNotificacoesValidade();
   toast('Checklist de '+viatura+' salvo.');
   switchTab('avisos');
 }
@@ -995,7 +1210,55 @@ function atualizarDot(){
   })?'block':'none';
 }
 
-function renderAvisos(){
+/* Notificações locais no celular para validade de itens do checklist */
+async function sincronizarNotificacoesValidade(){
+  const ln=getLocalNotifPlugin();
+  if(!ln)return;
+  try{
+    const perm=await ln.checkPermissions();
+    if(perm.display!=='granted')return;
+    const L=ld(K_CHK,[]);
+    const h=new Date();h.setHours(0,0,0,0);
+    const notificacoes=[];
+    let seq=70000;
+
+    for(const v of viaturasConhecidas(L)){
+      const c=L.find(x=>x.viatura===v);
+      if(!c||!Array.isArray(c.itens))continue;
+      for(const it of c.itens){
+        if(it.indeterminada||!it.validade)continue;
+        const dtAlvo=new Date(it.validade+'T08:00:00');
+        const dtDia=new Date(it.validade+'T00:00:00');
+        const d=Math.round((dtDia-h)/864e5);
+        seq++;
+        if(d<=0){
+          const chave=`val_${v}_${it.nome}_${it.validade}_${d<0?'vencido':'hoje'}`;
+          if(!notifDisparadas.has(chave)){
+            notifDisparadas.add(chave);
+            notificacoes.push({
+              id:seq,
+              title:d<0?`⚠️ Item vencido (${v})`:`⚠️ Item vence hoje (${v})`,
+              body:`${it.nome} — ${d<0?'vencido em '+br(it.validade):'validade vence hoje ('+br(it.validade)+')'}.`,
+              schedule:{at:new Date(Date.now()+1500)}
+            });
+          }
+        }else if(d<=60){
+          notificacoes.push({
+            id:seq,
+            title:`⚠️ Validade vence hoje (${v})`,
+            body:`${it.nome} vence hoje (${br(it.validade)}).`,
+            schedule:{at:dtAlvo}
+          });
+        }
+      }
+    }
+    if(notificacoes.length){
+      await ln.schedule({notifications:notificacoes.slice(0,25)});
+    }
+  }catch(_){}
+}
+
+async function renderAvisos(){
   $('sol').classList.add('hidden');
   fillViaturas();
   const L=ld(K_CHK,[]);
@@ -1003,18 +1266,29 @@ function renderAvisos(){
   const todas=viaturasConhecidas(L);
   const lista=filtro==='__ALL__'?todas:todas.filter(v=>v===filtro);
 
-  if(!L.length){
-    $('avisos').innerHTML='<p class="muted">Nenhum checklist salvo ainda. Faça o primeiro na aba Checklist.</p>';
-    return;
+  const renderListaAvisos=(listaChecklists)=>{
+    const todasV=viaturasConhecidas(listaChecklists);
+    const exib=filtro==='__ALL__'?todasV:todasV.filter(v=>v===filtro);
+    if(!listaChecklists.length){
+      $('avisos').innerHTML='<p class="muted">Nenhum checklist salvo ainda. Faça o primeiro na aba Checklist.</p>';
+      return;
+    }
+    $('avisos').innerHTML=exib.map(v=>{
+      const c=listaChecklists.find(x=>x.viatura===v);
+      if(!c)return`<div class="rec"><strong>${esc(v)}</strong><p class="muted" style="margin:4px 0 0">Sem checklist registrado para esta viatura.</p></div>`;
+      const p=pendencias(c);
+      return`<div class="rec ${p.length?'bad':'ok'}"><strong>${esc(v)}</strong> <span class="muted">${esc(c.data)}</span><div style="margin-top:6px">${
+        p.length?p.map(x=>`<div style="margin-bottom:6px"><b>${esc(x.i.nome)}</b>${x.i.kit?' <span class="muted">('+esc(x.i.kit)+')</span>':''}<br>${x.s.a.map(t=>`<span class="badge ${x.s.lvl>1?'b-bad':'b-warn'}">${esc(t)}</span>`).join('')}</div>`).join(''):'<span class="badge b-ok">✅ Tudo em ordem</span>'}</div>${p.length?`<div class="acts"><button class="sm teal" onclick="abrirSolViatura('${esc(v)}')">📦 Solicitar à farmácia</button></div>`:''}</div>`;
+    }).join('');
+    atualizarDot();
+  };
+
+  renderListaAvisos(L);
+
+  if(cloudOn&&sess&&!sup()&&navigator.onLine){
+    await sincronizarLeituraFuncionarioNuvem(false);
+    renderListaAvisos(ld(K_CHK,[]));
   }
-  $('avisos').innerHTML=lista.map(v=>{
-    const c=L.find(x=>x.viatura===v);
-    if(!c)return`<div class="rec"><strong>${esc(v)}</strong><p class="muted" style="margin:4px 0 0">Sem checklist registrado para esta viatura.</p></div>`;
-    const p=pendencias(c);
-    return`<div class="rec ${p.length?'bad':'ok'}"><strong>${esc(v)}</strong> <span class="muted">${esc(c.data)}</span><div style="margin-top:6px">${
-      p.length?p.map(x=>`<div style="margin-bottom:6px"><b>${esc(x.i.nome)}</b>${x.i.kit?' <span class="muted">('+esc(x.i.kit)+')</span>':''}<br>${x.s.a.map(t=>`<span class="badge ${x.s.lvl>1?'b-bad':'b-warn'}">${esc(t)}</span>`).join('')}</div>`).join(''):'<span class="badge b-ok">✅ Tudo em ordem</span>'}</div>${p.length?`<div class="acts"><button class="sm teal" onclick="abrirSolViatura('${esc(v)}')">📦 Solicitar à farmácia</button></div>`:''}</div>`;
-  }).join('');
-  atualizarDot();
 }
 
 function calcKm(){
@@ -1022,9 +1296,9 @@ function calcKm(){
   $('r-km').textContent=(!isNaN(a)&&!isNaN(b)&&b>=a?b-a:0)+' km';
 }
 
-async function notificarConclusaoRemocao(rec){
+async function notificarConclusaoRemocao(rec,qtdDescontada=0){
   const resumoIns=rec.insumos&&rec.insumos.length
-    ?` • ${rec.insumos.length} insumo(s) registrado(s)`
+    ?` • ${rec.insumos.length} insumo(s) descontado(s) da maleta`
     :'';
   const msg=`Remoção concluída — ${rec.nome} (${rec.viatura||'—'}) • ${rec.totalKm} km${resumoIns}.`;
   toast('✅ '+msg);
@@ -1115,11 +1389,18 @@ function salvarRemocao(){
   if(editId){
     const ix=M.findIndex(x=>x.id===editId);
     if(ix<0){toast('Registro não encontrado.');return}
-    M[ix]={...M[ix],...rec,editadoEm:agora(),retificado:true};
+    const antigo=M[ix];
+    if(Array.isArray(antigo.insumos)&&antigo.insumos.length){
+      aplicarMovimentoInsumosMaleta(antigo.viatura,antigo.insumos,+1);
+    }
+    if(rec.insumos.length){
+      aplicarMovimentoInsumosMaleta(rec.viatura,rec.insumos,-1);
+    }
+    M[ix]={...antigo,...rec,editadoEm:agora(),retificado:true};
     if(!sv(K_REM,M))return;
     enviarEdicao('remocao',M[ix]);
     cancelarEdicao(false);
-    toast('Remoção atualizada e marcada como retificada.');
+    toast('Remoção atualizada e maleta ajustada.');
     switchTab('history');
     return;
   }
@@ -1127,13 +1408,14 @@ function salvarRemocao(){
   const salvo={id:Date.now(),data:agora(),...rec};
   M.unshift(salvo);
   if(!sv(K_REM,M))return;
+  const qtdDesc=rec.insumos.length?aplicarMovimentoInsumosMaleta(rec.viatura,rec.insumos,-1):0;
   enviar('remocao',salvo);
   if(agId){
     api('/rest/v1/agenda?id=eq.'+agId,{method:'PATCH',body:{status:'concluida'}}).catch(()=>{});
     agId=null;
   }
   limparCamposRemocao();
-  notificarConclusaoRemocao(salvo);
+  notificarConclusaoRemocao(salvo,qtdDesc);
   switchTab('history');
 }
 
@@ -1145,7 +1427,7 @@ function formatarHorariosRemocao(m){
   return partes.join(' • ');
 }
 
-function renderHistorico(){
+function renderHistorico(evitarLoopNuvem=false){
   fillViaturas();
   const filtro=$('hist-viatura')?.value||getViaturaAtual();
   const byV=arr=>filtro==='__ALL__'?arr:arr.filter(x=>x.viatura===filtro);
@@ -1167,18 +1449,47 @@ function renderHistorico(){
     <div style="display:flex;justify-content:space-between;gap:8px"><strong>${esc(c.viatura)}</strong><span class="badge ${p.length?'b-bad':'b-ok'}">${p.length?'⚠️ '+p.length+' pendência(s)':'✅ 100% OK'}</span></div>
     <p class="muted" style="margin:4px 0">🕒 ${esc(c.data)}${c.obs?' • '+esc(c.obs):''}</p>
     ${p.map(x=>`<div style="font-size:.75rem;color:var(--bad)">• <b>${esc(x.i.nome)}:</b> ${esc(x.s.a.join(' | '))}</div>`).join('')}
-    <div class="acts"><button class="sm badx" onclick="apagar('${K_CHK}',${c.id})">Excluir</button></div></div>`;
+    <div class="acts"><button class="sm sec" onclick="corrigirViaturaChecklist(${c.id})">🔄 Corrigir viatura</button><button class="sm badx" onclick="apagar('${K_CHK}',${c.id})">Excluir</button></div></div>`;
   }).join(''):'<p class="muted">Nenhum checklist registrado para esta seleção.</p>';
 
   $('h-rem').innerHTML=M.length?M.map(m=>{
     const hrs=formatarHorariosRemocao(m);
-    const insTxt=m.insumos&&m.insumos.length?`<br>🧪 Insumos: ${esc(m.insumos.map(i=>`${i.nome} (${i.qtd})`).join(', '))}`:'';
+    const insTxt=m.insumos&&m.insumos.length?`<br>🧪 Insumos gastos: ${esc(m.insumos.map(i=>`${i.nome} (${i.qtd})`).join(', '))}`:'';
     const guiaTxt=m.guia?` • Guia: ${esc(m.guia)}`:'';
-    return`<div class="rec"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><strong>${esc(m.nome)}</strong><div><span class="badge b-warn" style="background:#e0f2fe;color:#0369a1">${esc(formatarConvenioExibicao(m.convenio))}</span>${m.retificado||m.editadoEm?'<span class="badge b-warn">Retificada</span>':''}</div></div>
-  <p class="muted" style="margin:6px 0">📍 ${esc(m.origem)} ➔ ${esc(m.destino)}<br>🚑 ${esc(m.viatura||'—')} • 🚗 ${m.totalKm} km (${esc(m.trajeto)})${guiaTxt}${hrs?'<br>⏱️ '+esc(hrs):''}${insTxt}<br>🕒 ${esc(m.data)}${m.editadoEm?'<br>✏️ editada em '+esc(m.editadoEm):''}</p>
+    return`<div class="rec"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><strong>${esc(m.nome)}</strong><div><span class="badge b-warn" style="background:#e0f2fe;color:#0369a1">${esc(formatarConvenioExibicao(m.convenio))}</span></div></div>
+  <p class="muted" style="margin:6px 0">📍 ${esc(m.origem)} ➔ ${esc(m.destino)}<br>🚑 ${esc(m.viatura||'—')} • 🚗 ${m.totalKm} km (${esc(m.trajeto)})${guiaTxt}${hrs?'<br>⏱️ '+esc(hrs):''}${insTxt}<br>🕒 ${esc(m.data)}</p>
   <div style="background:#fff;padding:8px;border-radius:4px;border:1px solid #e2e8f0;font-size:.82rem">💬 <i>${esc(m.relato||'Sem relato.')}</i></div>
   <div class="acts"><button class="sm teal" onclick="editarRemocao(${m.id})">✏️ Editar</button><button class="sm sec" onclick="compartilhar(${m.id})">Compartilhar resumo</button><button class="sm badx" onclick="apagar('${K_REM}',${m.id})">Excluir</button></div></div>`;
   }).join(''):'<p class="muted">Nenhuma remoção registrada para esta seleção.</p>';
+
+  if(!evitarLoopNuvem&&cloudOn&&sess&&!sup()&&navigator.onLine){
+    sincronizarLeituraFuncionarioNuvem(false).then(atualizou=>{
+      if(atualizou)renderHistorico(true);
+    });
+  }
+}
+
+function corrigirViaturaChecklist(id){
+  const L=ld(K_CHK,[]);
+  const ix=L.findIndex(x=>x.id===id);
+  if(ix<0)return;
+  const atual=L[ix].viatura||'';
+  const opcoes=cfg.viaturas.join(', ');
+  const nova=prompt(`Viatura atual: ${atual}\nDigite a viatura correta (${opcoes}):`,atual);
+  if(!nova||!nova.trim())return;
+  const limpa=nova.trim();
+  if(!cfg.viaturas.includes(limpa)){
+    toast('Viatura inválida. Escolha entre: '+opcoes);
+    return;
+  }
+  if(limpa===atual)return;
+  L[ix].viatura=limpa;
+  L[ix].editadoEm=agora();
+  if(!sv(K_CHK,L))return;
+  enviarEdicao('checklist',L[ix]);
+  renderHistorico();
+  atualizarDot();
+  toast('Viatura do checklist corrigida para '+limpa+'.');
 }
 
 function apagar(k,id){
@@ -1213,7 +1524,7 @@ Distância: ${m.totalKm} km${hrs?`\nHorários: ${hrs}`:''}
 
 async function exportar(){
   if(cloudOn&&perfil&&!sup()){toast('Exportação restrita à supervisão (LGPD).');return}
-  const d={versao:'1.1.6',cfg,checklists:ld(K_CHK,[]),remocoes:ld(K_REM,[]),solicitacoes:ld(K_SOL,[])};
+  const d={versao:'1.1.7',cfg,checklists:ld(K_CHK,[]),remocoes:ld(K_REM,[]),solicitacoes:ld(K_SOL,[])};
   const nome='fluxsaude-backup-'+new Date().toISOString().slice(0,10)+'.json';
   if(nat()){
     try{
@@ -1268,7 +1579,7 @@ function qtdSol(i){
   if(!i.indeterminada&&i.validade&&i.atual>0){
     const h=new Date();h.setHours(0,0,0,0);
     const d=Math.round((new Date(i.validade+'T00:00:00')-h)/864e5);
-    if(d<=30){troca=i.atual;m.push(d<0?'vencido':'vence em '+d+' d')}
+    if(d<=30){troca=i.atual;m.push(d<0?'vencido':(d===0?'vence hoje':'vence em '+d+' d'))}
   }
   return{qtd:falta+troca,motivo:m.join(', ')};
 }
@@ -1648,7 +1959,7 @@ function renderCarimboRetangularHtml(carimboData){
   const cat=String(carimboData?.categoria||'').trim();
   const reg=String(carimboData?.registro||'').trim();
   if(!nome&&!cat&&!reg){
-    return`<div class="carimbo-box ${clsEstilo} ${clsAl}" style="border-style:dashed;color:#64748b;font-size:10px">Carimbo profissional não cadastrado</div>`;
+    return`<div class="carimbo-box ${clsEstilo} ${clsAl}" style="border-style:dashed;color:#64748b;font-size:10px">Carimbo não cadastrado</div>`;
   }
   return`<div class="carimbo-box ${clsEstilo} ${clsAl}">
     ${nome?`<div class="carimbo-nome">${esc(nome)}</div>`:''}
@@ -1715,15 +2026,14 @@ function abrirEvolucaoModelo(remId,modeloForcado){
   const prontAtual=$('evo-pront-inp')?$('evo-pront-inp').value:(m.prontuario||'');
   const guiaAtual=m.guia||'';
   const hrs=formatarHorariosRemocao(m);
-  const insResumo=m.insumos&&m.insumos.length?'\nInsumos utilizados: '+m.insumos.map(i=>`${i.nome} (${i.qtd})`).join(', '):'';
-  const textoCorpo=(m.relato||'')+insResumo;
+  const textoCorpo=m.relato||'';
 
   if(!modeloForcado||!carimboEvoSelecionado){
     carimboEvoSelecionado=resolverCarimboParaRemocao(m);
   }
   const listaCarimbos=cfg.carimbos?.lista||[];
   const seletorCarimboSup=sup()&&listaCarimbos.length?`
-    <label>Carimbo (Supervisão)
+    <label>Carimbo
       <select id="evo-carimbo-sel" onchange="selecionarCarimboEvo(this.value)">
         <option value="">Padrão do registro</option>
         ${listaCarimbos.map((c,idx)=>`<option value="${idx}"${c.nome===carimboEvoSelecionado?.nome&&c.registro===carimboEvoSelecionado?.registro?' selected':''}>${esc(c.nome)} (${esc(c.registro||c.categoria||'Carimbo')})</option>`).join('')}
@@ -1763,7 +2073,7 @@ function abrirEvolucaoModelo(remId,modeloForcado){
               <div class="evo-logo-sub">Assistência e Remoção</div>
             </div>
             <div>
-              <div class="evo-title">${esc(titulo)}${m.retificado||m.editadoEm?' <span style="font-size:10px;color:#d97706">(RETIFICADA)</span>':''}</div>
+              <div class="evo-title">${esc(titulo)}</div>
               <div class="evo-date-line">Data: <span id="evo-data-val">${esc(dataCurta)}</span>${hrs?' • '+esc(hrs):''}</div>
             </div>
             ${renderBolinhaConvenioHtml(convAtual)}
@@ -1814,13 +2124,68 @@ const notifDisparadas=new Set();
 
 const sup=()=>!!perfil&&String(perfil.papel||'').trim().toLowerCase()==='supervisor';
 
+/* Leitura da nuvem para o funcionário com proteção da fila offline (fs_out) */
+let syncingRead=false;
+async function sincronizarLeituraFuncionarioNuvem(silencioso=true){
+  if(!cloudOn||!sess||!perfil||sup()||!navigator.onLine||syncingRead)return false;
+  syncingRead=true;
+  let houveAtualizacao=false;
+  try{
+    const R=await api('/rest/v1/registros?select=local_id,tipo,dados,criado_em&empresa_id=eq.'+perfil.empresa_id+'&tipo=in.(checklist,remocao,solicitacao)&order=criado_em.desc&limit=120');
+    if(!Array.isArray(R))return false;
+
+    const filaPendente=ld('fs_out',[]);
+    const idsPendentes=new Set(filaPendente.map(x=>`${x.tipo}:${x.local_id}`));
+
+    const mesclarLista=(chaveStorage,tipoRegistro)=>{
+      const locais=ld(chaveStorage,[]);
+      const mapa=new Map();
+      locais.forEach(item=>{
+        if(item&&item.id!=null)mapa.set(String(item.id),item);
+      });
+      let mudou=false;
+      for(const row of R){
+        if(row.tipo!==tipoRegistro||!row.dados)continue;
+        const lid=String(row.local_id||row.dados.id||'');
+        if(!lid)continue;
+        if(idsPendentes.has(`${tipoRegistro}:${lid}`))continue;
+        const remoto={...row.dados,id:row.dados.id??(Number(lid)||lid)};
+        const existente=mapa.get(lid);
+        if(!existente||JSON.stringify(existente)!==JSON.stringify(remoto)){
+          mapa.set(lid,remoto);
+          mudou=true;
+        }
+      }
+      if(mudou){
+        const ordenada=[...mapa.values()].sort((a,b)=>(Number(b.id)||0)-(Number(a.id)||0));
+        sv(chaveStorage,ordenada);
+        houveAtualizacao=true;
+      }
+    };
+
+    mesclarLista(K_CHK,'checklist');
+    mesclarLista(K_REM,'remocao');
+    mesclarLista(K_SOL,'solicitacao');
+
+    if(houveAtualizacao){
+      atualizarDot();
+      sincronizarNotificacoesValidade();
+    }
+  }catch(_){
+    if(!silencioso)toast('Sem conexão para atualizar registros da nuvem; exibindo dados locais.');
+  }finally{
+    syncingRead=false;
+  }
+  return houveAtualizacao;
+}
+
 async function carregarConfigEmpresaNuvem(){
   if(!cloudOn||!sess||!perfil)return;
   try{
     const resV=await api('/rest/v1/registros?select=dados&empresa_id=eq.'+perfil.empresa_id+'&tipo=eq.config_viaturas&limit=1');
     if(Array.isArray(resV)&&resV[0]&&resV[0].dados&&Array.isArray(resV[0].dados.viaturas)&&resV[0].dados.viaturas.length){
       cfg.viaturas=resV[0].dados.viaturas;
-      if(!cfg.viaturas.includes(viatAtiva))viatAtiva=cfg.viaturas[0];
+      if(!cfg.viaturas.includes(viatAtiva))viatAtiva=getViaturaAtual();
     }
     const resC=await api('/rest/v1/registros?select=dados&empresa_id=eq.'+perfil.empresa_id+'&tipo=eq.config_carimbos&limit=1');
     if(Array.isArray(resC)&&resC[0]&&resC[0].dados){
@@ -1832,6 +2197,7 @@ async function carregarConfigEmpresaNuvem(){
     }
     sv('fs_cfg',cfg);
     fillViaturas();
+    renderPlantaoBar();
     if($('viat-readonly-list'))$('viat-readonly-list').textContent='Viaturas cadastradas pela supervisão: '+cfg.viaturas.join(', ');
   }catch(_){}
 }
@@ -1901,6 +2267,7 @@ async function prepararNotificacoesLocais(){
     if(perm.display!=='granted'){
       await ln.requestPermissions();
     }
+    sincronizarNotificacoesValidade();
   }catch(_){}
 }
 
@@ -1913,7 +2280,8 @@ async function sincronizarNotificacoesAgenda(lista){
 
     const pendentes=await ln.getPending();
     if(pendentes&&Array.isArray(pendentes.notifications)&&pendentes.notifications.length){
-      await ln.cancel({notifications:pendentes.notifications.map(x=>({id:x.id}))});
+      const idsAgenda=pendentes.notifications.filter(x=>x.id<70000).map(x=>({id:x.id}));
+      if(idsAgenda.length)await ln.cancel({notifications:idsAgenda});
     }
 
     const agoraMs=Date.now();
@@ -2008,6 +2376,10 @@ async function carregarPerfil(user){
   if(error)throw new Error('Falha ao consultar a tabela perfis: '+error.message);
   if(!p)throw new Error('Este e-mail está autenticado, mas ainda não possui cadastro na tabela perfis.');
   perfil=p;sv('fs_perfil',perfil);
+  if(p.viatura_padrao&&cfg.viaturas.includes(p.viatura_padrao)){
+    viaturaPadraoPerfil=p.viatura_padrao;
+    sv(K_VIAT_PADRAO,viaturaPadraoPerfil);
+  }
   return p;
 }
 
@@ -2115,7 +2487,7 @@ async function sair(){
     :'Verificação concluída: tudo ok e dados sensíveis limpos deste aparelho.';
 
   try{if(sb)await sb.auth.signOut()}catch(e){}
-  [K_REM,K_CHK,K_SOL,'fs_sess','fs_perfil'].forEach(k=>localStorage.removeItem(k));
+  [K_REM,K_CHK,K_SOL,K_PLANTAO,'fs_sess','fs_perfil'].forEach(k=>localStorage.removeItem(k));
   toast('✅ '+avisoSaida);
   setTimeout(()=>location.reload(),700);
 }
@@ -2130,16 +2502,25 @@ async function iniciar(){
   });
   $('cfg-carimbos-sup').classList.toggle('hidden',!s);
   $('cfg-viat-sup').classList.toggle('hidden',!s);
+  $('cfg-viat-padrao').classList.toggle('hidden',s);
   $('cfg-op').classList.toggle('hidden',s);
   $('ag-f').classList.toggle('hidden',s||!cloudOn||!sess);
   $('conta').classList.toggle('hidden',!cloudOn||!perfil);
   if(perfil){
     $('conta-info').textContent=[perfil.nome,perfil.coren,s?'Supervisor':'Funcionário'].filter(Boolean).join(' • ');
-    const cbAtual=obterCarimboProfissionalAtual();
+    const temCarimbosSup=(cfg.carimbos?.lista||[]).length>0;
+    const cbAtual=!temCarimbosSup?obterCarimboProfissionalAtual():null;
     if($('conta-carimbo-preview'))$('conta-carimbo-preview').innerHTML=cbAtual?renderCarimboRetangularHtml(cbAtual):'';
   }
+  renderPlantaoBar();
   switchTab(s?'painel':'checklist');
-  if(!s&&sess){backfill();sync()}
+  if(!s&&sess){
+    backfill();
+    await sync();
+    await sincronizarLeituraFuncionarioNuvem(true);
+    if(document.querySelector('.tab.on')?.dataset.t==='checklist')renderChecklist();
+    atualizarDot();
+  }
   prepararNotificacoesLocais();
   if(sess)renderAgenda();
 }
@@ -2185,7 +2566,10 @@ async function sync(){
   syncing=false;
 }
 
-window.addEventListener('online',sync);
+window.addEventListener('online',async()=>{
+  await sync();
+  if(!sup())await sincronizarLeituraFuncionarioNuvem(true);
+});
 setInterval(sync,60000);
 
 async function renderPainel(){
@@ -2206,10 +2590,10 @@ async function renderPainel(){
       const m=r.dados;
       const recKey=r.local_id||(m&&m.id)||'';
       const hrs=formatarHorariosRemocao(m);
-      const insTxt=m.insumos&&m.insumos.length?`<br>🧪 Insumos: ${esc(m.insumos.map(i=>`${i.nome} (${i.qtd})`).join(', '))}`:'';
+      const insTxt=m.insumos&&m.insumos.length?`<br>🧪 Insumos gastos: ${esc(m.insumos.map(i=>`${i.nome} (${i.qtd})`).join(', '))}`:'';
       return`<div class="rec"><strong>${esc(m.nome)}</strong> <span class="badge b-warn" style="background:#e0f2fe;color:#0369a1">${esc(formatarConvenioExibicao(m.convenio))}</span>${m.guia?`<span class="badge" style="background:#f1f5f9;color:#334155">Guia ${esc(m.guia)}</span>`:''}<p class="muted" style="margin:6px 0 0">📍 ${esc(m.origem)} ➔ ${esc(m.destino)}<br>🚑 ${esc(m.viatura||'—')} • 🚗 ${esc(m.totalKm)} km • 🕒 ${esc(m.data)}${hrs?' • '+esc(hrs):''}${insTxt}<br>💬 ${esc(m.relato||'Sem relato.')}</p><div class="acts"><button class="sm teal" type="button" onclick="abrirEvolucaoModelo('${esc(recKey)}')">🖨️ Imprimir evolução</button></div>${ed(r)}</div>`;
     }).join(''):'<p class="muted">Nenhuma remoção.</p>'}</div>
-    <div class="card"><h2>📦 Solicitações à farmácia</h2>${so.length?so.map(s=>`<div class="rec"><strong>${esc(s.viatura)}</strong> <span class="muted">${esc(s.data)}</span>${s.itens.map(i=>`<div style="font-size:.8rem">• ${esc(i.nome)} — <b>${esc(i.qtd)}</b></div>`).join('')}</div>`).join(''):'<p class="muted">Nenhuma solicitação.</p>'}</div>`;
+    <div class="card"><h2>📦 Solicitações à farmácia</h2>${so.length?so.map(s=>`<div class="rec"><strong>${esc(s.viatura)}</strong> <span class="muted">${esc(s.data)}</span>${s.itens.map(i=>`<div style="font-size:.8rem">• ${esc(i.nome)} — <b>${i.qtd}</b></div>`).join('')}</div>`).join(''):'<p class="muted">Nenhuma solicitação.</p>'}</div>`;
   }catch(e){
     $('pn').innerHTML='<div class="card"><p class="muted">Não foi possível carregar. Verifique a internet.</p></div>';
   }
@@ -2288,8 +2672,8 @@ function agUsar(id){
   $('r-ini').focus();
 }
 
-/* Edição */
-const ed=r=>r.editado_em?`<div style="margin-top:6px"><span class="badge b-warn">✏️ Editada em ${esc(new Date(r.editado_em).toLocaleString('pt-BR'))}</span><details><summary class="muted" style="cursor:pointer">Versões anteriores (${(r.historico||[]).length})</summary>${(r.historico||[]).map(h=>`<div style="font-size:.75rem;border-top:1px solid #e2e8f0;padding:4px 0">${esc(new Date(h.em).toLocaleString('pt-BR'))}: ${esc(h.dados.nome)} • ${esc(h.dados.origem)} ➔ ${esc(h.dados.destino)} • ${esc(h.dados.totalKm)} km • ${esc(h.dados.relato||'')}</div>`).join('')}</details></div>`:'';
+/* Edição (visível apenas para supervisão no Painel) */
+const ed=r=>(r.editado_em||(r.dados&&r.dados.retificado))?`<div style="margin-top:6px"><span class="badge b-warn">✏️ Editada em ${esc(r.editado_em?new Date(r.editado_em).toLocaleString('pt-BR'):(r.dados?.editadoEm||''))}</span><details><summary class="muted" style="cursor:pointer">Versões anteriores (${(r.historico||[]).length})</summary>${(r.historico||[]).map(h=>`<div style="font-size:.75rem;border-top:1px solid #e2e8f0;padding:4px 0">${esc(new Date(h.em).toLocaleString('pt-BR'))}: ${esc(h.dados.nome)} • ${esc(h.dados.viatura||'—')} • ${esc(h.dados.origem)} ➔ ${esc(h.dados.destino)} • ${esc(h.dados.totalKm)} km • ${esc(h.dados.relato||'')}</div>`).join('')}</details></div>`:'';
 
 function enviarEdicao(tipo,o){
   if(!cloudOn||!sess||sup())return;
@@ -2339,6 +2723,7 @@ function persist(syncViat=false,syncCarimbo=false){
   sv('fs_cfg',cfg);
   dirty=true;
   fillViaturas();
+  renderPlantaoBar();
   atualizarSugestoesInsumos();
   if(syncViat&&sup())salvarViaturasNuvem();
   if(syncCarimbo&&sup())salvarCarimbosNuvem();
@@ -2352,7 +2737,7 @@ function renderCarimbosAjustes(){
   const box=$('cb-lista');
   if(!box)return;
   if(!lista.length){
-    box.innerHTML='<p class="muted" style="font-size:.8rem">Nenhum carimbo cadastrado ainda. Adicione abaixo.</p>';
+    box.innerHTML='<p class="muted" style="font-size:.8rem">Nenhum carimbo cadastrado.</p>';
     return;
   }
   box.innerHTML=lista.map((c,i)=>`<div class="carimbo-card">
@@ -2380,6 +2765,11 @@ function renderAjustes(open){
   if($('viat-readonly-list')){
     $('viat-readonly-list').textContent='Viaturas ativas: '+cfg.viaturas.join(', ');
   }
+  if(!sup()&&$('sel-viat-padrao')){
+    const padraoAtual=getViaturaPadraoEfetiva();
+    $('sel-viat-padrao').innerHTML=`<option value="">Rodízio (escolher ao iniciar plantão)</option>`+
+      cfg.viaturas.map(v=>`<option value="${esc(v)}"${v===padraoAtual?' selected':''}>Fixo: ${esc(v)}</option>`).join('');
+  }
   if(sup()){
     renderCarimbosAjustes();
     $('aj-viat').innerHTML=cfg.viaturas.map((v,i)=>`<div class="row"><input value="${esc(v)}" aria-label="Nome da viatura" onchange="cfg.viaturas[${i}]=this.value.trim()||cfg.viaturas[${i}];persist(true,false);renderAjustes()"><button class="sm badx" onclick="delViat(${i})">Remover</button></div>`).join('');
@@ -2403,6 +2793,22 @@ function delViat(i){
 function addItem(ki){const n=prompt('Nome do item:');if(!n||!n.trim())return;const c=parseInt(prompt('Cota (quantidade mínima):','1'));cfg.kits[ki].itens.push({nome:n.trim(),cota:isNaN(c)?1:Math.max(0,c)});persist(false,false);renderAjustes(ki)}
 function delItem(ki,ii){cfg.kits[ki].itens.splice(ii,1);persist(false,false);renderAjustes(ki)}
 function delKit(ki){if(confirm('Excluir o kit inteiro?')){cfg.kits.splice(ki,1);persist(false,false);renderAjustes()}}
+
+$('sel-viat-padrao').onchange=async e=>{
+  const val=e.target.value;
+  viaturaPadraoPerfil=val;
+  sv(K_VIAT_PADRAO,val);
+  if(val&&!plantaoAtivo)setViaturaAtual(val);
+  renderPlantaoBar();
+  if(cloudOn&&sess&&perfil){
+    try{
+      await api('/rest/v1/perfis?id=eq.'+perfil.id,{method:'PATCH',h:{Prefer:'return=minimal'},body:{viatura_padrao:val||null}});
+      perfil.viatura_padrao=val||null;
+      sv('fs_perfil',perfil);
+    }catch(_){}
+  }
+  toast(val?`Viatura padrão definida para ${val}.`:'Modo rodízio ativado para seu perfil.');
+};
 
 $('cb-estilo').onchange=e=>{
   if(!sup())return;
