@@ -210,7 +210,7 @@ details.kit[open]>summary{border-radius:8px 8px 0 0}details.kit>div.body{padding
 <div class="card hidden" id="cfg-viat-sup"><h2>🚐 Viaturas da empresa (Supervisão)</h2><p class="muted">Apenas a supervisão pode cadastrar, renomear ou remover viaturas. A equipe seleciona a viatura do plantão.</p><div id="aj-viat"></div><button class="sm teal" id="add-viat">+ Viatura</button></div>
 <div id="cfg-op"><div class="card"><h2>🚐 Viaturas disponíveis</h2><p class="muted" id="viat-readonly-list"></p></div>
 <div class="card"><h2>🎒 Kits, itens e cotas</h2><div id="aj-kits"></div><div class="acts"><button class="sm teal" id="add-kit">+ Kit</button><button class="sm sec" id="reset-cfg">Restaurar padrão</button></div></div></div>
-<footer style="text-align:center;margin-top:14px;padding-bottom:8px;font-size:.75rem;color:var(--muted)">v.1.2.1</footer>
+<footer style="text-align:center;margin-top:14px;padding-bottom:8px;font-size:.75rem;color:var(--muted)">v.1.2.3</footer>
 </section>
 </div>
 
@@ -277,10 +277,11 @@ function getViaturaAtual(){
 }
 function setViaturaAtual(v){if(!v)return;viatAtiva=v;sv('fs_viat_ativa',v);['chk-viatura','r-viatura','hist-viatura'].forEach(id=>{const el=$(id);if(el&&[...el.options].some(o=>o.value===v))el.value=v})}
 
-function registrarEventoPlantaoNuvem(acao,viatura,inicioFmt=''){
+async function registrarEventoPlantaoNuvem(acao,viatura,inicioFmt=''){
   if(!cloudOn||!sess||!perfil||sup())return;
   const ev={id:Date.now()+'_'+acao,acao,viatura,profissional:perfil?.nome||perfil?.email||'Profissional',coren:perfil?.coren||'',inicio:inicioFmt||'',data:agora()};
-  const q=ld('fs_out',[]);q.push({tipo:'plantao_evento',local_id:ev.id,dados:ev});sv('fs_out',q);renderPlantaoBar();sync(true);
+  const q=ld('fs_out',[]);q.push({tipo:'plantao_evento',local_id:ev.id,dados:ev});sv('fs_out',q);renderPlantaoBar();
+  if(navigator.onLine)await sync(false);
 }
 
 function limparFilaPresa(){
@@ -325,28 +326,32 @@ function renderPlantaoBar(){
   }
 }
 
-function iniciarPlantao(){
+async function iniciarPlantao(){
   const v=$('sel-inicio-plantao')?$('sel-inicio-plantao').value:getViaturaAtual();if(!v){toast('Selecione uma viatura.');return}
   const inicioFmt=agora();plantaoAtivo={viatura:v,inicio:inicioFmt,profissional:perfil?.nome||''};
-  sv(K_PLANTAO,plantaoAtivo);setViaturaAtual(v);renderPlantaoBar();renderChecklist();registrarEventoPlantaoNuvem('iniciado',v,inicioFmt);toast('🟢 Plantão iniciado na viatura '+v+'.');
+  sv(K_PLANTAO,plantaoAtivo);setViaturaAtual(v);renderPlantaoBar();renderChecklist();await registrarEventoPlantaoNuvem('iniciado',v,inicioFmt);toast('🟢 Plantão iniciado na viatura '+v+'.');
 }
 function abrirTrocaViaturaPlantao(){$('plantao-troca-area')?.classList.toggle('hidden')}
-function confirmarTrocaViaturaPlantao(){
+async function confirmarTrocaViaturaPlantao(){
   if(!plantaoAtivo)return;const novaViat=$('sel-troca-viat')?.value,antigaViat=plantaoAtivo.viatura;
   if(!novaViat||novaViat===antigaViat){$('plantao-troca-area')?.classList.add('hidden');return}
   const drafts=ld(K_CHK_DRAFTS,{});
   if(drafts[antigaViat]&&confirm(`Há um rascunho de checklist em aberto na ${antigaViat}. Deseja transferir esse preenchimento para a ${novaViat}?`)){drafts[novaViat]=drafts[antigaViat];delete drafts[antigaViat];sv(K_CHK_DRAFTS,drafts)}
-  plantaoAtivo.viatura=novaViat;plantaoAtivo.trocadoDe=antigaViat;plantaoAtivo.trocadoEm=agora();
-  sv(K_PLANTAO,plantaoAtivo);setViaturaAtual(novaViat);renderPlantaoBar();renderChecklist();toast(`🔄 Plantão alterado de ${antigaViat} para ${novaViat}.`);
+  const inicioAnterior=plantaoAtivo.inicio||'',novoInicio=agora();
+  plantaoAtivo.viatura=novaViat;plantaoAtivo.inicio=novoInicio;plantaoAtivo.trocadoDe=antigaViat;plantaoAtivo.trocadoEm=novoInicio;
+  sv(K_PLANTAO,plantaoAtivo);setViaturaAtual(novaViat);renderPlantaoBar();renderChecklist();
+  await registrarEventoPlantaoNuvem('encerrado',antigaViat,inicioAnterior);
+  await registrarEventoPlantaoNuvem('iniciado',novaViat,novoInicio);
+  toast(`🔄 Plantão alterado de ${antigaViat} para ${novaViat}.`);
 }
 async function finalizarPlantao(){
   if(!plantaoAtivo)return;const v=plantaoAtivo.viatura,inicioFmt=plantaoAtivo.inicio||'';
-  if(ld('fs_out',[]).length&&navigator.onLine&&sess&&perfil){try{await sync(true)}catch(_){}}
+  if(ld('fs_out',[]).length&&navigator.onLine&&sess&&perfil){try{await sync(false)}catch(_){}}
   const filaRest=ld('fs_out',[]),temDraft=!!ld(K_CHK_DRAFTS,{})[v];
   const msg=(filaRest.length||temDraft)?`Atenção: há ${filaRest.length} envio(s) pendente(s)${temDraft?' e rascunho de checklist em aberto':''}. Encerrar o plantão da ${v} mesmo assim?`:`Encerrar o plantão na viatura ${v}?`;
   if(!confirm(msg))return;plantaoAtivo=null;localStorage.removeItem(K_PLANTAO);
   const padrao=getViaturaPadraoEfetiva();if(padrao)setViaturaAtual(padrao);
-  renderPlantaoBar();registrarEventoPlantaoNuvem('encerrado',v,inicioFmt);toast('Plantão encerrado.');
+  renderPlantaoBar();await registrarEventoPlantaoNuvem('encerrado',v,inicioFmt);toast('Plantão encerrado.');
 }
 
 function atualizarSugestoesInsumos(){const dl=$('dl-insumos');if(!dl)return;const nomes=new Set();cfg.kits.forEach(k=>k.itens.forEach(it=>{if(it&&it.nome)nomes.add(it.nome)}));dl.innerHTML=[...nomes].map(n=>`<option value="${esc(n)}"></option>`).join('')}
@@ -627,7 +632,7 @@ function corrigirViaturaChecklist(id){
   if(!nova||!nova.trim())return;const limpa=nova.trim();if(!cfg.viaturas.includes(limpa)){toast('Viatura inválida. Escolha entre: '+opcoes);return}if(limpa===atual)return;
   L[ix].viatura=limpa;L[ix].editadoEm=agora();if(!sv(K_CHK,L))return;enviarEdicao('checklist',L[ix]);renderHistorico();atualizarDot();toast('Viatura do checklist corrigida para '+limpa+'.');
 }
-function enfileirarExclusaoNuvem(tipo,id){if(!cloudOn||!sess||sup())return;const lid=String(id),q=ld('fs_out',[]).filter(x=>!(x.tipo===tipo&&String(x.local_id)===lid));q.push({op:'del',tipo,local_id:lid});sv('fs_out',q);renderPlantaoBar();sync(true)}
+function enfileirarExclusaoNuvem(tipo,id){if(!cloudOn||!sess||sup())return;const lid=String(id),q=ld('fs_out',[]).filter(x=>!(x.tipo===tipo&&String(x.local_id)===lid));q.push({op:'del',tipo,local_id:lid});sv('fs_out',q);renderPlantaoBar();sync(false)}
 function apagar(k,id){if(!confirm('Excluir este registro? Isso não pode ser desfeito.'))return;sv(k,ld(k,[]).filter(x=>String(x.id)!==String(id)));if(k===K_SOL)enfileirarExclusaoNuvem('solicitacao',id);else if(k===K_CHK)enfileirarExclusaoNuvem('checklist',id);else if(k===K_REM)enfileirarExclusaoNuvem('remocao',id);renderHistorico();atualizarDot();toast('Registro excluído.')}
 
 const nat=()=>window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform();
@@ -636,7 +641,7 @@ async function compartilhar(id){const m=ld(K_REM,[]).find(x=>x.id===id);if(!m)re
 
 async function exportar(){
   if(cloudOn&&perfil&&!sup()){toast('Exportação restrita à supervisão (LGPD).');return}
-  const d={versao:'1.2.1',cfg,checklists:ld(K_CHK,[]),remocoes:ld(K_REM,[]),solicitacoes:ld(K_SOL,[])},nome='fluxsaude-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  const d={versao:'1.2.3',cfg,checklists:ld(K_CHK,[]),remocoes:ld(K_REM,[]),solicitacoes:ld(K_SOL,[])},nome='fluxsaude-backup-'+new Date().toISOString().slice(0,10)+'.json';
   if(nat()){try{const r=await Capacitor.Plugins.Filesystem.writeFile({path:nome,data:JSON.stringify(d),directory:'CACHE',encoding:'utf8'});await Capacitor.Plugins.Share.share({title:'Backup FluxSaúde',url:r.uri})}catch(e){toast('Não foi possível exportar o backup.')}return}
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d)],{type:'application/json'}));a.download=nome;document.body.appendChild(a);a.click();a.remove();toast('Backup gerado.');
 }
@@ -810,7 +815,13 @@ async function sincronizarLeituraFuncionarioNuvem(silencioso=true){
 
 async function salvarConfigTipoNuvem(tipo,localId,dados){
   if(!cloudOn||!sess||!perfil||!sup())return;
-  try{const ex=await api('/rest/v1/registros?select=id&empresa_id=eq.'+encodeURIComponent(perfil.empresa_id)+'&tipo=eq.'+tipo+'&limit=1');if(Array.isArray(ex)&&ex[0])await api('/rest/v1/registros?id=eq.'+ex[0].id,{method:'PATCH',h:{Prefer:'return=minimal'},body:{dados}});else await api('/rest/v1/registros',{method:'POST',h:{Prefer:'return=minimal'},body:{empresa_id:perfil.empresa_id,tipo,local_id:localId,dados}})}catch(_){toast('Configuração salva localmente, mas sem conexão para sincronizar.')}
+  try{
+    await api('/rest/v1/registros?on_conflict=empresa_id,tipo,local_id',{
+      method:'POST',
+      h:{Prefer:'resolution=merge-duplicates,return=minimal'},
+      body:{empresa_id:perfil.empresa_id,tipo,local_id:localId,dados}
+    });
+  }catch(_){toast('Configuração salva localmente, mas sem conexão para sincronizar.')}
 }
 async function carregarConfigEmpresaNuvem(){
   if(!cloudOn||!sess||!perfil||!perfil.empresa_id)return;
@@ -892,7 +903,7 @@ async function restaurarSessao(){
 }
 
 async function sair(){
-  if(ld('fs_out',[]).length&&navigator.onLine&&sess&&perfil&&!sup()){try{await sync(true)}catch(_){}}
+  if(ld('fs_out',[]).length&&navigator.onLine&&sess&&perfil&&!sup()){try{await sync(false)}catch(_){}}
   const filaRestante=ld('fs_out',[]),temRascunho=Object.keys(ld(K_CHK_DRAFTS,{})).length>0;
   let msgConf='Verificação de saída: tudo sincronizado e em ordem (LGPD). Deseja sair da conta e limpar os dados locais deste aparelho?';
   if(filaRestante.length&&temRascunho)msgConf=`Atenção: há ${filaRestante.length} registro(s) pendente(s) de envio e rascunho de checklist em aberto. Deseja sair mesmo assim?`;
@@ -916,11 +927,11 @@ async function iniciar(){
   $('cfg-carimbos-sup').classList.toggle('hidden',!s);$('cfg-viat-sup').classList.toggle('hidden',!s);$('cfg-viat-padrao').classList.toggle('hidden',s);$('cfg-op').classList.toggle('hidden',s);$('ag-f').classList.toggle('hidden',s||!cloudOn||!sess);$('conta').classList.toggle('hidden',!cloudOn||!perfil);
   if(perfil){$('conta-info').textContent=[perfil.nome,perfil.coren,s?'Supervisor':'Funcionário'].filter(Boolean).join(' • ');const cbAtual=!(cfg.carimbos?.lista||[]).length?obterCarimboProfissionalAtual():null;if($('conta-carimbo-preview'))$('conta-carimbo-preview').innerHTML=cbAtual?renderCarimboRetangularHtml(cbAtual):''}
   renderPlantaoBar();switchTab(s?'painel':'checklist');
-  if(!s&&sess){backfill();await sync(true);await sincronizarLeituraFuncionarioNuvem(true);if(document.querySelector('.tab.on')?.dataset.t==='checklist')renderChecklist();atualizarDot();renderPlantaoBar()}
+  if(!s&&sess){backfill();await sync(false);await sincronizarLeituraFuncionarioNuvem(true);if(document.querySelector('.tab.on')?.dataset.t==='checklist')renderChecklist();atualizarDot();renderPlantaoBar()}
   prepararNotificacoesLocais();if(sess)renderAgenda();
 }
 
-function enviar(tipo,o){if(!cloudOn||!sess||sup())return;const q=ld('fs_out',[]);q.push({tipo,local_id:String(o.id),dados:o});sv('fs_out',q);renderPlantaoBar();sync(true)}
+function enviar(tipo,o){if(!cloudOn||!sess||sup())return;const q=ld('fs_out',[]);q.push({tipo,local_id:String(o.id),dados:o});sv('fs_out',q);renderPlantaoBar();sync(false)}
 function backfill(){if(!cloudOn||ld('fs_bf',false))return;ld(K_CHK,[]).forEach(o=>enviar('checklist',o));ld(K_REM,[]).forEach(o=>enviar('remocao',o));ld(K_SOL,[]).forEach(o=>enviar('solicitacao',o));sv('fs_bf',true)}
 
 let syncing=false;
@@ -940,15 +951,11 @@ async function sync(mostrarErro=false){
         }else if(it.op==='upd'){
           await api('/rest/v1/registros?'+filtroUrl,{method:'PATCH',h:{Prefer:'return=minimal'},body:{dados:it.dados}});
         }else{
-          try{
-            await api('/rest/v1/registros?on_conflict=empresa_id,tipo,local_id',{method:'POST',h:{Prefer:'resolution=merge-duplicates,return=minimal'},body:{empresa_id:perfil.empresa_id,tipo:it.tipo,local_id:String(it.local_id),dados:it.dados}});
-          }catch(errPost){
-            if(/http (400|409)/.test(String(errPost?.message||''))){
-              await api('/rest/v1/registros?'+filtroUrl,{method:'PATCH',h:{Prefer:'return=minimal'},body:{dados:it.dados}});
-            }else{
-              throw errPost;
-            }
-          }
+          await api('/rest/v1/registros?on_conflict=empresa_id,tipo,local_id',{
+            method:'POST',
+            h:{Prefer:'resolution=merge-duplicates,return=minimal'},
+            body:{empresa_id:perfil.empresa_id,tipo:it.tipo,local_id:String(it.local_id),dados:it.dados}
+          });
         }
       }catch(errItem){
         restantes.push(it);
@@ -992,7 +999,7 @@ async function agDel(id){if(!confirm('Cancelar esta remoção agendada?'))return
 function agUsar(id){const a=agData.find(x=>x.id===id);if(!a)return;const d=a.dados||{},atraso=formatarAtraso(a.quando);$('r-nome').value=d.nome||'';$('r-orig').value=d.origem||'';$('r-dest').value=d.destino||'';if(d.viatura&&cfg.viaturas.includes(d.viatura))setViaturaAtual(d.viatura);agId=id;toast(atraso?`Atenção: remoção estava prevista para este horário (${atraso}).`:'Dados carregados. Preencha o hodômetro.');$('r-ini').focus()}
 
 const ed=r=>(r.editado_em||(r.dados&&r.dados.retificado))?`<div style="margin-top:6px"><span class="badge b-warn">✏️ Editada em ${esc(r.editado_em?new Date(r.editado_em).toLocaleString('pt-BR'):(r.dados?.editadoEm||''))}</span><details><summary class="muted" style="cursor:pointer">Versões anteriores (${(r.historico||[]).length})</summary>${(r.historico||[]).map(h=>`<div style="font-size:.75rem;border-top:1px solid #e2e8f0;padding:4px 0">${esc(new Date(h.em).toLocaleString('pt-BR'))}: ${esc(h.dados.nome)} • ${esc(h.dados.viatura||'—')} • ${esc(h.dados.origem)} ➔ ${esc(h.dados.destino)} • ${esc(h.dados.totalKm)} km • ${esc(h.dados.relato||'')}</div>`).join('')}</details></div>`:'';
-function enviarEdicao(tipo,o){if(!cloudOn||!sess||sup())return;const q=ld('fs_out',[]),lid=String(o.id),p=q.find(x=>x.tipo===tipo&&x.local_id===lid);if(p)p.dados=o;else q.push({op:'upd',tipo,local_id:lid,dados:o});sv('fs_out',q);renderPlantaoBar();sync(true)}
+function enviarEdicao(tipo,o){if(!cloudOn||!sess||sup())return;const q=ld('fs_out',[]),lid=String(o.id),p=q.find(x=>x.tipo===tipo&&x.local_id===lid);if(p)p.dados=o;else q.push({op:'upd',tipo,local_id:lid,dados:o});sv('fs_out',q);renderPlantaoBar();sync(false)}
 function editarRemocao(id){
   const m=ld(K_REM,[]).find(x=>x.id===id);if(!m)return;editId=id;agId=null;fillViaturas();atualizarSugestoesInsumos();
   if(m.viatura&&!cfg.viaturas.includes(m.viatura))$('r-viatura').add(new Option(m.viatura,m.viatura));
