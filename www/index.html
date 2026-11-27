@@ -106,12 +106,25 @@ details.kit>div.body{padding:6px 8px 10px}
 .evo-cell-hdr{padding:5px 8px;font-size:11.5px;color:#0f172a;min-height:34px;background:rgba(248,250,252,.75)}
 .evo-cell-hdr:first-child{border-right:1.2px solid #93c5fd}
 .evo-cell-hdr b{display:block;font-size:9px;color:#003366;text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px}
-.evo-lined{position:relative;border:1.2px solid #93c5fd;border-radius:0 0 4px 4px;min-height:610px;background:transparent}
+.evo-lined{position:relative;border:1.2px solid #93c5fd;border-radius:0 0 4px 4px;min-height:570px;background:transparent}
 .evo-lines-layer{position:absolute;inset:0;pointer-events:none;z-index:0;display:flex;flex-direction:column}
 .evo-line-row{height:26px;border-bottom:1px solid #bfdbfe;flex:0 0 26px}
 .evo-text{position:relative;z-index:1;font-size:12.5px;line-height:26px;color:#0f172a;padding:0 8px;white-space:pre-wrap;word-break:break-word}
-.evo-footer{display:grid;grid-template-columns:1.4fr 1fr;gap:12px;margin-top:12px;padding-top:10px;border-top:1px solid #cbd5e1;font-size:10.5px;color:#334155;break-inside:avoid;page-break-inside:avoid}
-.evo-sign-line{border-top:1px solid #475569;padding-top:4px;text-align:center;margin-top:26px;font-size:10.5px}
+.evo-footer{display:grid;grid-template-columns:1.1fr 1fr;gap:14px;margin-top:12px;padding-top:10px;border-top:1px solid #cbd5e1;font-size:10.5px;color:#334155;align-items:end;break-inside:avoid;page-break-inside:avoid}
+.evo-sign-area{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;break-inside:avoid;page-break-inside:avoid}
+.evo-sign-line{width:100%;border-top:1px solid #475569;padding-top:4px;text-align:center;margin-top:26px;margin-bottom:6px;font-size:10px;color:#475569}
+
+/* Carimbo retangular profissional no PDF e na pré-visualização */
+.carimbo-box{width:100%;max-width:280px;background:#ffffff;color:#0f172a;padding:8px 12px;line-height:1.35;break-inside:avoid;page-break-inside:avoid}
+.carimbo-box.st-simples{border:1.5px solid #003366;border-radius:6px}
+.carimbo-box.st-dupla{border:3px double #003366;border-radius:6px}
+.carimbo-box.st-compacto{border:1.2px solid #1e293b;border-radius:3px;padding:6px 10px;max-width:255px}
+.carimbo-box.al-centro{text-align:center}
+.carimbo-box.al-esquerda{text-align:left}
+.carimbo-nome{font-size:11.5px;font-weight:800;color:#003366;text-transform:uppercase;letter-spacing:.01em}
+.carimbo-cat{font-size:10.5px;font-weight:600;color:#334155;margin-top:1px}
+.carimbo-reg{font-size:11px;font-weight:700;color:#0f172a;margin-top:2px;white-space:nowrap}
+.carimbo-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:8px}
 
 @media print{
   body>*:not(#pdf-modal){display:none!important}
@@ -223,7 +236,40 @@ details.kit>div.body{padding:6px 8px 10px}
 </section>
 
 <section id="v-config" class="view hidden">
-<div class="card hidden" id="conta"><h2>👤 Conta e sigilo (LGPD)</h2><p id="conta-info" class="muted"></p><p class="muted" style="font-size:.78rem">Dados sensíveis de saúde ficam protegidos por sigilo profissional e são removidos deste aparelho ao sair.</p><button class="sm sec" onclick="sair()">Sair e verificar pendências</button></div>
+<div class="card hidden" id="conta"><h2>👤 Conta e sigilo (LGPD)</h2><p id="conta-info" class="muted"></p><div id="conta-carimbo-preview" style="margin-bottom:10px"></div><p class="muted" style="font-size:.78rem">Dados sensíveis de saúde ficam protegidos por sigilo profissional e são removidos deste aparelho ao sair.</p><button class="sm sec" onclick="sair()">Sair e verificar pendências</button></div>
+
+<div class="card hidden" id="cfg-carimbos-sup">
+  <h2>🪪 Carimbos Profissionais (Supervisão)</h2>
+  <p class="muted">Apenas a supervisão define o estilo visual e cadastra carimbos da equipe para emissão padronizada no PDF da evolução.</p>
+  <div class="g2">
+    <div class="fg">
+      <label for="cb-estilo">Estilo visual do carimbo</label>
+      <select id="cb-estilo">
+        <option value="simples">Retangular (Borda simples)</option>
+        <option value="dupla">Retangular (Borda dupla)</option>
+        <option value="compacto">Retangular compacto</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label for="cb-alinhamento">Alinhamento</label>
+      <select id="cb-alinhamento">
+        <option value="centro">Centralizado</option>
+        <option value="esquerda">À esquerda</option>
+      </select>
+    </div>
+  </div>
+  <div id="cb-lista"></div>
+  <div style="border-top:1px solid #e2e8f0;padding-top:10px;margin-top:10px">
+    <label style="margin-bottom:6px">Adicionar novo carimbo</label>
+    <div class="fg"><input id="cb-novo-nome" placeholder="Nome completo (ex.: Lucas Alves Clemente de Araujo)"></div>
+    <div class="g2">
+      <div class="fg"><input id="cb-novo-cat" placeholder="Categoria (ex.: Enfermeiro)"></div>
+      <div class="fg"><input id="cb-novo-reg" placeholder="Registro (ex.: COREN-PE 123456)"></div>
+    </div>
+    <button class="sm teal" type="button" id="add-carimbo">+ Salvar carimbo</button>
+  </div>
+</div>
+
 <div class="card hidden" id="cfg-viat-sup"><h2>🚐 Viaturas da empresa (Supervisão)</h2><p class="muted">Apenas a supervisão pode cadastrar, renomear ou remover viaturas. A equipe seleciona a viatura do plantão.</p><div id="aj-viat"></div><button class="sm teal" id="add-viat">+ Viatura</button></div>
 <div id="cfg-op">
 <div class="card"><h2>🚐 Viaturas disponíveis</h2><p class="muted" id="viat-readonly-list"></p></div>
@@ -642,10 +688,12 @@ const ld=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?
 let tt;
 const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),3000)};
 const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){toast('Erro ao salvar: armazenamento indisponível ou cheio.');return false}};
-const defCfg=()=>({viaturas:['UTI-15'],kits:KITS0.map(([n,i])=>({nome:n,itens:i.map(([a,b])=>({nome:a,cota:b}))}))});
+const defCarimbosCfg=()=>({estilo:'simples',alinhamento:'centro',lista:[]});
+const defCfg=()=>({viaturas:['UTI-15'],kits:KITS0.map(([n,i])=>({nome:n,itens:i.map(([a,b])=>({nome:a,cota:b}))})),carimbos:defCarimbosCfg()});
 
 let cfg=ld('fs_cfg',null);
 if(!cfg||!Array.isArray(cfg.kits)||!cfg.kits.length||!Array.isArray(cfg.viaturas)||!cfg.viaturas.length)cfg=defCfg();
+if(!cfg.carimbos||!Array.isArray(cfg.carimbos.lista))cfg.carimbos=defCarimbosCfg();
 
 const K_CHK='checklists_fluxsaude',K_REM='missoes_fluxsaude',K_SOL='solicitacoes_fluxsaude';
 const K_CHK_DRAFTS='fs_chk_drafts_by_viat';
@@ -1010,6 +1058,27 @@ function limparCamposRemocao(){
   calcKm();
 }
 
+function obterCarimboProfissionalAtual(){
+  const nomeProf=String(perfil?.nome||'').trim();
+  const corenProf=String(perfil?.coren||'').trim();
+  const catProf=String(perfil?.categoria||perfil?.cargo||'').trim();
+  const lista=cfg.carimbos?.lista||[];
+  const achado=lista.find(c=>
+    (corenProf&&String(c.registro||'').toLowerCase()===corenProf.toLowerCase())||
+    (nomeProf&&String(c.nome||'').toLowerCase()===nomeProf.toLowerCase())
+  );
+  if(achado)return{...achado};
+  if(nomeProf||corenProf||catProf){
+    return{
+      id:'perfil_atual',
+      nome:nomeProf,
+      categoria:catProf||(sup()?'Supervisão':'Enfermagem'),
+      registro:corenProf
+    };
+  }
+  return lista[0]?{...lista[0]}:null;
+}
+
 function salvarRemocao(){
   const g=id=>$(id).value.trim();
   const ini=parseFloat($('r-ini').value),fim=parseFloat($('r-fim').value);
@@ -1019,6 +1088,7 @@ function salvarRemocao(){
   if(isNaN(ini)||isNaN(fim)){toast('Informe o hodômetro inicial e final.');return}
   if(fim<ini){toast('O hodômetro final não pode ser menor que o inicial.');return}
 
+  const carimboAtual=obterCarimboProfissionalAtual();
   const M=ld(K_REM,[]);
   const rec={
     viatura:$('r-viatura').value,
@@ -1036,9 +1106,11 @@ function salvarRemocao(){
     kmFim:fim,
     insumos:insumosRemocao.map(x=>({...x})),
     relato,
-    profissionalNome:perfil?.nome||'',
-    profissionalCoren:perfil?.coren||'',
-    profissionalPapel:perfil?.papel||''
+    profissionalNome:carimboAtual?.nome||perfil?.nome||'',
+    profissionalCategoria:carimboAtual?.categoria||perfil?.categoria||'',
+    profissionalCoren:carimboAtual?.registro||perfil?.coren||'',
+    profissionalPapel:perfil?.papel||'',
+    carimbo:carimboAtual
   };
 
   if(editId){
@@ -1171,8 +1243,10 @@ function importar(f){
       if(!confirm('Importar vai substituir os dados atuais. Continuar?'))return;
       if(d.cfg&&d.cfg.kits){
         const viatAtual=cfg.viaturas;
+        const carimbosAtual=cfg.carimbos;
         cfg=d.cfg;
-        if(!sup())cfg.viaturas=viatAtual;
+        if(!cfg.carimbos)cfg.carimbos=carimbosAtual;
+        if(!sup()){cfg.viaturas=viatAtual;cfg.carimbos=carimbosAtual}
       }
       sv('fs_cfg',cfg);
       sv(K_CHK,d.checklists);
@@ -1519,8 +1593,9 @@ function solStatus(id){
   if(s){s.status=s.status==='recebida'?'pendente':'recebida';sv(K_SOL,S);renderSolHist($('hist-viatura')?.value||getViaturaAtual())}
 }
 
-/* Modelo de Evolução Clínica / Registro de Enfermagem (FluxSaúde) */
+/* Modelo de Evolução Clínica / Registro de Enfermagem + Carimbo Retangular (FluxSaúde) */
 let ultimoPainelRms=[];
+let carimboEvoSelecionado=null;
 
 function formatarConvenioExibicao(convenio){
   const c=String(convenio||'').trim();
@@ -1565,6 +1640,54 @@ function atualizarBolinhaConvenioNaTela(valorConv){
   el.innerHTML=`<span>${esc(b.topo)}</span><span>${esc(b.base)}</span>`;
 }
 
+function renderCarimboRetangularHtml(carimboData){
+  const estilo=cfg.carimbos?.estilo||'simples';
+  const alinhamento=cfg.carimbos?.alinhamento||'centro';
+  const clsEstilo=estilo==='dupla'?'st-dupla':(estilo==='compacto'?'st-compacto':'st-simples');
+  const clsAl=alinhamento==='esquerda'?'al-esquerda':'al-centro';
+  const nome=String(carimboData?.nome||'').trim();
+  const cat=String(carimboData?.categoria||'').trim();
+  const reg=String(carimboData?.registro||'').trim();
+  if(!nome&&!cat&&!reg){
+    return`<div class="carimbo-box ${clsEstilo} ${clsAl}" style="border-style:dashed;color:#64748b;font-size:10px">Carimbo profissional não cadastrado</div>`;
+  }
+  return`<div class="carimbo-box ${clsEstilo} ${clsAl}">
+    ${nome?`<div class="carimbo-nome">${esc(nome)}</div>`:''}
+    ${cat?`<div class="carimbo-cat">${esc(cat)}</div>`:''}
+    ${reg?`<div class="carimbo-reg">${esc(reg)}</div>`:''}
+  </div>`;
+}
+
+function resolverCarimboParaRemocao(m){
+  if(m?.carimbo&&(m.carimbo.nome||m.carimbo.registro))return{...m.carimbo};
+  const lista=cfg.carimbos?.lista||[];
+  const mCoren=String(m?.profissionalCoren||'').trim().toLowerCase();
+  const mNome=String(m?.profissionalNome||'').trim().toLowerCase();
+  const achado=lista.find(c=>
+    (mCoren&&String(c.registro||'').toLowerCase()===mCoren)||
+    (mNome&&String(c.nome||'').toLowerCase()===mNome)
+  );
+  if(achado)return{...achado};
+  if(m?.profissionalNome||m?.profissionalCoren||m?.profissionalCategoria){
+    return{
+      nome:m.profissionalNome||'',
+      categoria:m.profissionalCategoria||'Enfermagem',
+      registro:m.profissionalCoren||''
+    };
+  }
+  return obterCarimboProfissionalAtual()||{nome:'',categoria:'',registro:''};
+}
+
+function selecionarCarimboEvo(idxStr){
+  const lista=cfg.carimbos?.lista||[];
+  const idx=parseInt(idxStr,10);
+  if(!isNaN(idx)&&lista[idx]){
+    carimboEvoSelecionado={...lista[idx]};
+  }
+  const slot=$('evo-carimbo-slot');
+  if(slot)slot.innerHTML=renderCarimboRetangularHtml(carimboEvoSelecionado);
+}
+
 function logoFluxSaudeSvg(className='', w=40, h=36){
   return`<svg class="${className}" width="${w}" height="${h}" viewBox="0 0 120 105" fill="none" aria-hidden="true">
     <circle cx="43" cy="14" r="4.5" fill="#003366"/>
@@ -1577,7 +1700,7 @@ function logoFluxSaudeSvg(className='', w=40, h=36){
   </svg>`;
 }
 
-function renderLinhasEvolucaoHtml(totalLinhas=23){
+function renderLinhasEvolucaoHtml(totalLinhas=22){
   return Array.from({length:totalLinhas},()=>'<div class="evo-line-row"></div>').join('');
 }
 
@@ -1595,9 +1718,18 @@ function abrirEvolucaoModelo(remId,modeloForcado){
   const hrs=formatarHorariosRemocao(m);
   const insResumo=m.insumos&&m.insumos.length?'\nInsumos utilizados: '+m.insumos.map(i=>`${i.nome} (${i.qtd})`).join(', '):'';
   const textoCorpo=(m.relato||'')+insResumo;
-  const profNome=m.profissionalNome||perfil?.nome||'';
-  const profCoren=m.profissionalCoren||perfil?.coren||'';
-  const profLinha=[profNome,profCoren].filter(Boolean).join(' • ');
+
+  if(!modeloForcado||!carimboEvoSelecionado){
+    carimboEvoSelecionado=resolverCarimboParaRemocao(m);
+  }
+  const listaCarimbos=cfg.carimbos?.lista||[];
+  const seletorCarimboSup=sup()&&listaCarimbos.length?`
+    <label>Carimbo (Supervisão)
+      <select id="evo-carimbo-sel" onchange="selecionarCarimboEvo(this.value)">
+        <option value="">Padrão do registro</option>
+        ${listaCarimbos.map((c,idx)=>`<option value="${idx}"${c.nome===carimboEvoSelecionado?.nome&&c.registro===carimboEvoSelecionado?.registro?' selected':''}>${esc(c.nome)} (${esc(c.registro||c.categoria||'Carimbo')})</option>`).join('')}
+      </select>
+    </label>`:'';
 
   $('pdf-content').innerHTML=`
     <div class="evo-controls no-print">
@@ -1616,6 +1748,7 @@ function abrirEvolucaoModelo(remId,modeloForcado){
       <label>Data
         <input type="text" id="evo-data-inp" value="${esc(dataCurta)}" oninput="$('evo-data-val').textContent=this.value">
       </label>
+      ${seletorCarimboSup}
     </div>
 
     <div id="pdf-printable-area" class="evo-sheet">
@@ -1643,16 +1776,20 @@ function abrirEvolucaoModelo(remId,modeloForcado){
           </div>
 
           <div class="evo-lined">
-            <div class="evo-lines-layer" aria-hidden="true">${renderLinhasEvolucaoHtml(23)}</div>
+            <div class="evo-lines-layer" aria-hidden="true">${renderLinhasEvolucaoHtml(22)}</div>
             <div class="evo-text">${esc(textoCorpo)}</div>
           </div>
 
           <div class="evo-footer">
             <div>
-              <div><b>Responsável:</b> ${esc(profLinha||'A preencher')}</div>
-              <div><b>Viatura / Rota:</b> ${esc(m.viatura||'—')} • ${esc(m.origem||'')} ➔ ${esc(m.destino||'')} (${esc(m.totalKm??0)} km)</div>
+              <div><b>Viatura:</b> ${esc(m.viatura||'—')} • <b>Distância:</b> ${esc(m.totalKm??0)} km</div>
+              <div><b>Trajeto:</b> ${esc(m.origem||'')} ➔ ${esc(m.destino||'')}</div>
+              ${guiaAtual?`<div><b>Guia / Autorização:</b> ${esc(guiaAtual)}</div>`:''}
             </div>
-            <div class="evo-sign-line">Assinatura / Carimbo Profissional</div>
+            <div class="evo-sign-area">
+              <div class="evo-sign-line">Assinatura do Profissional</div>
+              <div id="evo-carimbo-slot" style="width:100%;display:flex;justify-content:center">${renderCarimboRetangularHtml(carimboEvoSelecionado)}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -1665,7 +1802,7 @@ function abrirEvolucaoModelo(remId,modeloForcado){
   $('pdf-modal').scrollTop=0;
 }
 
-/* Nuvem (Supabase): login, sincronização, painel, viaturas e agenda */
+/* Nuvem (Supabase): login, sincronização, painel, viaturas, carimbos e agenda */
 const SB_URL="https://esoujnlijfmqjxdziesa.supabase.co";
 const SB_KEY="sb_publishable_Si90uy9oqXOQU-B5AZHBNQ_I6tn_T23";
 const sb=(window.supabase&&/^https:\/\//.test(SB_URL))?window.supabase.createClient(SB_URL,SB_KEY):null;
@@ -1679,17 +1816,25 @@ const notifDisparadas=new Set();
 
 const sup=()=>!!perfil&&String(perfil.papel||'').trim().toLowerCase()==='supervisor';
 
-async function carregarViaturasNuvem(){
+async function carregarConfigEmpresaNuvem(){
   if(!cloudOn||!sess||!perfil)return;
   try{
-    const res=await api('/rest/v1/registros?select=dados&empresa_id=eq.'+perfil.empresa_id+'&tipo=eq.config_viaturas&limit=1');
-    if(Array.isArray(res)&&res[0]&&res[0].dados&&Array.isArray(res[0].dados.viaturas)&&res[0].dados.viaturas.length){
-      cfg.viaturas=res[0].dados.viaturas;
-      sv('fs_cfg',cfg);
+    const resV=await api('/rest/v1/registros?select=dados&empresa_id=eq.'+perfil.empresa_id+'&tipo=eq.config_viaturas&limit=1');
+    if(Array.isArray(resV)&&resV[0]&&resV[0].dados&&Array.isArray(resV[0].dados.viaturas)&&resV[0].dados.viaturas.length){
+      cfg.viaturas=resV[0].dados.viaturas;
       if(!cfg.viaturas.includes(viatAtiva))viatAtiva=cfg.viaturas[0];
-      fillViaturas();
-      if($('viat-readonly-list'))$('viat-readonly-list').textContent='Viaturas cadastradas pela supervisão: '+cfg.viaturas.join(', ');
     }
+    const resC=await api('/rest/v1/registros?select=dados&empresa_id=eq.'+perfil.empresa_id+'&tipo=eq.config_carimbos&limit=1');
+    if(Array.isArray(resC)&&resC[0]&&resC[0].dados){
+      cfg.carimbos={
+        estilo:resC[0].dados.estilo||'simples',
+        alinhamento:resC[0].dados.alinhamento||'centro',
+        lista:Array.isArray(resC[0].dados.lista)?resC[0].dados.lista:[]
+      };
+    }
+    sv('fs_cfg',cfg);
+    fillViaturas();
+    if($('viat-readonly-list'))$('viat-readonly-list').textContent='Viaturas cadastradas pela supervisão: '+cfg.viaturas.join(', ');
   }catch(_){}
 }
 
@@ -1710,6 +1855,31 @@ async function salvarViaturasNuvem(){
     }
   }catch(_){
     toast('Viaturas salvas localmente, mas sem conexão para sincronizar.');
+  }
+}
+
+async function salvarCarimbosNuvem(){
+  if(!cloudOn||!sess||!perfil||!sup())return;
+  try{
+    const ex=await api('/rest/v1/registros?select=id&empresa_id=eq.'+perfil.empresa_id+'&tipo=eq.config_carimbos&limit=1');
+    const body={
+      estilo:cfg.carimbos.estilo||'simples',
+      alinhamento:cfg.carimbos.alinhamento||'centro',
+      lista:cfg.carimbos.lista||[],
+      atualizado_em:new Date().toISOString()
+    };
+    if(Array.isArray(ex)&&ex[0]){
+      await api('/rest/v1/registros?id=eq.'+ex[0].id,{
+        method:'PATCH',h:{Prefer:'return=minimal'},body:{dados:body}
+      });
+    }else{
+      await api('/rest/v1/registros',{
+        method:'POST',h:{Prefer:'return=minimal'},
+        body:{empresa_id:perfil.empresa_id,tipo:'config_carimbos',local_id:'carimbos_empresa',dados:body}
+      });
+    }
+  }catch(_){
+    toast('Carimbos salvos localmente, mas sem conexão para sincronizar.');
   }
 }
 
@@ -1954,17 +2124,22 @@ async function sair(){
 
 async function iniciar(){
   $('login').classList.add('hidden');
-  if(sess)await carregarViaturasNuvem();
+  if(sess)await carregarConfigEmpresaNuvem();
   const s=sup();
   document.querySelectorAll('.tab').forEach(b=>{
     const t=b.dataset.t,so=['painel','agenda'].includes(t);
     b.classList.toggle('hidden',s?!(so||t==='config'):so);
   });
+  $('cfg-carimbos-sup').classList.toggle('hidden',!s);
   $('cfg-viat-sup').classList.toggle('hidden',!s);
   $('cfg-op').classList.toggle('hidden',s);
   $('ag-f').classList.toggle('hidden',s||!cloudOn||!sess);
   $('conta').classList.toggle('hidden',!cloudOn||!perfil);
-  if(perfil)$('conta-info').textContent=[perfil.nome,perfil.coren,s?'Supervisor':'Funcionário'].filter(Boolean).join(' • ');
+  if(perfil){
+    $('conta-info').textContent=[perfil.nome,perfil.coren,s?'Supervisor':'Funcionário'].filter(Boolean).join(' • ');
+    const cbAtual=obterCarimboProfissionalAtual();
+    if($('conta-carimbo-preview'))$('conta-carimbo-preview').innerHTML=cbAtual?renderCarimboRetangularHtml(cbAtual):'';
+  }
   switchTab(s?'painel':'checklist');
   if(!s&&sess){backfill();sync()}
   prepararNotificacoesLocais();
@@ -2036,7 +2211,7 @@ async function renderPainel(){
       const insTxt=m.insumos&&m.insumos.length?`<br>🧪 Insumos: ${esc(m.insumos.map(i=>`${i.nome} (${i.qtd})`).join(', '))}`:'';
       return`<div class="rec"><strong>${esc(m.nome)}</strong> <span class="badge b-warn" style="background:#e0f2fe;color:#0369a1">${esc(formatarConvenioExibicao(m.convenio))}</span>${m.guia?`<span class="badge" style="background:#f1f5f9;color:#334155">Guia ${esc(m.guia)}</span>`:''}<p class="muted" style="margin:6px 0 0">📍 ${esc(m.origem)} ➔ ${esc(m.destino)}<br>🚑 ${esc(m.viatura||'—')} • 🚗 ${esc(m.totalKm)} km • 🕒 ${esc(m.data)}${hrs?' • '+esc(hrs):''}${insTxt}<br>💬 ${esc(m.relato||'Sem relato.')}</p><div class="acts"><button class="sm teal" type="button" onclick="abrirEvolucaoModelo('${esc(recKey)}')">🖨️ Imprimir evolução</button></div>${ed(r)}</div>`;
     }).join(''):'<p class="muted">Nenhuma remoção.</p>'}</div>
-    <div class="card"><h2>📦 Solicitações à farmácia</h2>${so.length?so.map(s=>`<div class="rec"><strong>${esc(s.viatura)}</strong> <span class="muted">${esc(s.data)}</span>${s.itens.map(i=>`<div style="font-size:.8rem">• ${esc(i.nome)} — <b>${esc(i.qtd)}</b></div>`).join('')}</div>`).join(''):'<p class="muted">Nenhuma solicitação.</p>'}</div>`;
+    <div class="card"><h2>📦 Solicitações à farmácia</h2>${so.length?so.map(s=>`<div class="rec"><strong>${esc(s.viatura)}</strong> <span class="muted">${esc(s.data)}</span>${s.itens.map(i=>`<div style="font-size:.8rem">• ${esc(i.nome)} — <b>${i.qtd}</b></div>`).join('')}</div>`).join(''):'<p class="muted">Nenhuma solicitação.</p>'}</div>`;
   }catch(e){
     $('pn').innerHTML='<div class="card"><p class="muted">Não foi possível carregar. Verifique a internet.</p></div>';
   }
@@ -2161,13 +2336,45 @@ function agCancelarEd(){
   $('ag-btn').textContent='Agendar';$('ag-ced').classList.add('hidden');
 }
 
-/* Ajustes */
-function persist(syncViat=false){
+/* Ajustes e Carimbos (Supervisão) */
+function persist(syncViat=false,syncCarimbo=false){
   sv('fs_cfg',cfg);
   dirty=true;
   fillViaturas();
   atualizarSugestoesInsumos();
   if(syncViat&&sup())salvarViaturasNuvem();
+  if(syncCarimbo&&sup())salvarCarimbosNuvem();
+}
+
+function renderCarimbosAjustes(){
+  if(!sup())return;
+  if($('cb-estilo'))$('cb-estilo').value=cfg.carimbos.estilo||'simples';
+  if($('cb-alinhamento'))$('cb-alinhamento').value=cfg.carimbos.alinhamento||'centro';
+  const lista=cfg.carimbos.lista||[];
+  const box=$('cb-lista');
+  if(!box)return;
+  if(!lista.length){
+    box.innerHTML='<p class="muted" style="font-size:.8rem">Nenhum carimbo cadastrado ainda. Adicione abaixo.</p>';
+    return;
+  }
+  box.innerHTML=lista.map((c,i)=>`<div class="carimbo-card">
+    <div style="display:flex;justify-content:center;margin-bottom:8px">${renderCarimboRetangularHtml(c)}</div>
+    <div class="fg" style="margin-bottom:6px"><input value="${esc(c.nome)}" aria-label="Nome no carimbo" onchange="cfg.carimbos.lista[${i}].nome=this.value.trim();persist(false,true);renderCarimbosAjustes()"></div>
+    <div class="g2">
+      <input value="${esc(c.categoria)}" aria-label="Categoria no carimbo" onchange="cfg.carimbos.lista[${i}].categoria=this.value.trim();persist(false,true);renderCarimbosAjustes()">
+      <input value="${esc(c.registro)}" aria-label="Registro no carimbo" onchange="cfg.carimbos.lista[${i}].registro=this.value.trim();persist(false,true);renderCarimbosAjustes()">
+    </div>
+    <div class="acts"><button class="sm badx" type="button" onclick="delCarimbo(${i})">Remover carimbo</button></div>
+  </div>`).join('');
+}
+
+function delCarimbo(i){
+  if(!sup()){toast('Apenas a supervisão pode remover carimbos.');return}
+  if(confirm('Remover este carimbo cadastrado?')){
+    cfg.carimbos.lista.splice(i,1);
+    persist(false,true);
+    renderCarimbosAjustes();
+  }
 }
 
 function renderAjustes(open){
@@ -2176,11 +2383,12 @@ function renderAjustes(open){
     $('viat-readonly-list').textContent='Viaturas ativas: '+cfg.viaturas.join(', ');
   }
   if(sup()){
-    $('aj-viat').innerHTML=cfg.viaturas.map((v,i)=>`<div class="row"><input value="${esc(v)}" aria-label="Nome da viatura" onchange="cfg.viaturas[${i}]=this.value.trim()||cfg.viaturas[${i}];persist(true);renderAjustes()"><button class="sm badx" onclick="delViat(${i})">Remover</button></div>`).join('');
+    renderCarimbosAjustes();
+    $('aj-viat').innerHTML=cfg.viaturas.map((v,i)=>`<div class="row"><input value="${esc(v)}" aria-label="Nome da viatura" onchange="cfg.viaturas[${i}]=this.value.trim()||cfg.viaturas[${i}];persist(true,false);renderAjustes()"><button class="sm badx" onclick="delViat(${i})">Remover</button></div>`).join('');
   }
   $('aj-kits').innerHTML=cfg.kits.map((k,ki)=>`<details class="kit"${open===ki?' open':''}><summary>${esc(k.nome)} (${k.itens.length})</summary><div class="body">
-  <div class="row"><input value="${esc(k.nome)}" aria-label="Nome do kit" onchange="cfg.kits[${ki}].nome=this.value.trim()||cfg.kits[${ki}].nome;persist(false)"><button class="sm badx" onclick="delKit(${ki})">Excluir kit</button></div>
-  ${k.itens.map((it,ii)=>`<div class="row"><input value="${esc(it.nome)}" aria-label="Nome do item" onchange="cfg.kits[${ki}].itens[${ii}].nome=this.value.trim()||cfg.kits[${ki}].itens[${ii}].nome;persist(false)"><input class="q" type="number" min="0" inputmode="numeric" value="${it.cota}" aria-label="Cota" onchange="cfg.kits[${ki}].itens[${ii}].cota=Math.max(0,parseInt(this.value)||0);persist(false)"><button class="sm badx" aria-label="Remover item" onclick="delItem(${ki},${ii})">✕</button></div>`).join('')}
+  <div class="row"><input value="${esc(k.nome)}" aria-label="Nome do kit" onchange="cfg.kits[${ki}].nome=this.value.trim()||cfg.kits[${ki}].nome;persist(false,false)"><button class="sm badx" onclick="delKit(${ki})">Excluir kit</button></div>
+  ${k.itens.map((it,ii)=>`<div class="row"><input value="${esc(it.nome)}" aria-label="Nome do item" onchange="cfg.kits[${ki}].itens[${ii}].nome=this.value.trim()||cfg.kits[${ki}].itens[${ii}].nome;persist(false,false)"><input class="q" type="number" min="0" inputmode="numeric" value="${it.cota}" aria-label="Cota" onchange="cfg.kits[${ki}].itens[${ii}].cota=Math.max(0,parseInt(this.value)||0);persist(false,false)"><button class="sm badx" aria-label="Remover item" onclick="delItem(${ki},${ii})">✕</button></div>`).join('')}
   <button class="sm" onclick="addItem(${ki})">+ Item</button></div></details>`).join('');
 }
 
@@ -2189,27 +2397,54 @@ function delViat(i){
   if(cfg.viaturas.length<2){toast('Mantenha ao menos uma viatura.');return}
   if(confirm('Remover esta viatura? O histórico dela é mantido.')){
     cfg.viaturas.splice(i,1);
-    persist(true);
+    persist(true,false);
     renderAjustes();
   }
 }
 
-function addItem(ki){const n=prompt('Nome do item:');if(!n||!n.trim())return;const c=parseInt(prompt('Cota (quantidade mínima):','1'));cfg.kits[ki].itens.push({nome:n.trim(),cota:isNaN(c)?1:Math.max(0,c)});persist(false);renderAjustes(ki)}
-function delItem(ki,ii){cfg.kits[ki].itens.splice(ii,1);persist(false);renderAjustes(ki)}
-function delKit(ki){if(confirm('Excluir o kit inteiro?')){cfg.kits.splice(ki,1);persist(false);renderAjustes()}}
+function addItem(ki){const n=prompt('Nome do item:');if(!n||!n.trim())return;const c=parseInt(prompt('Cota (quantidade mínima):','1'));cfg.kits[ki].itens.push({nome:n.trim(),cota:isNaN(c)?1:Math.max(0,c)});persist(false,false);renderAjustes(ki)}
+function delItem(ki,ii){cfg.kits[ki].itens.splice(ii,1);persist(false,false);renderAjustes(ki)}
+function delKit(ki){if(confirm('Excluir o kit inteiro?')){cfg.kits.splice(ki,1);persist(false,false);renderAjustes()}}
+
+$('cb-estilo').onchange=e=>{
+  if(!sup())return;
+  cfg.carimbos.estilo=e.target.value;
+  persist(false,true);
+  renderCarimbosAjustes();
+};
+$('cb-alinhamento').onchange=e=>{
+  if(!sup())return;
+  cfg.carimbos.alinhamento=e.target.value;
+  persist(false,true);
+  renderCarimbosAjustes();
+};
+$('add-carimbo').onclick=()=>{
+  if(!sup()){toast('Apenas a supervisão pode adicionar carimbos.');return}
+  const nome=$('cb-novo-nome').value.trim();
+  const categoria=$('cb-novo-cat').value.trim();
+  const registro=$('cb-novo-reg').value.trim();
+  if(!nome||!registro){toast('Informe pelo menos o nome completo e o registro (COREN).');return}
+  cfg.carimbos.lista.push({id:Date.now(),nome,categoria:categoria||'Enfermagem',registro});
+  $('cb-novo-nome').value='';
+  $('cb-novo-cat').value='';
+  $('cb-novo-reg').value='';
+  persist(false,true);
+  renderCarimbosAjustes();
+  toast('Carimbo cadastrado e sincronizado.');
+};
 
 $('add-viat').onclick=()=>{
   if(!sup()){toast('Apenas a supervisão pode adicionar viaturas.');return}
   const n=prompt('Identificação da viatura (ex.: UTI-16):');
   if(n&&n.trim()&&!cfg.viaturas.includes(n.trim())){
     cfg.viaturas.push(n.trim());
-    persist(true);
+    persist(true,false);
     renderAjustes();
     toast('Viatura '+n.trim()+' adicionada.');
   }
 };
-$('add-kit').onclick=()=>{const n=prompt('Nome do novo kit:');if(n&&n.trim()){cfg.kits.push({nome:n.trim(),itens:[]});persist(false);renderAjustes(cfg.kits.length-1)}};
-$('reset-cfg').onclick=()=>{if(confirm('Restaurar kits e cotas para o padrão? O histórico é mantido.')){const vAtual=cfg.viaturas;cfg=defCfg();if(!sup())cfg.viaturas=vAtual;persist(false);renderAjustes();toast('Padrão restaurado.')}};
+$('add-kit').onclick=()=>{const n=prompt('Nome do novo kit:');if(n&&n.trim()){cfg.kits.push({nome:n.trim(),itens:[]});persist(false,false);renderAjustes(cfg.kits.length-1)}};
+$('reset-cfg').onclick=()=>{if(confirm('Restaurar kits e cotas para o padrão? O histórico é mantido.')){const vAtual=cfg.viaturas;const cAtual=cfg.carimbos;cfg=defCfg();cfg.carimbos=cAtual;if(!sup())cfg.viaturas=vAtual;persist(false,false);renderAjustes();toast('Padrão restaurado.')}};
 
 /* Eventos */
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>switchTab(b.dataset.t));
