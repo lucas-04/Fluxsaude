@@ -210,7 +210,7 @@ details.kit[open]>summary{border-radius:8px 8px 0 0}details.kit>div.body{padding
 <div class="card hidden" id="cfg-viat-sup"><h2>🚐 Viaturas da empresa (Supervisão)</h2><p class="muted">Apenas a supervisão pode cadastrar, renomear ou remover viaturas. A equipe seleciona a viatura do plantão.</p><div id="aj-viat"></div><button class="sm teal" id="add-viat">+ Viatura</button></div>
 <div id="cfg-op"><div class="card"><h2>🚐 Viaturas disponíveis</h2><p class="muted" id="viat-readonly-list"></p></div>
 <div class="card"><h2>🎒 Kits, itens e cotas</h2><div id="aj-kits"></div><div class="acts"><button class="sm teal" id="add-kit">+ Kit</button><button class="sm sec" id="reset-cfg">Restaurar padrão</button></div></div></div>
-<footer style="text-align:center;margin-top:14px;padding-bottom:8px;font-size:.75rem;color:var(--muted)">v.1.1.9</footer>
+<footer style="text-align:center;margin-top:14px;padding-bottom:8px;font-size:.75rem;color:var(--muted)">v.1.2.0</footer>
 </section>
 </div>
 
@@ -251,7 +251,7 @@ const KITS0=[
 
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ld=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}};
-let tt;const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),3400)};
+let tt;const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),3800)};
 const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){toast('Erro ao salvar: armazenamento indisponível ou cheio.');return false}};
 const defCarimbosCfg=()=>({estilo:'simples',alinhamento:'centro',lista:[]});
 const defCfg=()=>({viaturas:['UTI-15'],kits:KITS0.map(([n,i])=>({nome:n,itens:i.map(([a,b])=>({nome:a,cota:b}))})),carimbos:defCarimbosCfg()});
@@ -283,6 +283,15 @@ function registrarEventoPlantaoNuvem(acao,viatura,inicioFmt=''){
   const q=ld('fs_out',[]);q.push({tipo:'plantao_evento',local_id:ev.id,dados:ev});sv('fs_out',q);renderPlantaoBar();sync(true);
 }
 
+function limparFilaPresa(){
+  const q=ld('fs_out',[]);
+  if(!q.length){toast('A fila de envio já está vazia.');return}
+  if(!confirm(`Remover ${q.length} item(ns) travado(s) da fila de sincronização deste aparelho?`))return;
+  localStorage.removeItem('fs_out');
+  renderPlantaoBar();
+  toast('Fila de envio limpa.');
+}
+
 async function atualizarTudoFuncionario(){
   toast('Sincronizando com a nuvem...');
   await sync(true);
@@ -306,12 +315,13 @@ function renderPlantaoBar(){
   box.classList.remove('hidden');
   const pend=ld('fs_out',[]).length;
   const btnSync=`<button class="sm teal" type="button" onclick="atualizarTudoFuncionario()">🔄 Atualizar${pend?` (${pend})`:''}</button>`;
+  const btnLimparFila=pend?`<button class="sm badx" type="button" onclick="limparFilaPresa()" title="Limpar itens travados na fila">🧹 Limpar fila</button>`:'';
   if(plantaoAtivo&&plantaoAtivo.viatura){
     box.classList.remove('off');
-    box.innerHTML=`<div class="plantao-top"><div class="plantao-info">🟢 <b>Plantão ativo:</b> <span class="badge b-ok" style="margin:0 4px">${esc(plantaoAtivo.viatura)}</span><span class="muted" style="font-size:.76rem">Início: ${esc(plantaoAtivo.inicio)}</span></div><div class="plantao-acts">${btnSync}<button class="sm sec" type="button" onclick="abrirTrocaViaturaPlantao()">🔄 Trocar</button><button class="sm badx" type="button" onclick="finalizarPlantao()">Encerrar</button></div></div><div id="plantao-troca-area" class="hidden" style="margin-top:8px;padding-top:8px;border-top:1px dashed #cbd5e1"><div class="plantao-start-row" style="margin-top:0"><select id="sel-troca-viat" aria-label="Nova viatura do plantão">${cfg.viaturas.map(v=>`<option value="${esc(v)}"${v===plantaoAtivo.viatura?' selected':''}>${esc(v)}</option>`).join('')}</select><button class="sm teal" type="button" onclick="confirmarTrocaViaturaPlantao()">Confirmar</button><button class="sm sec" type="button" onclick="$('plantao-troca-area').classList.add('hidden')">Cancelar</button></div></div>`;
+    box.innerHTML=`<div class="plantao-top"><div class="plantao-info">🟢 <b>Plantão ativo:</b> <span class="badge b-ok" style="margin:0 4px">${esc(plantaoAtivo.viatura)}</span><span class="muted" style="font-size:.76rem">Início: ${esc(plantaoAtivo.inicio)}</span></div><div class="plantao-acts">${btnSync}${btnLimparFila}<button class="sm sec" type="button" onclick="abrirTrocaViaturaPlantao()">🔄 Trocar</button><button class="sm badx" type="button" onclick="finalizarPlantao()">Encerrar</button></div></div><div id="plantao-troca-area" class="hidden" style="margin-top:8px;padding-top:8px;border-top:1px dashed #cbd5e1"><div class="plantao-start-row" style="margin-top:0"><select id="sel-troca-viat" aria-label="Nova viatura do plantão">${cfg.viaturas.map(v=>`<option value="${esc(v)}"${v===plantaoAtivo.viatura?' selected':''}>${esc(v)}</option>`).join('')}</select><button class="sm teal" type="button" onclick="confirmarTrocaViaturaPlantao()">Confirmar</button><button class="sm sec" type="button" onclick="$('plantao-troca-area').classList.add('hidden')">Cancelar</button></div></div>`;
   }else{
     box.classList.add('off');const padrao=getViaturaPadraoEfetiva()||getViaturaAtual();
-    box.innerHTML=`<div class="plantao-top"><div class="plantao-info">🟡 <b>Nenhum plantão iniciado</b>${getViaturaPadraoEfetiva()?` • Padrão: <b>${esc(getViaturaPadraoEfetiva())}</b>`:' • Selecione a viatura do turno'}</div><div class="plantao-acts">${btnSync}</div></div><div class="plantao-start-row"><select id="sel-inicio-plantao" aria-label="Viatura para iniciar plantão">${cfg.viaturas.map(v=>`<option value="${esc(v)}"${v===padrao?' selected':''}>${esc(v)}</option>`).join('')}</select><button class="sm teal" type="button" onclick="iniciarPlantao()">Iniciar plantão</button></div>`;
+    box.innerHTML=`<div class="plantao-top"><div class="plantao-info">🟡 <b>Nenhum plantão iniciado</b>${getViaturaPadraoEfetiva()?` • Padrão: <b>${esc(getViaturaPadraoEfetiva())}</b>`:' • Selecione a viatura do turno'}</div><div class="plantao-acts">${btnSync}${btnLimparFila}</div></div><div class="plantao-start-row"><select id="sel-inicio-plantao" aria-label="Viatura para iniciar plantão">${cfg.viaturas.map(v=>`<option value="${esc(v)}"${v===padrao?' selected':''}>${esc(v)}</option>`).join('')}</select><button class="sm teal" type="button" onclick="iniciarPlantao()">Iniciar plantão</button></div>`;
   }
 }
 
@@ -623,7 +633,7 @@ async function compartilhar(id){const m=ld(K_REM,[]).find(x=>x.id===id);if(!m)re
 
 async function exportar(){
   if(cloudOn&&perfil&&!sup()){toast('Exportação restrita à supervisão (LGPD).');return}
-  const d={versao:'1.1.9',cfg,checklists:ld(K_CHK,[]),remocoes:ld(K_REM,[]),solicitacoes:ld(K_SOL,[])},nome='fluxsaude-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  const d={versao:'1.2.0',cfg,checklists:ld(K_CHK,[]),remocoes:ld(K_REM,[]),solicitacoes:ld(K_SOL,[])},nome='fluxsaude-backup-'+new Date().toISOString().slice(0,10)+'.json';
   if(nat()){try{const r=await Capacitor.Plugins.Filesystem.writeFile({path:nome,data:JSON.stringify(d),directory:'CACHE',encoding:'utf8'});await Capacitor.Plugins.Share.share({title:'Backup FluxSaúde',url:r.uri})}catch(e){toast('Não foi possível exportar o backup.')}return}
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d)],{type:'application/json'}));a.download=nome;document.body.appendChild(a);a.click();a.remove();toast('Backup gerado.');
 }
@@ -667,6 +677,7 @@ async function solEnviar(copiar){
   S.unshift(novo);if(!sv(K_SOL,S))return;
   const ultimoChk=ld(K_CHK,[]).find(x=>x.viatura===solV);
   marcarItensSolicitadosViatura(solV,novo.itens,ultimoChk?.id||0);
+  const hv=$('hist-viatura');if(hv){hv.value=solV;hv.dataset.userPicked='1'}
   enviar('solicitacao',novo);const t=formatarTextoSol(novo);
   try{if(!copiar&&nat())await Capacitor.Plugins.Share.share({text:t});else if(!copiar&&navigator.share)await navigator.share({text:t});else{await navigator.clipboard.writeText(t);toast('Texto copiado e aviso da viatura atualizado.')}}catch(e){toast('Solicitação salva e aviso da viatura atualizado.')}
   $('sol').classList.add('hidden');atualizarDot();renderAvisos();
@@ -793,7 +804,7 @@ async function salvarConfigTipoNuvem(tipo,localId,dados){
   try{const ex=await api('/rest/v1/registros?select=id&empresa_id=eq.'+encodeURIComponent(perfil.empresa_id)+'&tipo=eq.'+tipo+'&limit=1');if(Array.isArray(ex)&&ex[0])await api('/rest/v1/registros?id=eq.'+ex[0].id,{method:'PATCH',h:{Prefer:'return=minimal'},body:{dados}});else await api('/rest/v1/registros',{method:'POST',h:{Prefer:'return=minimal'},body:{empresa_id:perfil.empresa_id,tipo,local_id:localId,dados}})}catch(_){toast('Configuração salva localmente, mas sem conexão para sincronizar.')}
 }
 async function carregarConfigEmpresaNuvem(){
-  if(!cloudOn||!sess||!perfil)return;
+  if(!cloudOn||!sess||!perfil||!perfil.empresa_id)return;
   try{
     const resV=await api('/rest/v1/registros?select=dados&empresa_id=eq.'+encodeURIComponent(perfil.empresa_id)+'&tipo=eq.config_viaturas&limit=1');if(Array.isArray(resV)&&resV[0]?.dados?.viaturas?.length){cfg.viaturas=resV[0].dados.viaturas;if(!cfg.viaturas.includes(viatAtiva))viatAtiva=getViaturaAtual()}
     const resC=await api('/rest/v1/registros?select=dados&empresa_id=eq.'+encodeURIComponent(perfil.empresa_id)+'&tipo=eq.config_carimbos&limit=1');if(Array.isArray(resC)&&resC[0]?.dados){cfg.carimbos={estilo:resC[0].dados.estilo||'simples',alinhamento:resC[0].dados.alinhamento||'centro',lista:Array.isArray(resC[0].dados.lista)?resC[0].dados.lista:[]}}
@@ -819,29 +830,57 @@ async function sincronizarNotificacoesAgenda(lista){
   }catch(_){}
 }
 
-function setSessFromAuth(session){if(!session){sess=null;localStorage.removeItem('fs_sess');return}sess={access:session.access_token,refresh:session.refresh_token,exp:(session.expires_at?session.expires_at*1000:Date.now()+(session.expires_in||3600)*1000),uid:session.user.id};sv('fs_sess',sess)}
-async function refreshTk(){if(!sb)throw new Error('sem supabase');const{data,error}=await sb.auth.refreshSession();if(error||!data.session)throw new Error('sessao');setSessFromAuth(data.session)}
+function setSessFromAuth(session){
+  if(!session||!session.user||!session.user.id){sess=null;localStorage.removeItem('fs_sess');return}
+  sess={access:session.access_token,refresh:session.refresh_token,exp:(session.expires_at?session.expires_at*1000:Date.now()+(session.expires_in||3600)*1000),uid:session.user.id};
+  sv('fs_sess',sess);
+}
+async function refreshTk(){if(!sb)throw new Error('sem supabase');const{data,error}=await sb.auth.refreshSession();if(error||!data?.session)throw new Error('sessao');setSessFromAuth(data.session)}
 async function api(path,o={}){
   if(!cloudOn||!sess)throw new Error('sem login');if(Date.now()>sess.exp-60000)await refreshTk();
   const r=await fetch(SB_URL+path,{method:o.method||'GET',headers:{apikey:SB_KEY,Authorization:'Bearer '+sess.access,'Content-Type':'application/json',...(o.h||{})},body:o.body?JSON.stringify(o.body):undefined});
-  if(!r.ok)throw new Error('http '+r.status);const t=await r.text();return t?JSON.parse(t):null;
+  const t=await r.text();
+  if(!r.ok){
+    let detalhe='';
+    try{const j=JSON.parse(t);detalhe=j.message||j.details||j.hint||''}catch(_){}
+    throw new Error('http '+r.status+(detalhe?' ('+detalhe+')':''));
+  }
+  return t?JSON.parse(t):null;
 }
 async function carregarPerfil(user){
+  if(!user||!user.id)throw new Error('Sessão sem usuário válido. Faça login novamente.');
   const{data:p,error}=await sb.from('perfis').select('*').eq('id',user.id).maybeSingle();
-  if(error)throw new Error('Falha ao consultar a tabela perfis: '+error.message);if(!p)throw new Error('Este e-mail está autenticado, mas ainda não possui cadastro na tabela perfis.');
+  if(error)throw new Error('Falha ao consultar a tabela perfis: '+error.message);
+  if(!p)throw new Error('Este e-mail está autenticado, mas ainda não possui cadastro na tabela perfis.');
   perfil=p;sv('fs_perfil',perfil);if(p.viatura_padrao&&cfg.viaturas.includes(p.viatura_padrao)){viaturaPadraoPerfil=p.viatura_padrao;sv(K_VIAT_PADRAO,viaturaPadraoPerfil)}return p;
 }
 async function entrar(){
   const email=$('lg-email').value.trim(),password=$('lg-pw').value,m=$('lg-msg');if(!email||!password){m.textContent='Informe e-mail e senha.';return}if(!cloudOn){m.textContent='Nuvem não configurada.';return}
   m.textContent='Entrando...';$('lg-btn').disabled=true;
-  try{const{data,error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;if(!data.session)throw new Error('O Supabase não retornou uma sessão.');setSessFromAuth(data.session);await carregarPerfil(data.user);$('lg-pw').value='';m.textContent='';await iniciar()}
+  try{const{data,error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;if(!data?.session)throw new Error('O Supabase não retornou uma sessão.');setSessFromAuth(data.session);await carregarPerfil(data.user);$('lg-pw').value='';m.textContent='';await iniciar()}
   catch(e){m.textContent=(e.message&&/Invalid login credentials/i.test(e.message))?'E-mail ou senha incorretos.':(e.message||'Não foi possível entrar. Confira o e-mail, a senha e a conexão.');sess=null;perfil=null;localStorage.removeItem('fs_sess');localStorage.removeItem('fs_perfil');try{await sb.auth.signOut()}catch(_){}}
   finally{$('lg-btn').disabled=false}
 }
 const mostrarRecuperacao=tela=>['login-card','recover-card','newpass-card'].forEach(id=>$(id).classList.toggle('hidden',id!==tela));
 async function recuperarSenha(){const email=$('rc-email').value.trim(),m=$('rc-msg');if(!email){m.textContent='Informe seu e-mail.';return}m.textContent='Enviando...';$('rc-send').disabled=true;try{const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});if(error)throw error;m.textContent='Se o endereço estiver cadastrado, você receberá um e-mail com o link para redefinir a senha.'}catch(e){m.textContent='Não foi possível enviar o link: '+(e.message||'verifique a configuração de e-mail.')}finally{$('rc-send').disabled=false}}
 async function salvarNovaSenha(){const a=$('np-pw').value,b=$('np-pw2').value,m=$('np-msg');if(a.length<6){m.textContent='A senha precisa ter pelo menos 6 caracteres.';return}if(a!==b){m.textContent='As senhas não coincidem.';return}m.textContent='Salvando...';try{const{error}=await sb.auth.updateUser({password:a});if(error)throw error;m.textContent='Senha atualizada. Entre novamente com a nova senha.';await sb.auth.signOut();sess=null;perfil=null;['fs_sess','fs_perfil'].forEach(k=>localStorage.removeItem(k));mostrarRecuperacao('login-card');$('lg-msg').textContent='Senha alterada com sucesso. Faça login.';history.replaceState(null,'',window.location.pathname+window.location.search)}catch(e){m.textContent='Não foi possível atualizar a senha: '+(e.message||'tente novamente.')}}
-async function restaurarSessao(){if(!cloudOn){await iniciar();return}try{const{data,error}=await sb.auth.getSession();if(error)throw error;if(data.session){setSessFromAuth(data.session);await carregarPerfil(data.user);await iniciar()}else{sess=null;perfil=null;localStorage.removeItem('fs_sess');localStorage.removeItem('fs_perfil');$('login').classList.remove('hidden');if(location.hash.includes('type=recovery'))mostrarRecuperacao('newpass-card')}}catch(e){sess=null;perfil=null;localStorage.removeItem('fs_sess');localStorage.removeItem('fs_perfil');$('login').classList.remove('hidden');$('lg-msg').textContent=e.message||'Faça login para continuar.'}}
+async function restaurarSessao(){
+  if(!cloudOn){await iniciar();return}
+  try{
+    const{data,error}=await sb.auth.getSession();
+    if(error)throw error;
+    if(data&&data.session&&data.session.user&&data.session.user.id){
+      setSessFromAuth(data.session);await carregarPerfil(data.user);await iniciar();
+    }else{
+      sess=null;perfil=null;['fs_sess','fs_perfil'].forEach(k=>localStorage.removeItem(k));
+      $('login').classList.remove('hidden');if($('lg-msg'))$('lg-msg').textContent='';
+      if(location.hash.includes('type=recovery'))mostrarRecuperacao('newpass-card');
+    }
+  }catch(e){
+    sess=null;perfil=null;['fs_sess','fs_perfil'].forEach(k=>localStorage.removeItem(k));
+    $('login').classList.remove('hidden');if($('lg-msg'))$('lg-msg').textContent=(e&&e.message)||'Faça login para continuar.';
+  }
+}
 
 async function sair(){
   if(ld('fs_out',[]).length&&navigator.onLine&&sess&&perfil&&!sup()){try{await sync(true)}catch(_){}}
@@ -852,12 +891,18 @@ async function sair(){
   else if(temRascunho)msgConf='Atenção: há rascunho de checklist não salvo em aberto. Deseja sair mesmo assim?';
   if(!confirm(msgConf))return;
   const avisoSaida=filaRestante.length?`Saída concluída com ${filaRestante.length} item(ns) pendente(s) na fila.`:'Verificação concluída: tudo ok e dados sensíveis limpos deste aparelho.';
-  try{if(sb)await sb.auth.signOut()}catch(e){}[K_REM,K_CHK,K_SOL,K_PLANTAO,'fs_sess','fs_perfil'].forEach(k=>localStorage.removeItem(k));
+  try{if(sb)await sb.auth.signOut()}catch(e){}[K_REM,K_CHK,K_SOL,K_CHK_DRAFTS,K_CONSUMO_VIAT,K_SOL_ENVIADAS,K_PLANTAO,'fs_out','fs_bf','fs_sess','fs_perfil'].forEach(k=>localStorage.removeItem(k));
   toast('✅ '+avisoSaida);setTimeout(()=>location.reload(),700);
+}
+
+function limparResiduosLocalSupervisor(){
+  ['fs_out','fs_bf',K_CHK_DRAFTS,K_CHK,K_REM,K_SOL,K_CONSUMO_VIAT,K_SOL_ENVIADAS,K_PLANTAO].forEach(k=>localStorage.removeItem(k));
+  plantaoAtivo=null;
 }
 
 async function iniciar(){
   $('login').classList.add('hidden');if(sess)await carregarConfigEmpresaNuvem();const s=sup();
+  if(s)limparResiduosLocalSupervisor();
   document.querySelectorAll('.tab').forEach(b=>{const t=b.dataset.t,so=['painel','agenda'].includes(t);b.classList.toggle('hidden',s?!(so||t==='config'):so)});
   $('cfg-carimbos-sup').classList.toggle('hidden',!s);$('cfg-viat-sup').classList.toggle('hidden',!s);$('cfg-viat-padrao').classList.toggle('hidden',s);$('cfg-op').classList.toggle('hidden',s);$('ag-f').classList.toggle('hidden',s||!cloudOn||!sess);$('conta').classList.toggle('hidden',!cloudOn||!perfil);
   if(perfil){$('conta-info').textContent=[perfil.nome,perfil.coren,s?'Supervisor':'Funcionário'].filter(Boolean).join(' • ');const cbAtual=!(cfg.carimbos?.lista||[]).length?obterCarimboProfissionalAtual():null;if($('conta-carimbo-preview'))$('conta-carimbo-preview').innerHTML=cbAtual?renderCarimboRetangularHtml(cbAtual):''}
@@ -872,32 +917,38 @@ function backfill(){if(!cloudOn||ld('fs_bf',false))return;ld(K_CHK,[]).forEach(o
 let syncing=false;
 async function sync(mostrarErro=false){
   if(!cloudOn||!sess||!perfil||sup()||syncing)return;
-  if(!perfil.empresa_id){if(mostrarErro)toast('⚠️ Perfil sem empresa_id vinculado. Não é possível enviar à supervisão.');return}
+  if(!perfil.empresa_id){if(mostrarErro)toast('⚠️ Perfil sem empresa_id vinculado.');return}
   syncing=true;
+  const q=ld('fs_out',[]),restantes=[];
+  let primeiroErro='';
   try{
-    const q=ld('fs_out',[]);
-    while(q.length){
-      const it=q[0];if(!it||!it.tipo||it.local_id==null){q.shift();sv('fs_out',q);continue}
+    for(const it of q){
+      if(!it||!it.tipo||it.local_id==null)continue;
       const filtroUrl='empresa_id=eq.'+encodeURIComponent(perfil.empresa_id)+'&tipo=eq.'+encodeURIComponent(it.tipo)+'&local_id=eq.'+encodeURIComponent(String(it.local_id));
-      if(it.op==='del'){
-        await api('/rest/v1/registros?'+filtroUrl,{method:'DELETE'});
-      }else if(it.op==='upd'){
-        await api('/rest/v1/registros?'+filtroUrl,{method:'PATCH',h:{Prefer:'return=minimal'},body:{dados:it.dados}});
-      }else{
-        try{
-          await api('/rest/v1/registros?on_conflict=empresa_id,tipo,local_id',{method:'POST',h:{Prefer:'resolution=merge-duplicates,return=minimal'},body:{empresa_id:perfil.empresa_id,tipo:it.tipo,local_id:String(it.local_id),dados:it.dados}});
-        }catch(errPost){
-          if(/http (400|409)/.test(String(errPost?.message||''))){
-            await api('/rest/v1/registros?'+filtroUrl,{method:'PATCH',h:{Prefer:'return=minimal'},body:{dados:it.dados}});
-          }else{
-            throw errPost;
+      try{
+        if(it.op==='del'){
+          await api('/rest/v1/registros?'+filtroUrl,{method:'DELETE'});
+        }else if(it.op==='upd'){
+          await api('/rest/v1/registros?'+filtroUrl,{method:'PATCH',h:{Prefer:'return=minimal'},body:{dados:it.dados}});
+        }else{
+          try{
+            await api('/rest/v1/registros?on_conflict=empresa_id,tipo,local_id',{method:'POST',h:{Prefer:'resolution=merge-duplicates,return=minimal'},body:{empresa_id:perfil.empresa_id,tipo:it.tipo,local_id:String(it.local_id),dados:it.dados}});
+          }catch(errPost){
+            if(/http (400|409)/.test(String(errPost?.message||''))){
+              await api('/rest/v1/registros?'+filtroUrl,{method:'PATCH',h:{Prefer:'return=minimal'},body:{dados:it.dados}});
+            }else{
+              throw errPost;
+            }
           }
         }
+      }catch(errItem){
+        restantes.push(it);
+        if(!primeiroErro)primeiroErro=errItem?.message||'erro no envio';
       }
-      q.shift();sv('fs_out',q);
     }
-  }catch(e){if(mostrarErro)toast('⚠️ Falha no envio ('+(e?.message||'rede/permissão')+'). Verifique conexão ou RLS no Supabase.')}
-  finally{syncing=false;renderPlantaoBar()}
+    sv('fs_out',restantes);
+    if(primeiroErro&&mostrarErro){toast('⚠️ '+primeiroErro)}
+  }finally{syncing=false;renderPlantaoBar()}
 }
 
 window.addEventListener('online',async()=>{await sync(false);if(!sup())await sincronizarLeituraFuncionarioNuvem(true)});
@@ -926,7 +977,7 @@ async function renderAgenda(){
 }
 async function agSalvar(){
   const g=id=>$(id).value.trim(),q=$('ag-quando').value;if(!g('ag-nome')||!g('ag-orig')||!g('ag-dest')||!q){toast('Preencha paciente, origem, destino e data/hora.');return}
-  try{const dados={nome:g('ag-nome'),origem:g('ag-orig'),destino:g('ag-dest'),viatura:$('ag-viat').value,obs:g('ag-obs')},quando=new Date(q).toISOString();if(agEd)await api('/rest/v1/agenda?id=eq.'+agEd,{method:'PATCH',h:{Prefer:'return=minimal'},body:{quando,dados}});else await api('/rest/v1/agenda',{method:'POST',h:{Prefer:'return=minimal'},body:{empresa_id:perfil.empresa_id,quando,dados}});agCancelarEd();['ag-nome','ag-orig','ag-dest','ag-obs','ag-quando'].forEach(i=>$(i).value='');$('ag-viat').value='';toast('Remoção agendada.');renderAgenda()}catch(e){toast('Erro ao agendar. Verifique a internet.')}
+  try{const dados={nome:g('ag-nome'),origem:g('ag-orig'),destino:g('ag-dest'),viatura:$('ag-viat').value,obs:g('ag-obs')},quando=new Date(q).toISOString();if(agEd)await api('/rest/v1/agenda?id=eq.'+agEd,{method:'PATCH',h:{Prefer:'return=minimal'},body:{quando,dados}});else await api('/rest/v1/agenda',{method:'POST',h:{Prefer:'return=minimal'},body:{empresa_id:perfil?.empresa_id,quando,dados}});agCancelarEd();['ag-nome','ag-orig','ag-dest','ag-obs','ag-quando'].forEach(i=>$(i).value='');$('ag-viat').value='';toast('Remoção agendada.');renderAgenda()}catch(e){toast('Erro ao agendar. Verifique a internet.')}
 }
 async function agDel(id){if(!confirm('Cancelar esta remoção agendada?'))return;try{await api('/rest/v1/agenda?id=eq.'+id,{method:'DELETE'});renderAgenda()}catch(e){toast('Erro ao cancelar.')}}
 function agUsar(id){const a=agData.find(x=>x.id===id);if(!a)return;const d=a.dados||{},atraso=formatarAtraso(a.quando);$('r-nome').value=d.nome||'';$('r-orig').value=d.origem||'';$('r-dest').value=d.destino||'';if(d.viatura&&cfg.viaturas.includes(d.viatura))setViaturaAtual(d.viatura);agId=id;toast(atraso?`Atenção: remoção estava prevista para este horário (${atraso}).`:'Dados carregados. Preencha o hodômetro.');$('r-ini').focus()}
@@ -965,7 +1016,7 @@ const delKit=ki=>{if(confirm('Excluir o kit inteiro?')){cfg.kits.splice(ki,1);pe
 
 $('sel-viat-padrao').onchange=async e=>{
   const val=e.target.value;viaturaPadraoPerfil=val;sv(K_VIAT_PADRAO,val);if(val&&!plantaoAtivo)setViaturaAtual(val);renderPlantaoBar();
-  if(cloudOn&&sess&&perfil){try{await api('/rest/v1/perfis?id=eq.'+perfil.id,{method:'PATCH',h:{Prefer:'return=minimal'},body:{viatura_padrao:val||null}});perfil.viatura_padrao=val||null;sv('fs_perfil',perfil)}catch(_){}}
+  if(cloudOn&&sess&&perfil&&perfil.id){try{await api('/rest/v1/perfis?id=eq.'+perfil.id,{method:'PATCH',h:{Prefer:'return=minimal'},body:{viatura_padrao:val||null}});perfil.viatura_padrao=val||null;sv('fs_perfil',perfil)}catch(_){}}
   toast(val?`Viatura padrão definida para ${val}.`:'Modo rodízio ativado para seu perfil.');
 };
 $('cb-estilo').onchange=e=>{if(!sup())return;cfg.carimbos.estilo=e.target.value;persist(false,true);renderCarimbosAjustes()};
