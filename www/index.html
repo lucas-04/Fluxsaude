@@ -25,6 +25,8 @@ header{display:flex;justify-content:center;margin-bottom:16px}
 h2{font-size:1.05rem;margin:0 0 12px;color:var(--navy);border-bottom:2px solid #f1f5f9;padding-bottom:8px}
 label{display:block;font-size:.85rem;font-weight:600;color:var(--navy);margin-bottom:4px}
 .fg{margin-bottom:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 input,select,textarea{width:100%;padding:10px;border:1px solid var(--bd);border-radius:6px;font-size:.95rem;background:#fff;color:var(--text);font-family:inherit}
 input:focus,select:focus,textarea:focus,button:focus-visible,summary:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
 button{background:var(--navy);color:#fff;border:0;padding:13px 18px;font-size:.95rem;font-weight:600;border-radius:8px;cursor:pointer;width:100%}
@@ -49,6 +51,8 @@ details.kit>div.body{padding:6px 8px 10px}
 .vl-ind{font-size:.7rem;color:var(--muted);font-weight:600;text-align:center;padding:4px 2px;background:#f1f5f9;border-radius:5px}
 .row{display:flex;gap:6px;margin-bottom:6px;align-items:center}
 .row .q{width:64px;flex:none}
+.ins-add{display:grid;grid-template-columns:1fr 74px auto;gap:6px;align-items:center;margin-bottom:8px}
+.ins-chip{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:6px 10px;margin-bottom:6px;font-size:.82rem}
 .sr{display:grid;grid-template-columns:24px 1fr 64px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:.85rem}
 .sr input[type=checkbox]{width:20px;height:20px;padding:0}
 .badge{display:inline-block;padding:4px 8px;font-size:.75rem;font-weight:700;border-radius:4px;margin:2px 2px 2px 0}
@@ -102,10 +106,12 @@ details.kit>div.body{padding:6px 8px 10px}
 .evo-cell-hdr{padding:5px 8px;font-size:11.5px;color:#0f172a;min-height:34px;background:rgba(248,250,252,.75)}
 .evo-cell-hdr:first-child{border-right:1.2px solid #93c5fd}
 .evo-cell-hdr b{display:block;font-size:9px;color:#003366;text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px}
-.evo-lined{position:relative;border:1.2px solid #93c5fd;border-radius:0 0 4px 4px;min-height:650px;background:transparent}
+.evo-lined{position:relative;border:1.2px solid #93c5fd;border-radius:0 0 4px 4px;min-height:610px;background:transparent}
 .evo-lines-layer{position:absolute;inset:0;pointer-events:none;z-index:0;display:flex;flex-direction:column}
 .evo-line-row{height:26px;border-bottom:1px solid #bfdbfe;flex:0 0 26px}
 .evo-text{position:relative;z-index:1;font-size:12.5px;line-height:26px;color:#0f172a;padding:0 8px;white-space:pre-wrap;word-break:break-word}
+.evo-footer{display:grid;grid-template-columns:1.4fr 1fr;gap:12px;margin-top:12px;padding-top:10px;border-top:1px solid #cbd5e1;font-size:10.5px;color:#334155;break-inside:avoid;page-break-inside:avoid}
+.evo-sign-line{border-top:1px solid #475569;padding-top:4px;text-align:center;margin-top:26px;font-size:10.5px}
 
 @media print{
   body>*:not(#pdf-modal){display:none!important}
@@ -152,19 +158,41 @@ details.kit>div.body{padding:6px 8px 10px}
 
 <section id="v-field" class="view hidden">
 <div class="card hidden" id="ag-f"><h2>📅 Remoções agendadas</h2><div id="ag-lista-f"></div></div>
-<div class="card"><h2>1. Dados da remoção</h2>
+<div class="card"><h2>1. Dados da remoção e autorização</h2>
 <div class="fg"><label for="r-viatura">Viatura</label><select id="r-viatura"></select></div>
 <div class="fg"><label for="r-nome">Paciente</label><input id="r-nome" autocomplete="off"></div>
-<div class="fg"><label for="r-conv">Convênio / tomador (opcional)</label><input id="r-conv" placeholder="Ex.: IRH, IASSEPE, Unimed ou deixe em branco"></div>
+<div class="g2">
+  <div class="fg"><label for="r-conv">Convênio / tomador (opcional)</label><input id="r-conv" placeholder="Ex.: IRH, IASSEPE, Unimed"></div>
+  <div class="fg"><label for="r-guia">Nº da guia / autorização</label><input id="r-guia" autocomplete="off" placeholder="Opcional / auditoria"></div>
+</div>
 <div class="fg"><label for="r-trajeto">Tipo de trajeto</label><select id="r-trajeto"><option>Ida e volta</option><option>Somente ida</option></select></div>
 <div class="fg"><label for="r-orig">Origem</label><input id="r-orig"></div>
-<div class="fg"><label for="r-dest">Destino</label><input id="r-dest"></div></div>
+<div class="fg"><label for="r-dest">Destino</label><input id="r-dest"></div>
+<div class="g3">
+  <div class="fg"><label for="r-h-saida">Saída</label><input type="time" id="r-h-saida"></div>
+  <div class="fg"><label for="r-h-chegada">Chegada</label><input type="time" id="r-h-chegada"></div>
+  <div class="fg"><label for="r-h-retorno">Retorno</label><input type="time" id="r-h-retorno"></div>
+</div></div>
+
 <div class="card"><h2>2. Hodômetro</h2>
-<div class="fg"><label for="r-ini">Inicial</label><input type="number" inputmode="numeric" id="r-ini" min="0"></div>
-<div class="fg"><label for="r-fim">Final</label><input type="number" inputmode="numeric" id="r-fim" min="0"></div>
+<div class="g2">
+  <div class="fg"><label for="r-ini">Inicial</label><input type="number" inputmode="numeric" id="r-ini" min="0"></div>
+  <div class="fg"><label for="r-fim">Final</label><input type="number" inputmode="numeric" id="r-fim" min="0"></div>
+</div>
 <p>Distância: <span class="metric" id="r-km">0 km</span></p></div>
-<div class="card"><h2>3. Evolução</h2>
-<div class="fg"><label for="r-relato">Relato / intercorrências</label><textarea id="r-relato" rows="3" placeholder="Ex.: paciente estável durante o trajeto, sem intercorrências."></textarea></div>
+
+<div class="card"><h2>3. Insumos / materiais utilizados (opcional)</h2>
+<p class="muted" style="margin-top:0">Registre apenas os itens gastos no atendimento para controle e cobrança/reposição.</p>
+<div class="ins-add">
+  <input id="r-ins-nome" list="dl-insumos" placeholder="Ex.: Jelco Nº 20, Soro Fisiológico..." autocomplete="off">
+  <input id="r-ins-qtd" type="number" inputmode="numeric" min="1" value="1" aria-label="Quantidade do insumo">
+  <button class="sm teal" type="button" id="btn-add-ins">+ Adicionar</button>
+</div>
+<datalist id="dl-insumos"></datalist>
+<div id="r-ins-lista"></div></div>
+
+<div class="card"><h2>4. Evolução clínica / registro de enfermagem</h2>
+<div class="fg"><label for="r-relato">Relato / intercorrências (obrigatório para evitar glosa)</label><textarea id="r-relato" rows="3" placeholder="Descreva estado do paciente, monitorização, condutas e intercorrências..."></textarea></div>
 <button id="btn-rem">Finalizar remoção</button>
 <button class="sec hidden" id="btn-ced" style="margin-top:8px" onclick="cancelarEdicao(true)">Cancelar edição</button></div>
 </section>
@@ -175,7 +203,7 @@ details.kit>div.body{padding:6px 8px 10px}
 <div class="card"><h2>🎒 Checklists realizados</h2><div id="h-chk"></div></div>
 <div class="card"><h2>🚑 Remoções concluídas</h2><div id="h-rem"></div></div>
 <div class="card"><h2>📦 Solicitações à farmácia</h2><div id="h-sol"></div></div>
-<div class="card"><h2>💾 Backup</h2><p class="muted">Exporte ou restaure uma cópia de segurança dos dados deste aparelho.</p>
+<div class="card" id="sec-backup"><h2>💾 Backup (LGPD)</h2><p class="muted" id="backup-nota">Exporte ou restaure uma cópia de segurança dos dados deste aparelho.</p>
 <div class="acts"><button class="sm teal" id="b-exp">Exportar backup</button><button class="sm sec" id="b-imp">Importar backup</button></div>
 <input type="file" id="b-file" accept="application/json" class="hidden"></div>
 </section>
@@ -195,13 +223,13 @@ details.kit>div.body{padding:6px 8px 10px}
 </section>
 
 <section id="v-config" class="view hidden">
-<div class="card hidden" id="conta"><h2>👤 Conta</h2><p id="conta-info" class="muted"></p><button class="sm sec" onclick="sair()">Sair</button></div>
+<div class="card hidden" id="conta"><h2>👤 Conta e sigilo (LGPD)</h2><p id="conta-info" class="muted"></p><p class="muted" style="font-size:.78rem">Dados sensíveis de saúde ficam protegidos por sigilo profissional e são removidos deste aparelho ao sair.</p><button class="sm sec" onclick="sair()">Sair e verificar pendências</button></div>
 <div class="card hidden" id="cfg-viat-sup"><h2>🚐 Viaturas da empresa (Supervisão)</h2><p class="muted">Apenas a supervisão pode cadastrar, renomear ou remover viaturas. A equipe seleciona a viatura do plantão.</p><div id="aj-viat"></div><button class="sm teal" id="add-viat">+ Viatura</button></div>
 <div id="cfg-op">
 <div class="card"><h2>🚐 Viaturas disponíveis</h2><p class="muted" id="viat-readonly-list"></p></div>
 <div class="card"><h2>🎒 Kits, itens e cotas</h2><div id="aj-kits"></div>
 <div class="acts"><button class="sm teal" id="add-kit">+ Kit</button><button class="sm sec" id="reset-cfg">Restaurar padrão</button></div></div></div>
-<footer style="text-align:center;margin-top:14px;padding-bottom:8px;font-size:.75rem;color:var(--muted)">v.1.1.5</footer>
+<footer style="text-align:center;margin-top:14px;padding-bottom:8px;font-size:.75rem;color:var(--muted)">v.1.1.6</footer>
 </section>
 </div>
 
@@ -612,7 +640,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ld=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}};
 let tt;
-const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2600)};
+const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),3000)};
 const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){toast('Erro ao salvar: armazenamento indisponível ou cheio.');return false}};
 const defCfg=()=>({viaturas:['UTI-15'],kits:KITS0.map(([n,i])=>({nome:n,itens:i.map(([a,b])=>({nome:a,cota:b}))}))});
 
@@ -623,6 +651,7 @@ const K_CHK='checklists_fluxsaude',K_REM='missoes_fluxsaude',K_SOL='solicitacoes
 const K_CHK_DRAFTS='fs_chk_drafts_by_viat';
 let viatAtiva=ld('fs_viat_ativa',cfg.viaturas[0]||'UTI-15');
 let dirty=true;
+let insumosRemocao=[];
 const br=d=>d.split('-').reverse().join('/');
 const agora=()=>new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
 
@@ -639,6 +668,46 @@ function setViaturaAtual(v){
     const el=$(id);
     if(el&&[...el.options].some(o=>o.value===v))el.value=v;
   });
+}
+
+function atualizarSugestoesInsumos(){
+  const dl=$('dl-insumos');
+  if(!dl)return;
+  const nomes=new Set();
+  cfg.kits.forEach(k=>k.itens.forEach(it=>{if(it&&it.nome)nomes.add(it.nome)}));
+  dl.innerHTML=[...nomes].map(n=>`<option value="${esc(n)}"></option>`).join('');
+}
+
+function renderInsumosRemocao(){
+  const box=$('r-ins-lista');
+  if(!box)return;
+  if(!insumosRemocao.length){
+    box.innerHTML='<p class="muted" style="margin:4px 0 0;font-size:.78rem">Nenhum insumo adicionado nesta remoção.</p>';
+    return;
+  }
+  box.innerHTML=insumosRemocao.map((item,idx)=>`<div class="ins-chip">
+    <span><b>${esc(item.nome)}</b> <span class="muted">(${item.qtd} un)</span></span>
+    <button class="sm badx" type="button" onclick="removerInsumoRemocao(${idx})" aria-label="Remover insumo">✕</button>
+  </div>`).join('');
+}
+
+function adicionarInsumoRemocao(){
+  const nomeEl=$('r-ins-nome');
+  const qtdEl=$('r-ins-qtd');
+  const nome=(nomeEl?.value||'').trim();
+  const qtd=Math.max(1,parseInt(qtdEl?.value,10)||1);
+  if(!nome){toast('Informe ou selecione o insumo/material.');nomeEl?.focus();return}
+  const ex=insumosRemocao.find(x=>x.nome.toLowerCase()===nome.toLowerCase());
+  if(ex)ex.qtd+=qtd;
+  else insumosRemocao.push({nome,qtd});
+  nomeEl.value='';
+  qtdEl.value='1';
+  renderInsumosRemocao();
+}
+
+function removerInsumoRemocao(idx){
+  insumosRemocao.splice(idx,1);
+  renderInsumosRemocao();
 }
 
 function status(i){
@@ -663,10 +732,11 @@ function switchTab(t){
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('hidden',v.id!=='v-'+t));
   if(t==='checklist')renderChecklist();
   if(t==='avisos')renderAvisos();
+  if(t==='field'){atualizarSugestoesInsumos();renderInsumosRemocao();if(cloudOn&&!sup())renderAgenda()}
   if(t==='history')renderHistorico();
   if(t==='config')renderAjustes();
   if(t==='painel')renderPainel();
-  if(t==='agenda'||(t==='field'&&cloudOn&&!sup()))renderAgenda();
+  if(t==='agenda')renderAgenda();
   window.scrollTo(0,0);
 }
 
@@ -769,6 +839,7 @@ function getBaseChecklistViatura(viatura){
 
 function renderChecklist(){
   fillViaturas();
+  atualizarSugestoesInsumos();
   const viatura=$('chk-viatura').value||getViaturaAtual();
   setViaturaAtual(viatura);
   if($('chk-obs-v'))$('chk-obs-v').textContent=viatura;
@@ -854,7 +925,7 @@ function salvarChecklist(){
     });
   });
   const L=ld(K_CHK,[]);
-  L.unshift({id:Date.now(),data:agora(),viatura,itens,obs:$('chk-obs').value.trim()});
+  L.unshift({id:Date.now(),data:agora(),viatura,itens,obs:$('chk-obs').value.trim(),responsavel:perfil?.nome||'',coren:perfil?.coren||''});
   if(!sv(K_CHK,L))return;
   enviar('checklist',L[0]);
   limparRascunhoChk(viatura);
@@ -904,53 +975,118 @@ function calcKm(){
   $('r-km').textContent=(!isNaN(a)&&!isNaN(b)&&b>=a?b-a:0)+' km';
 }
 
+async function notificarConclusaoRemocao(rec){
+  const resumoIns=rec.insumos&&rec.insumos.length
+    ?` • ${rec.insumos.length} insumo(s) registrado(s)`
+    :'';
+  const msg=`Remoção concluída — ${rec.nome} (${rec.viatura||'—'}) • ${rec.totalKm} km${resumoIns}.`;
+  toast('✅ '+msg);
+  const ln=getLocalNotifPlugin();
+  if(!ln)return;
+  try{
+    const perm=await ln.checkPermissions();
+    if(perm.display!=='granted')await ln.requestPermissions();
+    const p2=await ln.checkPermissions();
+    if(p2.display==='granted'){
+      await ln.schedule({
+        notifications:[{
+          id:notifIdFromUUID(Date.now()),
+          title:'✅ Remoção concluída — FluxSaúde',
+          body:msg,
+          schedule:{at:new Date(Date.now()+500)}
+        }]
+      });
+    }
+  }catch(_){}
+}
+
+function limparCamposRemocao(){
+  ['r-nome','r-conv','r-guia','r-orig','r-dest','r-h-saida','r-h-chegada','r-h-retorno','r-ini','r-fim','r-relato','r-ins-nome'].forEach(id=>{
+    if($(id))$(id).value='';
+  });
+  if($('r-ins-qtd'))$('r-ins-qtd').value='1';
+  insumosRemocao=[];
+  renderInsumosRemocao();
+  calcKm();
+}
+
 function salvarRemocao(){
   const g=id=>$(id).value.trim();
   const ini=parseFloat($('r-ini').value),fim=parseFloat($('r-fim').value);
+  const relato=g('r-relato');
   if(!g('r-nome')||!g('r-orig')||!g('r-dest')){toast('Preencha paciente, origem e destino.');return}
+  if(!relato||relato.length<5){toast('Preencha o relato clínico / evolução de enfermagem para evitar glosa.');$('r-relato').focus();return}
   if(isNaN(ini)||isNaN(fim)){toast('Informe o hodômetro inicial e final.');return}
   if(fim<ini){toast('O hodômetro final não pode ser menor que o inicial.');return}
+
   const M=ld(K_REM,[]);
   const rec={
     viatura:$('r-viatura').value,
     nome:g('r-nome'),
     convenio:g('r-conv'),
+    guia:g('r-guia'),
     trajeto:$('r-trajeto').value,
     origem:g('r-orig'),
     destino:g('r-dest'),
+    horaSaida:g('r-h-saida'),
+    horaChegada:g('r-h-chegada'),
+    horaRetorno:g('r-h-retorno'),
     totalKm:fim-ini,
     kmIni:ini,
     kmFim:fim,
-    relato:g('r-relato')
+    insumos:insumosRemocao.map(x=>({...x})),
+    relato,
+    profissionalNome:perfil?.nome||'',
+    profissionalCoren:perfil?.coren||'',
+    profissionalPapel:perfil?.papel||''
   };
+
   if(editId){
     const ix=M.findIndex(x=>x.id===editId);
     if(ix<0){toast('Registro não encontrado.');return}
-    M[ix]={...M[ix],...rec,editadoEm:agora()};
+    M[ix]={...M[ix],...rec,editadoEm:agora(),retificado:true};
     if(!sv(K_REM,M))return;
     enviarEdicao('remocao',M[ix]);
     cancelarEdicao(false);
-    toast('Remoção atualizada.');
+    toast('Remoção atualizada e marcada como retificada.');
     switchTab('history');
     return;
   }
-  M.unshift({id:Date.now(),data:agora(),...rec});
+
+  const salvo={id:Date.now(),data:agora(),...rec};
+  M.unshift(salvo);
   if(!sv(K_REM,M))return;
-  enviar('remocao',M[0]);
+  enviar('remocao',salvo);
   if(agId){
     api('/rest/v1/agenda?id=eq.'+agId,{method:'PATCH',body:{status:'concluida'}}).catch(()=>{});
     agId=null;
   }
-  ['r-nome','r-conv','r-orig','r-dest','r-ini','r-fim','r-relato'].forEach(id=>$(id).value='');
-  calcKm();
-  toast('Remoção finalizada.');
+  limparCamposRemocao();
+  notificarConclusaoRemocao(salvo);
   switchTab('history');
+}
+
+function formatarHorariosRemocao(m){
+  const partes=[];
+  if(m.horaSaida)partes.push('Saída '+m.horaSaida);
+  if(m.horaChegada)partes.push('Chegada '+m.horaChegada);
+  if(m.horaRetorno)partes.push('Retorno '+m.horaRetorno);
+  return partes.join(' • ');
 }
 
 function renderHistorico(){
   fillViaturas();
   const filtro=$('hist-viatura')?.value||getViaturaAtual();
   const byV=arr=>filtro==='__ALL__'?arr:arr.filter(x=>x.viatura===filtro);
+
+  const podeExportar=!cloudOn||!perfil||sup();
+  if($('sec-backup')){
+    $('b-exp').classList.toggle('hidden',!podeExportar);
+    $('b-imp').classList.toggle('hidden',!podeExportar);
+    $('backup-nota').textContent=podeExportar
+      ?'Exporte ou restaure uma cópia de segurança dos dados deste aparelho.'
+      :'Por segurança (LGPD), a exportação de backup completo fica restrita à supervisão.';
+  }
 
   renderSolHist(filtro);
   const L=byV(ld(K_CHK,[])),M=byV(ld(K_REM,[]));
@@ -963,10 +1099,15 @@ function renderHistorico(){
     <div class="acts"><button class="sm badx" onclick="apagar('${K_CHK}',${c.id})">Excluir</button></div></div>`;
   }).join(''):'<p class="muted">Nenhum checklist registrado para esta seleção.</p>';
 
-  $('h-rem').innerHTML=M.length?M.map(m=>`<div class="rec"><div style="display:flex;justify-content:space-between;gap:8px"><strong>${esc(m.nome)}</strong><span class="badge b-warn" style="background:#e0f2fe;color:#0369a1">${esc(formatarConvenioExibicao(m.convenio))}</span></div>
-  <p class="muted" style="margin:6px 0">📍 ${esc(m.origem)} ➔ ${esc(m.destino)}<br>🚑 ${esc(m.viatura||'—')} • 🚗 ${m.totalKm} km (${esc(m.trajeto)})<br>🕒 ${esc(m.data)}${m.editadoEm?'<br>✏️ editada em '+esc(m.editadoEm):''}</p>
+  $('h-rem').innerHTML=M.length?M.map(m=>{
+    const hrs=formatarHorariosRemocao(m);
+    const insTxt=m.insumos&&m.insumos.length?`<br>🧪 Insumos: ${esc(m.insumos.map(i=>`${i.nome} (${i.qtd})`).join(', '))}`:'';
+    const guiaTxt=m.guia?` • Guia: ${esc(m.guia)}`:'';
+    return`<div class="rec"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><strong>${esc(m.nome)}</strong><div><span class="badge b-warn" style="background:#e0f2fe;color:#0369a1">${esc(formatarConvenioExibicao(m.convenio))}</span>${m.retificado||m.editadoEm?'<span class="badge b-warn">Retificada</span>':''}</div></div>
+  <p class="muted" style="margin:6px 0">📍 ${esc(m.origem)} ➔ ${esc(m.destino)}<br>🚑 ${esc(m.viatura||'—')} • 🚗 ${m.totalKm} km (${esc(m.trajeto)})${guiaTxt}${hrs?'<br>⏱️ '+esc(hrs):''}${insTxt}<br>🕒 ${esc(m.data)}${m.editadoEm?'<br>✏️ editada em '+esc(m.editadoEm):''}</p>
   <div style="background:#fff;padding:8px;border-radius:4px;border:1px solid #e2e8f0;font-size:.82rem">💬 <i>${esc(m.relato||'Sem relato.')}</i></div>
-  <div class="acts"><button class="sm teal" onclick="editarRemocao(${m.id})">✏️ Editar</button><button class="sm sec" onclick="compartilhar(${m.id})">Compartilhar</button><button class="sm badx" onclick="apagar('${K_REM}',${m.id})">Excluir</button></div></div>`).join(''):'<p class="muted">Nenhuma remoção registrada para esta seleção.</p>';
+  <div class="acts"><button class="sm teal" onclick="editarRemocao(${m.id})">✏️ Editar</button><button class="sm sec" onclick="compartilhar(${m.id})">Compartilhar resumo</button><button class="sm badx" onclick="apagar('${K_REM}',${m.id})">Excluir</button></div></div>`;
+  }).join(''):'<p class="muted">Nenhuma remoção registrada para esta seleção.</p>';
 }
 
 function apagar(k,id){
@@ -982,24 +1123,26 @@ async function compartilharTexto(t){
   try{
     if(nat())await Capacitor.Plugins.Share.share({text:t});
     else if(navigator.share)await navigator.share({text:t});
-    else{await navigator.clipboard.writeText(t);toast('Texto copiado.')}
+    else{await navigator.clipboard.writeText(t);toast('Resumo copiado.')}
   }catch(e){}
 }
 
+/* LGPD: compartilhamento operacional sem expor evolução clínica completa em texto aberto */
 async function compartilhar(id){
   const m=ld(K_REM,[]).find(x=>x.id===id);if(!m)return;
-  const t=`Remoção ${m.data}
-Paciente: ${m.nome}
-Convênio: ${formatarConvenioExibicao(m.convenio)}
+  const hrs=formatarHorariosRemocao(m);
+  const t=`Resumo Operacional — Remoção ${m.data}
+Convênio: ${formatarConvenioExibicao(m.convenio)}${m.guia?`\nGuia/Autorização: ${m.guia}`:''}
 Viatura: ${m.viatura||'—'}
 Rota: ${m.origem} > ${m.destino} (${m.trajeto})
-Distância: ${m.totalKm} km
-Relato: ${m.relato||'—'}`;
+Distância: ${m.totalKm} km${hrs?`\nHorários: ${hrs}`:''}
+(Dados clínicos detalhados protegidos pela LGPD — use o PDF oficial na supervisão.)`;
   await compartilharTexto(t);
 }
 
 async function exportar(){
-  const d={versao:1,cfg,checklists:ld(K_CHK,[]),remocoes:ld(K_REM,[]),solicitacoes:ld(K_SOL,[])};
+  if(cloudOn&&perfil&&!sup()){toast('Exportação restrita à supervisão (LGPD).');return}
+  const d={versao:'1.1.6',cfg,checklists:ld(K_CHK,[]),remocoes:ld(K_REM,[]),solicitacoes:ld(K_SOL,[])};
   const nome='fluxsaude-backup-'+new Date().toISOString().slice(0,10)+'.json';
   if(nat()){
     try{
@@ -1019,6 +1162,7 @@ async function exportar(){
 
 function importar(f){
   if(!f)return;
+  if(cloudOn&&perfil&&!sup()){toast('Importação restrita à supervisão (LGPD).');$('b-file').value='';return}
   const r=new FileReader();
   r.onload=()=>{
     try{
@@ -1433,7 +1577,7 @@ function logoFluxSaudeSvg(className='', w=40, h=36){
   </svg>`;
 }
 
-function renderLinhasEvolucaoHtml(totalLinhas=25){
+function renderLinhasEvolucaoHtml(totalLinhas=23){
   return Array.from({length:totalLinhas},()=>'<div class="evo-line-row"></div>').join('');
 }
 
@@ -1447,6 +1591,13 @@ function abrirEvolucaoModelo(remId,modeloForcado){
   const dataCurta=(m.data||agora()).split(',')[0].trim();
   const convAtual=$('evo-conv-inp')?$('evo-conv-inp').value:(m.convenio||'');
   const prontAtual=$('evo-pront-inp')?$('evo-pront-inp').value:(m.prontuario||'');
+  const guiaAtual=m.guia||'';
+  const hrs=formatarHorariosRemocao(m);
+  const insResumo=m.insumos&&m.insumos.length?'\nInsumos utilizados: '+m.insumos.map(i=>`${i.nome} (${i.qtd})`).join(', '):'';
+  const textoCorpo=(m.relato||'')+insResumo;
+  const profNome=m.profissionalNome||perfil?.nome||'';
+  const profCoren=m.profissionalCoren||perfil?.coren||'';
+  const profLinha=[profNome,profCoren].filter(Boolean).join(' • ');
 
   $('pdf-content').innerHTML=`
     <div class="evo-controls no-print">
@@ -1480,20 +1631,28 @@ function abrirEvolucaoModelo(remId,modeloForcado){
               <div class="evo-logo-sub">Assistência e Remoção</div>
             </div>
             <div>
-              <div class="evo-title">${esc(titulo)}</div>
-              <div class="evo-date-line">Data: <span id="evo-data-val">${esc(dataCurta)}</span></div>
+              <div class="evo-title">${esc(titulo)}${m.retificado||m.editadoEm?' <span style="font-size:10px;color:#d97706">(RETIFICADA)</span>':''}</div>
+              <div class="evo-date-line">Data: <span id="evo-data-val">${esc(dataCurta)}</span>${hrs?' • '+esc(hrs):''}</div>
             </div>
             ${renderBolinhaConvenioHtml(convAtual)}
           </div>
 
           <div class="evo-grid-hdr">
             <div class="evo-cell-hdr"><b>Paciente</b>${esc(m.nome||'')}</div>
-            <div class="evo-cell-hdr"><b>Prontuário</b><span id="evo-pront-val">${esc(prontAtual)}</span></div>
+            <div class="evo-cell-hdr"><b>Prontuário${guiaAtual?' / Guia: '+esc(guiaAtual):''}</b><span id="evo-pront-val">${esc(prontAtual)}</span></div>
           </div>
 
           <div class="evo-lined">
-            <div class="evo-lines-layer" aria-hidden="true">${renderLinhasEvolucaoHtml(25)}</div>
-            <div class="evo-text">${esc(m.relato||'')}</div>
+            <div class="evo-lines-layer" aria-hidden="true">${renderLinhasEvolucaoHtml(23)}</div>
+            <div class="evo-text">${esc(textoCorpo)}</div>
+          </div>
+
+          <div class="evo-footer">
+            <div>
+              <div><b>Responsável:</b> ${esc(profLinha||'A preencher')}</div>
+              <div><b>Viatura / Rota:</b> ${esc(m.viatura||'—')} • ${esc(m.origem||'')} ➔ ${esc(m.destino||'')} (${esc(m.totalKm??0)} km)</div>
+            </div>
+            <div class="evo-sign-line">Assinatura / Carimbo Profissional</div>
           </div>
         </div>
       </div>
@@ -1762,11 +1921,35 @@ async function restaurarSessao(){
   }
 }
 
+/* Verificação LGPD ao sair: checa fila pendente e notifica estado antes de limpar dados sensíveis locais */
 async function sair(){
-  if(!confirm('Sair da conta?'))return;
+  const fila=ld('fs_out',[]);
+  if(fila.length&&navigator.onLine&&sess&&perfil&&!sup()){
+    try{await sync()}catch(_){}
+  }
+  const filaRestante=ld('fs_out',[]);
+  const drafts=ld(K_CHK_DRAFTS,{});
+  const temRascunho=Object.keys(drafts).length>0;
+
+  let msgConf='Verificação de saída: tudo sincronizado e em ordem (LGPD). Deseja sair da conta e limpar os dados locais deste aparelho?';
+  if(filaRestante.length&&temRascunho){
+    msgConf=`Atenção: há ${filaRestante.length} registro(s) pendente(s) de envio e rascunho de checklist em aberto. Deseja sair mesmo assim?`;
+  }else if(filaRestante.length){
+    msgConf=`Atenção: ainda há ${filaRestante.length} registro(s) aguardando sincronização na fila. Deseja sair mesmo assim?`;
+  }else if(temRascunho){
+    msgConf='Atenção: há rascunho de checklist não salvo em aberto. Deseja sair mesmo assim?';
+  }
+
+  if(!confirm(msgConf))return;
+
+  const avisoSaida=filaRestante.length
+    ?`Saída concluída com ${filaRestante.length} item(ns) pendente(s) na fila.`
+    :'Verificação concluída: tudo ok e dados sensíveis limpos deste aparelho.';
+
   try{if(sb)await sb.auth.signOut()}catch(e){}
-  ['fs_sess','fs_perfil'].forEach(k=>localStorage.removeItem(k));
-  location.reload();
+  [K_REM,K_CHK,K_SOL,'fs_sess','fs_perfil'].forEach(k=>localStorage.removeItem(k));
+  toast('✅ '+avisoSaida);
+  setTimeout(()=>location.reload(),700);
 }
 
 async function iniciar(){
@@ -1781,7 +1964,7 @@ async function iniciar(){
   $('cfg-op').classList.toggle('hidden',s);
   $('ag-f').classList.toggle('hidden',s||!cloudOn||!sess);
   $('conta').classList.toggle('hidden',!cloudOn||!perfil);
-  if(perfil)$('conta-info').textContent=[perfil.nome,s?'Supervisor':'Funcionário'].filter(Boolean).join(' • ');
+  if(perfil)$('conta-info').textContent=[perfil.nome,perfil.coren,s?'Supervisor':'Funcionário'].filter(Boolean).join(' • ');
   switchTab(s?'painel':'checklist');
   if(!s&&sess){backfill();sync()}
   prepararNotificacoesLocais();
@@ -1849,7 +2032,9 @@ async function renderPainel(){
     <div class="card"><h2>🚑 Remoções recentes</h2>${rm.length?rm.map(r=>{
       const m=r.dados;
       const recKey=r.local_id||(m&&m.id)||'';
-      return`<div class="rec"><strong>${esc(m.nome)}</strong> <span class="badge b-warn" style="background:#e0f2fe;color:#0369a1">${esc(formatarConvenioExibicao(m.convenio))}</span><p class="muted" style="margin:6px 0 0">📍 ${esc(m.origem)} ➔ ${esc(m.destino)}<br>🚑 ${esc(m.viatura||'—')} • 🚗 ${esc(m.totalKm)} km • 🕒 ${esc(m.data)}<br>💬 ${esc(m.relato||'Sem relato.')}</p><div class="acts"><button class="sm teal" type="button" onclick="abrirEvolucaoModelo('${esc(recKey)}')">🖨️ Imprimir evolução</button></div>${ed(r)}</div>`;
+      const hrs=formatarHorariosRemocao(m);
+      const insTxt=m.insumos&&m.insumos.length?`<br>🧪 Insumos: ${esc(m.insumos.map(i=>`${i.nome} (${i.qtd})`).join(', '))}`:'';
+      return`<div class="rec"><strong>${esc(m.nome)}</strong> <span class="badge b-warn" style="background:#e0f2fe;color:#0369a1">${esc(formatarConvenioExibicao(m.convenio))}</span>${m.guia?`<span class="badge" style="background:#f1f5f9;color:#334155">Guia ${esc(m.guia)}</span>`:''}<p class="muted" style="margin:6px 0 0">📍 ${esc(m.origem)} ➔ ${esc(m.destino)}<br>🚑 ${esc(m.viatura||'—')} • 🚗 ${esc(m.totalKm)} km • 🕒 ${esc(m.data)}${hrs?' • '+esc(hrs):''}${insTxt}<br>💬 ${esc(m.relato||'Sem relato.')}</p><div class="acts"><button class="sm teal" type="button" onclick="abrirEvolucaoModelo('${esc(recKey)}')">🖨️ Imprimir evolução</button></div>${ed(r)}</div>`;
     }).join(''):'<p class="muted">Nenhuma remoção.</p>'}</div>
     <div class="card"><h2>📦 Solicitações à farmácia</h2>${so.length?so.map(s=>`<div class="rec"><strong>${esc(s.viatura)}</strong> <span class="muted">${esc(s.data)}</span>${s.itens.map(i=>`<div style="font-size:.8rem">• ${esc(i.nome)} — <b>${esc(i.qtd)}</b></div>`).join('')}</div>`).join(''):'<p class="muted">Nenhuma solicitação.</p>'}</div>`;
   }catch(e){
@@ -1944,20 +2129,22 @@ function enviarEdicao(tipo,o){
 
 function editarRemocao(id){
   const m=ld(K_REM,[]).find(x=>x.id===id);if(!m)return;
-  editId=id;agId=null;fillViaturas();
+  editId=id;agId=null;fillViaturas();atualizarSugestoesInsumos();
   if(m.viatura&&!cfg.viaturas.includes(m.viatura))$('r-viatura').add(new Option(m.viatura,m.viatura));
   $('r-viatura').value=m.viatura||'';
-  $('r-nome').value=m.nome;$('r-conv').value=m.convenio||'';$('r-trajeto').value=m.trajeto;
+  $('r-nome').value=m.nome;$('r-conv').value=m.convenio||'';$('r-guia').value=m.guia||'';$('r-trajeto').value=m.trajeto;
   $('r-orig').value=m.origem;$('r-dest').value=m.destino;
+  $('r-h-saida').value=m.horaSaida||'';$('r-h-chegada').value=m.horaChegada||'';$('r-h-retorno').value=m.horaRetorno||'';
   $('r-ini').value=m.kmIni??0;$('r-fim').value=m.kmFim??m.totalKm;$('r-relato').value=m.relato||'';
+  insumosRemocao=Array.isArray(m.insumos)?m.insumos.map(x=>({...x})):[];
+  renderInsumosRemocao();
   calcKm();$('btn-rem').textContent='Salvar alterações';$('btn-ced').classList.remove('hidden');
   switchTab('field');toast('Editando remoção. Altere e salve.');
 }
 
 function cancelarEdicao(){
   editId=null;$('btn-rem').textContent='Finalizar remoção';$('btn-ced').classList.add('hidden');
-  ['r-nome','r-conv','r-orig','r-dest','r-ini','r-fim','r-relato'].forEach(id=>$(id).value='');
-  calcKm();
+  limparCamposRemocao();
 }
 
 function agEditar(id){
@@ -1979,6 +2166,7 @@ function persist(syncViat=false){
   sv('fs_cfg',cfg);
   dirty=true;
   fillViaturas();
+  atualizarSugestoesInsumos();
   if(syncViat&&sup())salvarViaturasNuvem();
 }
 
@@ -2034,6 +2222,8 @@ $('r-viatura').addEventListener('change',e=>setViaturaAtual(e.target.value));
 $('av-viatura').addEventListener('change',()=>renderAvisos());
 $('hist-viatura').addEventListener('change',()=>renderHistorico());
 $('busca').addEventListener('input',filtrar);
+$('btn-add-ins').onclick=adicionarInsumoRemocao;
+$('r-ins-nome').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();adicionarInsumoRemocao()}});
 $('btn-chk').onclick=salvarChecklist;
 $('btn-rem').onclick=salvarRemocao;
 $('r-ini').addEventListener('input',calcKm);
@@ -2049,6 +2239,7 @@ $('np-save').onclick=salvarNovaSenha;
 sb?.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){ $('login').classList.remove('hidden');mostrarRecuperacao('newpass-card'); }});
 
 renderChecklist();
+renderInsumosRemocao();
 atualizarDot();
 restaurarSessao();
 </script>
