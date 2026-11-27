@@ -210,7 +210,7 @@ details.kit[open]>summary{border-radius:8px 8px 0 0}details.kit>div.body{padding
 <div class="card hidden" id="cfg-viat-sup"><h2>🚐 Viaturas da empresa (Supervisão)</h2><p class="muted">Apenas a supervisão pode cadastrar, renomear ou remover viaturas. A equipe seleciona a viatura do plantão.</p><div id="aj-viat"></div><button class="sm teal" id="add-viat">+ Viatura</button></div>
 <div id="cfg-op"><div class="card"><h2>🚐 Viaturas disponíveis</h2><p class="muted" id="viat-readonly-list"></p></div>
 <div class="card"><h2>🎒 Kits, itens e cotas</h2><div id="aj-kits"></div><div class="acts"><button class="sm teal" id="add-kit">+ Kit</button><button class="sm sec" id="reset-cfg">Restaurar padrão</button></div></div></div>
-<footer style="text-align:center;margin-top:14px;padding-bottom:8px;font-size:.75rem;color:var(--muted)">v.1.2.0</footer>
+<footer style="text-align:center;margin-top:14px;padding-bottom:8px;font-size:.75rem;color:var(--muted)">v.1.2.1</footer>
 </section>
 </div>
 
@@ -557,7 +557,7 @@ async function notificarSolucaoDemandaSupervisao(titulo,corpo,chaveUnica){
 }
 
 async function renderAvisos(){
-  $('sol').classList.add('hidden');fillViaturas();
+  fillViaturas();
   const selEl=$('av-viatura'),filtro=selEl?.value||getViaturaAtual();
   const pintar=listaChecklists=>{
     const todasV=viaturasConhecidas(listaChecklists,ld(K_REM,[]),ld(K_SOL,[])),alvos=filtro==='__ALL__'?todasV:todasV.filter(v=>v===filtro);
@@ -565,12 +565,15 @@ async function renderAvisos(){
     $('avisos').innerHTML=alvos.map(v=>{
       const c=listaChecklists.find(x=>x.viatura===v),p=pendenciasViatura(v,c);
       if(!c&&!p.length)return`<div class="rec"><strong>${esc(v)}</strong><p class="muted" style="margin:4px 0 0">Sem checklist registrado para esta viatura.</p></div>`;
-      return`<div class="rec ${p.length?'bad':'ok'}"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><strong>${esc(v)}</strong><span class="muted" style="font-size:.76rem">${esc(c?c.data:'Consumo em remoção')}</span></div><div style="margin-top:6px">${p.length?p.map(x=>`<div style="margin-bottom:6px"><b>${esc(x.i.nome)}</b>${x.i.kit?' <span class="muted">('+esc(x.i.kit)+')</span>':''}<br>${x.s.a.map(t=>`<span class="badge ${x.s.lvl>1?'b-bad':'b-warn'}">${esc(t)}</span>`).join('')}</div>`).join(''):'<span class="badge b-ok">✅ Tudo em ordem</span>'}</div>${p.length?`<div class="acts"><button class="sm teal" type="button" onclick="abrirSolViatura(${JSON.stringify(v)})">📦 Solicitar à farmácia (${esc(v)})</button></div>`:''}</div>`;
+      return`<div class="rec ${p.length?'bad':'ok'}"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><strong>${esc(v)}</strong><span class="muted" style="font-size:.76rem">${esc(c?c.data:'Consumo em remoção')}</span></div><div style="margin-top:6px">${p.length?p.map(x=>`<div style="margin-bottom:6px"><b>${esc(x.i.nome)}</b>${x.i.kit?' <span class="muted">('+esc(x.i.kit)+')</span>':''}<br>${x.s.a.map(t=>`<span class="badge ${x.s.lvl>1?'b-bad':'b-warn'}">${esc(t)}</span>`).join('')}</div>`).join(''):'<span class="badge b-ok">✅ Tudo em ordem</span>'}</div>${p.length?`<div class="acts"><button class="sm teal" type="button" data-viat="${esc(v)}" onclick="abrirSolViatura(this.dataset.viat)">📦 Solicitar à farmácia (${esc(v)})</button></div>`:''}</div>`;
     }).join('');
     atualizarDot();
   };
   pintar(ld(K_CHK,[]));
-  if(cloudOn&&sess&&!sup()&&navigator.onLine){const mudou=await sincronizarLeituraFuncionarioNuvem(true);if(mudou)pintar(ld(K_CHK,[]))}
+  if(cloudOn&&sess&&!sup()&&navigator.onLine){
+    const mudou=await sincronizarLeituraFuncionarioNuvem(true);
+    if(mudou&&$('sol')?.classList.contains('hidden'))pintar(ld(K_CHK,[]));
+  }
 }
 
 function calcKm(){const a=parseFloat($('r-ini').value),b=parseFloat($('r-fim').value);$('r-km').textContent=(!isNaN(a)&&!isNaN(b)&&b>=a?b-a:0)+' km'}
@@ -633,7 +636,7 @@ async function compartilhar(id){const m=ld(K_REM,[]).find(x=>x.id===id);if(!m)re
 
 async function exportar(){
   if(cloudOn&&perfil&&!sup()){toast('Exportação restrita à supervisão (LGPD).');return}
-  const d={versao:'1.2.0',cfg,checklists:ld(K_CHK,[]),remocoes:ld(K_REM,[]),solicitacoes:ld(K_SOL,[])},nome='fluxsaude-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  const d={versao:'1.2.1',cfg,checklists:ld(K_CHK,[]),remocoes:ld(K_REM,[]),solicitacoes:ld(K_SOL,[])},nome='fluxsaude-backup-'+new Date().toISOString().slice(0,10)+'.json';
   if(nat()){try{const r=await Capacitor.Plugins.Filesystem.writeFile({path:nome,data:JSON.stringify(d),directory:'CACHE',encoding:'utf8'});await Capacitor.Plugins.Share.share({title:'Backup FluxSaúde',url:r.uri})}catch(e){toast('Não foi possível exportar o backup.')}return}
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d)],{type:'application/json'}));a.download=nome;document.body.appendChild(a);a.click();a.remove();toast('Backup gerado.');
 }
@@ -650,12 +653,18 @@ function qtdSol(i){
 }
 let solV='',solRows=[];
 function abrirSolViatura(v){
-  const viatAlvo=v||$('av-viatura')?.value||getViaturaAtual(),c=ld(K_CHK,[]).find(x=>x.viatura===viatAlvo);
-  solV=viatAlvo;solRows=pendenciasViatura(viatAlvo,c).map(x=>({nome:x.i.nome,...qtdSol(x.i),on:true})).filter(r=>r.qtd>0);
+  const viatAlvo=v||$('av-viatura')?.value||getViaturaAtual();
+  const c=ld(K_CHK,[]).find(x=>String(x.viatura||'').trim()===String(viatAlvo||'').trim());
+  solV=viatAlvo;
+  solRows=pendenciasViatura(viatAlvo,c).map(x=>{
+    const q=qtdSol(x.i);
+    return{nome:x.i.nome,qtd:Math.max(1,Number(q.qtd)||1),motivo:q.motivo,on:true};
+  });
   if(!solRows.length){toast('Nada a solicitar para esta viatura.');return}
   $('sol-v').textContent=viatAlvo;$('sol-obs').value='';
   $('sol-list').innerHTML=solRows.map((r,k)=>`<div class="sr"><input type="checkbox" checked aria-label="Incluir ${esc(r.nome)}" onchange="solRows[${k}].on=this.checked"><span><b>${esc(r.nome)}</b><br><span class="muted">${esc(r.motivo)}</span></span><input type="number" min="1" inputmode="numeric" value="${r.qtd}" aria-label="Quantidade" onchange="solRows[${k}].qtd=Math.max(1,parseInt(this.value)||1)"></div>`).join('');
-  $('sol').classList.remove('hidden');$('sol').scrollIntoView({behavior:'smooth'});
+  const box=$('sol');
+  box.classList.remove('hidden');box.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 function marcarItensSolicitadosViatura(viatura,itensSolicitados,chkIdAtual){
