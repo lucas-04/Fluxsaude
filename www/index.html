@@ -292,7 +292,7 @@ details.kit>div.body{padding:6px 8px 10px}
 <div class="card"><h2>🚐 Viaturas disponíveis</h2><p class="muted" id="viat-readonly-list"></p></div>
 <div class="card"><h2>🎒 Kits, itens e cotas</h2><div id="aj-kits"></div>
 <div class="acts"><button class="sm teal" id="add-kit">+ Kit</button><button class="sm sec" id="reset-cfg">Restaurar padrão</button></div></div></div>
-<footer style="text-align:center;margin-top:14px;padding-bottom:8px;font-size:.75rem;color:var(--muted)">v.1.1.7</footer>
+<footer style="text-align:center;margin-top:14px;padding-bottom:8px;font-size:.75rem;color:var(--muted)">v.1.1.8</footer>
 </section>
 </div>
 
@@ -751,6 +751,24 @@ function setViaturaAtual(v){
   });
 }
 
+/* Envia evento de plantão para comunicação com a supervisão */
+function registrarEventoPlantaoNuvem(acao, viatura, inicioFmt=''){
+  if(!cloudOn||!sess||!perfil||sup())return;
+  const ev={
+    id:Date.now()+'_'+acao,
+    acao,
+    viatura,
+    profissional:perfil?.nome||perfil?.email||'Profissional',
+    coren:perfil?.coren||'',
+    inicio:inicioFmt||'',
+    data:agora()
+  };
+  const q=ld('fs_out',[]);
+  q.push({tipo:'plantao_evento',local_id:ev.id,dados:ev});
+  sv('fs_out',q);
+  sync();
+}
+
 /* Controle de Plantão (Iniciar, Trocar Viatura em caso de engano e Finalizar) */
 function renderPlantaoBar(){
   const box=$('plantao-box');
@@ -802,15 +820,17 @@ function iniciarPlantao(){
   const sel=$('sel-inicio-plantao');
   const v=sel?sel.value:getViaturaAtual();
   if(!v){toast('Selecione uma viatura.');return}
+  const inicioFmt=agora();
   plantaoAtivo={
     viatura:v,
-    inicio:agora(),
+    inicio:inicioFmt,
     profissional:perfil?.nome||''
   };
   sv(K_PLANTAO,plantaoAtivo);
   setViaturaAtual(v);
   renderPlantaoBar();
   renderChecklist();
+  registrarEventoPlantaoNuvem('iniciado',v,inicioFmt);
   toast('🟢 Plantão iniciado na viatura '+v+'.');
 }
 
@@ -848,6 +868,7 @@ function confirmarTrocaViaturaPlantao(){
 async function finalizarPlantao(){
   if(!plantaoAtivo)return;
   const v=plantaoAtivo.viatura;
+  const inicioFmt=plantaoAtivo.inicio||'';
   const fila=ld('fs_out',[]);
   if(fila.length&&navigator.onLine&&sess&&perfil){
     try{await sync()}catch(_){}
@@ -865,6 +886,7 @@ async function finalizarPlantao(){
   const padrao=getViaturaPadraoEfetiva();
   if(padrao)setViaturaAtual(padrao);
   renderPlantaoBar();
+  registrarEventoPlantaoNuvem('encerrado',v,inicioFmt);
   toast('Plantão encerrado.');
 }
 
@@ -1155,12 +1177,15 @@ function renderChecklist(){
   if($('busca')&&$('busca').value.trim())filtrar();
 }
 
+/* Pesquisa corrigida: busca pelo nome do item dentro do <span> da linha */
 function filtrar(){
   const t=$('busca').value.trim().toLowerCase();
   document.querySelectorAll('#kits details').forEach(d=>{
     let n=0;
     d.querySelectorAll('.it[data-k]').forEach(r=>{
-      const m=!t||r.firstChild.textContent.toLowerCase().includes(t);
+      const nomeEl=r.querySelector('span');
+      const nome=nomeEl?nomeEl.textContent.toLowerCase():'';
+      const m=!t||nome.includes(t);
       r.style.display=m?'':'none';
       if(m)n++;
     });
@@ -1258,13 +1283,38 @@ async function sincronizarNotificacoesValidade(){
   }catch(_){}
 }
 
+/* Notificação de solução de demandas no perfil da supervisão */
+async function notificarSolucaoDemandaSupervisao(titulo, corpo, chaveUnica){
+  if(!sup())return;
+  if(chaveUnica){
+    if(notifDisparadas.has(chaveUnica))return;
+    notifDisparadas.add(chaveUnica);
+  }
+  toast('✅ '+titulo+' — '+corpo);
+  const ln=getLocalNotifPlugin();
+  if(!ln)return;
+  try{
+    const perm=await ln.checkPermissions();
+    if(perm.display!=='granted')await ln.requestPermissions();
+    const p2=await ln.checkPermissions();
+    if(p2.display==='granted'){
+      await ln.schedule({
+        notifications:[{
+          id:notifIdFromUUID(Date.now()+Math.floor(Math.random()*900)),
+          title:'✅ '+titulo,
+          body:corpo,
+          schedule:{at:new Date(Date.now()+400)}
+        }]
+      });
+    }
+  }catch(_){}
+}
+
 async function renderAvisos(){
   $('sol').classList.add('hidden');
   fillViaturas();
   const L=ld(K_CHK,[]);
   const filtro=$('av-viatura')?.value||getViaturaAtual();
-  const todas=viaturasConhecidas(L);
-  const lista=filtro==='__ALL__'?todas:todas.filter(v=>v===filtro);
 
   const renderListaAvisos=(listaChecklists)=>{
     const todasV=viaturasConhecidas(listaChecklists);
@@ -1492,11 +1542,25 @@ function corrigirViaturaChecklist(id){
   toast('Viatura do checklist corrigida para '+limpa+'.');
 }
 
+function enfileirarExclusaoNuvem(tipo, id){
+  if(!cloudOn||!sess||sup())return;
+  const lid=String(id);
+  const q=ld('fs_out',[]).filter(x=>!(x.tipo===tipo&&String(x.local_id)===lid));
+  q.push({op:'del',tipo,local_id:lid});
+  sv('fs_out',q);
+  sync();
+}
+
 function apagar(k,id){
   if(!confirm('Excluir este registro? Isso não pode ser desfeito.'))return;
-  sv(k,ld(k,[]).filter(x=>x.id!==id));
+  const novaLista=ld(k,[]).filter(x=>String(x.id)!==String(id));
+  sv(k,novaLista);
+  if(k===K_SOL)enfileirarExclusaoNuvem('solicitacao',id);
+  else if(k===K_CHK)enfileirarExclusaoNuvem('checklist',id);
+  else if(k===K_REM)enfileirarExclusaoNuvem('remocao',id);
   renderHistorico();
   atualizarDot();
+  toast('Registro excluído.');
 }
 
 const nat=()=>window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform();
@@ -1524,7 +1588,7 @@ Distância: ${m.totalKm} km${hrs?`\nHorários: ${hrs}`:''}
 
 async function exportar(){
   if(cloudOn&&perfil&&!sup()){toast('Exportação restrita à supervisão (LGPD).');return}
-  const d={versao:'1.1.7',cfg,checklists:ld(K_CHK,[]),remocoes:ld(K_REM,[]),solicitacoes:ld(K_SOL,[])};
+  const d={versao:'1.1.8',cfg,checklists:ld(K_CHK,[]),remocoes:ld(K_REM,[]),solicitacoes:ld(K_SOL,[])};
   const nome='fluxsaude-backup-'+new Date().toISOString().slice(0,10)+'.json';
   if(nat()){
     try{
@@ -1624,7 +1688,7 @@ function renderSolHist(filtro='__ALL__'){
   const S=filtro==='__ALL__'?allS:allS.filter(x=>x.viatura===filtro);
   $('h-sol').innerHTML=S.length?S.map(s=>{
     const ok=s.status==='recebida';
-    return`<div class="rec ${ok?'ok':'bad'}"><div style="display:flex;justify-content:space-between;gap:8px"><strong>${esc(s.viatura)}</strong><span class="badge ${ok?'b-ok':'b-warn'}">${ok?'✅ Recebida':'⏳ Pendente'}</span></div><p class="muted" style="margin:4px 0">🕒 ${esc(s.data)}</p>${s.itens.map(i=>`<div style="font-size:.8rem">• ${esc(i.nome)} — <b>${i.qtd}</b></div>`).join('')}${s.obs?`<p class="muted" style="margin:4px 0;font-size:.78rem">📝 ${esc(s.obs)}</p>`:''}<div class="acts"><button class="sm sec" onclick="solPdf(${s.id})">📄 PDF / Imprimir</button><button class="sm teal" onclick="solStatus(${s.id})">${ok?'Reabrir':'Marcar recebida'}</button><button class="sm badx" onclick="apagar('${K_SOL}',${s.id})">Excluir</button></div></div>`;
+    return`<div class="rec ${ok?'ok':'bad'}"><div style="display:flex;justify-content:space-between;gap:8px"><strong>${esc(s.viatura)}</strong><span class="badge ${ok?'b-ok':'b-warn'}">${ok?'✅ Recebida':'⏳ Pendente'}</span></div><p class="muted" style="margin:4px 0">🕒 ${esc(s.data)}${s.solucionadaEm?' • Solucionada em '+esc(s.solucionadaEm):''}</p>${s.itens.map(i=>`<div style="font-size:.8rem">• ${esc(i.nome)} — <b>${i.qtd}</b></div>`).join('')}${s.obs?`<p class="muted" style="margin:4px 0;font-size:.78rem">📝 ${esc(s.obs)}</p>`:''}<div class="acts"><button class="sm sec" onclick="solPdf(${s.id})">📄 PDF / Imprimir</button><button class="sm teal" onclick="solStatus(${s.id})">${ok?'Reabrir':'Marcar recebida'}</button><button class="sm badx" onclick="apagar('${K_SOL}',${s.id})">Excluir</button></div></div>`;
   }).join(''):'<p class="muted">Nenhuma solicitação para esta seleção.</p>';
 }
 
@@ -1899,8 +1963,22 @@ async function gerarECompartilharPdf(compartilhar){
 }
 
 function solStatus(id){
-  const S=ld(K_SOL,[]),s=S.find(x=>x.id===id);
-  if(s){s.status=s.status==='recebida'?'pendente':'recebida';sv(K_SOL,S);renderSolHist($('hist-viatura')?.value||getViaturaAtual())}
+  const S=ld(K_SOL,[]);
+  const s=S.find(x=>String(x.id)===String(id));
+  if(!s)return;
+  const vaiReceber=s.status!=='recebida';
+  s.status=vaiReceber?'recebida':'pendente';
+  if(vaiReceber)s.solucionadaEm=agora();
+  sv(K_SOL,S);
+  enviarEdicao('solicitacao',s);
+  renderSolHist($('hist-viatura')?.value||getViaturaAtual());
+  if(vaiReceber&&sup()){
+    notificarSolucaoDemandaSupervisao(
+      `Demanda solucionada (${s.viatura})`,
+      `Solicitação #${s.id} marcada como recebida em ${s.solucionadaEm}.`,
+      `sol_rec_${s.id}_${s.solucionadaEm}`
+    );
+  }
 }
 
 /* Modelo de Evolução Clínica / Registro de Enfermagem + Carimbo Retangular (FluxSaúde) */
@@ -2136,6 +2214,7 @@ async function sincronizarLeituraFuncionarioNuvem(silencioso=true){
 
     const filaPendente=ld('fs_out',[]);
     const idsPendentes=new Set(filaPendente.map(x=>`${x.tipo}:${x.local_id}`));
+    const idsExcluidos=new Set(filaPendente.filter(x=>x.op==='del').map(x=>`${x.tipo}:${x.local_id}`));
 
     const mesclarLista=(chaveStorage,tipoRegistro)=>{
       const locais=ld(chaveStorage,[]);
@@ -2148,6 +2227,7 @@ async function sincronizarLeituraFuncionarioNuvem(silencioso=true){
         if(row.tipo!==tipoRegistro||!row.dados)continue;
         const lid=String(row.local_id||row.dados.id||'');
         if(!lid)continue;
+        if(idsExcluidos.has(`${tipoRegistro}:${lid}`))continue;
         if(idsPendentes.has(`${tipoRegistro}:${lid}`))continue;
         const remoto={...row.dados,id:row.dados.id??(Number(lid)||lid)};
         const existente=mapa.get(lid);
@@ -2549,7 +2629,11 @@ async function sync(){
     const q=ld('fs_out',[]);
     while(q.length){
       const it=q[0];
-      if(it.op==='upd'){
+      if(it.op==='del'){
+        await api('/rest/v1/registros?empresa_id=eq.'+perfil.empresa_id+'&tipo=eq.'+encodeURIComponent(it.tipo)+'&local_id=eq.'+encodeURIComponent(it.local_id),{
+          method:'DELETE'
+        });
+      }else if(it.op==='upd'){
         await api('/rest/v1/registros?empresa_id=eq.'+perfil.empresa_id+'&tipo=eq.'+it.tipo+'&local_id=eq.'+encodeURIComponent(it.local_id),{
           method:'PATCH',h:{Prefer:'return=minimal'},body:{dados:it.dados}
         });
@@ -2575,10 +2659,23 @@ setInterval(sync,60000);
 async function renderPainel(){
   $('pn').innerHTML='<div class="card"><p class="muted">Carregando...</p></div>';
   try{
-    const R=await api('/rest/v1/registros?select=local_id,tipo,dados,editado_em,historico&order=criado_em.desc&limit=150');
+    const R=await api('/rest/v1/registros?select=local_id,tipo,dados,editado_em,historico&order=criado_em.desc&limit=180');
     const por=t=>R.filter(r=>r.tipo===t).map(r=>r.dados);
     const ck=por('checklist'),rm=R.filter(r=>r.tipo==='remocao').slice(0,25),so=por('solicitacao').slice(0,15);
+    const evPlantao=por('plantao_evento').slice(0,15);
     ultimoPainelRms=rm;
+
+    /* Notifica a supervisão sobre solicitações já marcadas como recebidas/solucionadas */
+    for(const s of so){
+      if(s&&s.status==='recebida'){
+        notificarSolucaoDemandaSupervisao(
+          `Solicitação recebida (${s.viatura})`,
+          `Pedido #${s.id} solucionado${s.solucionadaEm?' em '+s.solucionadaEm:''}.`,
+          `sol_painel_${s.id}_${s.solucionadaEm||s.status}`
+        );
+      }
+    }
+
     const vs=[...new Set([...cfg.viaturas,...ck.map(c=>c.viatura)].filter(Boolean))];
     $('pn').innerHTML=`<div class="card"><h2>🔔 Situação das viaturas</h2>${vs.length?vs.map(v=>{
       const c=ck.find(x=>x.viatura===v);
@@ -2586,6 +2683,16 @@ async function renderPainel(){
       const p=pendencias(c);
       return`<div class="rec ${p.length?'bad':'ok'}"><strong>${esc(v)}</strong> <span class="muted">${esc(c.data)}</span><div style="margin-top:6px">${p.length?p.map(x=>`<div style="font-size:.8rem">• <b>${esc(x.i.nome)}</b> — ${esc(x.s.a.join(' | '))}</div>`).join(''):'<span class="badge b-ok">✅ Tudo em ordem</span>'}</div></div>`;
     }).join(''):'<p class="muted">Nenhuma viatura cadastrada.</p>'}</div>
+    <div class="card"><h2>🟢 Movimentação de plantões</h2>${evPlantao.length?evPlantao.map(ev=>{
+      const ativo=ev.acao==='iniciado';
+      return`<div class="rec ${ativo?'ok':'bad'}">
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+          <strong>${esc(ev.viatura||'—')}</strong>
+          <span class="badge ${ativo?'b-ok':'b-warn'}">${ativo?'🟢 Plantão ativo':'🔴 Plantão encerrado'}</span>
+        </div>
+        <p class="muted" style="margin:4px 0 0">👤 ${esc(ev.profissional||'Profissional')}${ev.coren?' ('+esc(ev.coren)+')':''} • 🕒 ${esc(ev.data||'')}${!ativo&&ev.inicio?' • Início: '+esc(ev.inicio):''}</p>
+      </div>`;
+    }).join(''):'<p class="muted">Nenhuma abertura ou encerramento de plantão registrado.</p>'}</div>
     <div class="card"><h2>🚑 Remoções recentes</h2>${rm.length?rm.map(r=>{
       const m=r.dados;
       const recKey=r.local_id||(m&&m.id)||'';
@@ -2593,7 +2700,10 @@ async function renderPainel(){
       const insTxt=m.insumos&&m.insumos.length?`<br>🧪 Insumos gastos: ${esc(m.insumos.map(i=>`${i.nome} (${i.qtd})`).join(', '))}`:'';
       return`<div class="rec"><strong>${esc(m.nome)}</strong> <span class="badge b-warn" style="background:#e0f2fe;color:#0369a1">${esc(formatarConvenioExibicao(m.convenio))}</span>${m.guia?`<span class="badge" style="background:#f1f5f9;color:#334155">Guia ${esc(m.guia)}</span>`:''}<p class="muted" style="margin:6px 0 0">📍 ${esc(m.origem)} ➔ ${esc(m.destino)}<br>🚑 ${esc(m.viatura||'—')} • 🚗 ${esc(m.totalKm)} km • 🕒 ${esc(m.data)}${hrs?' • '+esc(hrs):''}${insTxt}<br>💬 ${esc(m.relato||'Sem relato.')}</p><div class="acts"><button class="sm teal" type="button" onclick="abrirEvolucaoModelo('${esc(recKey)}')">🖨️ Imprimir evolução</button></div>${ed(r)}</div>`;
     }).join(''):'<p class="muted">Nenhuma remoção.</p>'}</div>
-    <div class="card"><h2>📦 Solicitações à farmácia</h2>${so.length?so.map(s=>`<div class="rec"><strong>${esc(s.viatura)}</strong> <span class="muted">${esc(s.data)}</span>${s.itens.map(i=>`<div style="font-size:.8rem">• ${esc(i.nome)} — <b>${i.qtd}</b></div>`).join('')}</div>`).join(''):'<p class="muted">Nenhuma solicitação.</p>'}</div>`;
+    <div class="card"><h2>📦 Solicitações à farmácia</h2>${so.length?so.map(s=>{
+      const ok=s.status==='recebida';
+      return`<div class="rec ${ok?'ok':'bad'}"><div style="display:flex;justify-content:space-between;gap:8px"><strong>${esc(s.viatura)}</strong><span class="badge ${ok?'b-ok':'b-warn'}">${ok?'✅ Solucionada / Recebida':'⏳ Pendente'}</span></div><p class="muted" style="margin:4px 0">🕒 ${esc(s.data)}${s.solucionadaEm?' • Solucionada em '+esc(s.solucionadaEm):''}</p>${s.itens.map(i=>`<div style="font-size:.8rem">• ${esc(i.nome)} — <b>${i.qtd}</b></div>`).join('')}</div>`;
+    }).join(''):'<p class="muted">Nenhuma solicitação.</p>'}</div>`;
   }catch(e){
     $('pn').innerHTML='<div class="card"><p class="muted">Não foi possível carregar. Verifique a internet.</p></div>';
   }
