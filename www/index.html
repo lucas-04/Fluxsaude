@@ -110,20 +110,19 @@ details.kit>div.body{padding:6px 8px 10px}
 .evo-lines-layer{position:absolute;inset:0;pointer-events:none;z-index:0;display:flex;flex-direction:column}
 .evo-line-row{height:26px;border-bottom:1px solid #bfdbfe;flex:0 0 26px}
 .evo-text{position:relative;z-index:1;font-size:12.5px;line-height:26px;color:#0f172a;padding:0 8px;white-space:pre-wrap;word-break:break-word}
-.evo-footer{display:grid;grid-template-columns:1.1fr 1fr;gap:14px;margin-top:12px;padding-top:10px;border-top:1px solid #cbd5e1;font-size:10.5px;color:#334155;align-items:end;break-inside:avoid;page-break-inside:avoid}
-.evo-sign-area{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;break-inside:avoid;page-break-inside:avoid}
-.evo-sign-line{width:100%;border-top:1px solid #475569;padding-top:4px;text-align:center;margin-top:26px;margin-bottom:6px;font-size:10px;color:#475569}
+.evo-footer{display:grid;grid-template-columns:1fr 1.1fr;gap:10px;margin-top:12px;padding-top:10px;border-top:1px solid #cbd5e1;font-size:10px;color:#334155;align-items:center;break-inside:avoid;page-break-inside:avoid}
+.evo-sign-area{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;break-inside:avoid;page-break-inside:avoid}
 
 /* Carimbo retangular profissional no PDF e na pré-visualização */
-.carimbo-box{width:100%;max-width:280px;background:#ffffff;color:#0f172a;padding:8px 12px;line-height:1.35;break-inside:avoid;page-break-inside:avoid}
+.carimbo-box{width:100%;max-width:265px;background:#ffffff;color:#0f172a;padding:7px 10px;line-height:1.3;break-inside:avoid;page-break-inside:avoid}
 .carimbo-box.st-simples{border:1.5px solid #003366;border-radius:6px}
 .carimbo-box.st-dupla{border:3px double #003366;border-radius:6px}
-.carimbo-box.st-compacto{border:1.2px solid #1e293b;border-radius:3px;padding:6px 10px;max-width:255px}
+.carimbo-box.st-compacto{border:1.2px solid #1e293b;border-radius:3px;padding:6px 8px;max-width:245px}
 .carimbo-box.al-centro{text-align:center}
 .carimbo-box.al-esquerda{text-align:left}
-.carimbo-nome{font-size:11.5px;font-weight:800;color:#003366;text-transform:uppercase;letter-spacing:.01em}
-.carimbo-cat{font-size:10.5px;font-weight:600;color:#334155;margin-top:1px}
-.carimbo-reg{font-size:11px;font-weight:700;color:#0f172a;margin-top:2px;white-space:nowrap}
+.carimbo-nome{font-size:10.5px;font-weight:800;color:#003366;text-transform:uppercase;letter-spacing:.01em;word-break:break-word}
+.carimbo-cat{font-size:10px;font-weight:600;color:#334155;margin-top:1px}
+.carimbo-reg{font-size:10.5px;font-weight:700;color:#0f172a;margin-top:2px;white-space:nowrap}
 .carimbo-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:8px}
 
 @media print{
@@ -1787,8 +1786,7 @@ function abrirEvolucaoModelo(remId,modeloForcado){
               ${guiaAtual?`<div><b>Guia / Autorização:</b> ${esc(guiaAtual)}</div>`:''}
             </div>
             <div class="evo-sign-area">
-              <div class="evo-sign-line">Assinatura do Profissional</div>
-              <div id="evo-carimbo-slot" style="width:100%;display:flex;justify-content:center">${renderCarimboRetangularHtml(carimboEvoSelecionado)}</div>
+              <div id="evo-carimbo-slot" style="width:100%;display:flex;justify-content:flex-end">${renderCarimboRetangularHtml(carimboEvoSelecionado)}</div>
             </div>
           </div>
         </div>
@@ -2211,7 +2209,7 @@ async function renderPainel(){
       const insTxt=m.insumos&&m.insumos.length?`<br>🧪 Insumos: ${esc(m.insumos.map(i=>`${i.nome} (${i.qtd})`).join(', '))}`:'';
       return`<div class="rec"><strong>${esc(m.nome)}</strong> <span class="badge b-warn" style="background:#e0f2fe;color:#0369a1">${esc(formatarConvenioExibicao(m.convenio))}</span>${m.guia?`<span class="badge" style="background:#f1f5f9;color:#334155">Guia ${esc(m.guia)}</span>`:''}<p class="muted" style="margin:6px 0 0">📍 ${esc(m.origem)} ➔ ${esc(m.destino)}<br>🚑 ${esc(m.viatura||'—')} • 🚗 ${esc(m.totalKm)} km • 🕒 ${esc(m.data)}${hrs?' • '+esc(hrs):''}${insTxt}<br>💬 ${esc(m.relato||'Sem relato.')}</p><div class="acts"><button class="sm teal" type="button" onclick="abrirEvolucaoModelo('${esc(recKey)}')">🖨️ Imprimir evolução</button></div>${ed(r)}</div>`;
     }).join(''):'<p class="muted">Nenhuma remoção.</p>'}</div>
-    <div class="card"><h2>📦 Solicitações à farmácia</h2>${so.length?so.map(s=>`<div class="rec"><strong>${esc(s.viatura)}</strong> <span class="muted">${esc(s.data)}</span>${s.itens.map(i=>`<div style="font-size:.8rem">• ${esc(i.nome)} — <b>${i.qtd}</b></div>`).join('')}</div>`).join(''):'<p class="muted">Nenhuma solicitação.</p>'}</div>`;
+    <div class="card"><h2>📦 Solicitações à farmácia</h2>${so.length?so.map(s=>`<div class="rec"><strong>${esc(s.viatura)}</strong> <span class="muted">${esc(s.data)}</span>${s.itens.map(i=>`<div style="font-size:.8rem">• ${esc(i.nome)} — <b>${esc(i.qtd)}</b></div>`).join('')}</div>`).join(''):'<p class="muted">Nenhuma solicitação.</p>'}</div>`;
   }catch(e){
     $('pn').innerHTML='<div class="card"><p class="muted">Não foi possível carregar. Verifique a internet.</p></div>';
   }
