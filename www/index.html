@@ -210,7 +210,7 @@ details.kit[open]>summary{border-radius:8px 8px 0 0}details.kit>div.body{padding
 <div class="card hidden" id="cfg-viat-sup"><h2>🚐 Viaturas da empresa (Supervisão)</h2><p class="muted">Apenas a supervisão pode cadastrar, renomear ou remover viaturas. A equipe seleciona a viatura do plantão.</p><div id="aj-viat"></div><button class="sm teal" id="add-viat">+ Viatura</button></div>
 <div id="cfg-op"><div class="card"><h2>🚐 Viaturas disponíveis</h2><p class="muted" id="viat-readonly-list"></p></div>
 <div class="card"><h2>🎒 Kits, itens e cotas</h2><div id="aj-kits"></div><div class="acts"><button class="sm teal" id="add-kit">+ Kit</button><button class="sm sec" id="reset-cfg">Restaurar padrão</button></div></div></div>
-<footer style="text-align:center;margin-top:14px;padding-bottom:8px;font-size:.75rem;color:var(--muted)">v.1.2.4</footer>
+<footer style="text-align:center;margin-top:14px;padding-bottom:8px;font-size:.75rem;color:var(--muted)">v.1.2.5</footer>
 </section>
 </div>
 
@@ -266,7 +266,7 @@ if(!cfg.carimbos||!Array.isArray(cfg.carimbos.lista))cfg.carimbos=defCarimbosCfg
 
 const K_CHK='checklists_fluxsaude',K_REM='missoes_fluxsaude',K_SOL='solicitacoes_fluxsaude',K_CHK_DRAFTS='fs_chk_drafts_by_viat',K_PLANTAO='fs_plantao_ativo',K_VIAT_PADRAO='fs_viatura_padrao_perfil',K_CONSUMO_VIAT='fs_consumo_viat',K_SOL_ENVIADAS='fs_sol_enviadas_viat';
 let plantaoAtivo=ld(K_PLANTAO,null),viaturaPadraoPerfil=ld(K_VIAT_PADRAO,''),viatAtiva=(plantaoAtivo&&plantaoAtivo.viatura)||viaturaPadraoPerfil||ld('fs_viat_ativa',cfg.viaturas[0]||'UTI-15');
-let dirty=true,insumosRemocao=[];
+let dirty=true,insumosRemocao=[],plantaoBusy=false;
 const br=d=>d.split('-').reverse().join('/'),agora=()=>new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
 
 function getViaturaPadraoEfetiva(){const p=String(perfil?.viatura_padrao||viaturaPadraoPerfil||'').trim();return cfg.viaturas.includes(p)?p:''}
@@ -277,11 +277,18 @@ function getViaturaAtual(){
 }
 function setViaturaAtual(v){if(!v)return;viatAtiva=v;sv('fs_viat_ativa',v);['chk-viatura','r-viatura','hist-viatura'].forEach(id=>{const el=$(id);if(el&&[...el.options].some(o=>o.value===v))el.value=v})}
 
-async function registrarEventoPlantaoNuvem(acao,viatura,inicioFmt=''){
+async function registrarEventoPlantaoNuvem(acao,viatura,inicioFmt='',aguardarSync=false){
   if(!cloudOn||!sess||!perfil||sup())return;
-  const ev={id:Date.now()+'_'+acao,acao,viatura,profissional:perfil?.nome||perfil?.email||'Profissional',coren:perfil?.coren||'',inicio:inicioFmt||'',data:agora()};
+  const ev={id:Date.now()+'_'+acao+'_'+Math.random().toString(36).slice(2,6),acao,viatura,profissional:perfil?.nome||perfil?.email||'Profissional',coren:perfil?.coren||'',inicio:inicioFmt||'',data:agora()};
   const q=ld('fs_out',[]);q.push({tipo:'plantao_evento',local_id:ev.id,dados:ev});sv('fs_out',q);renderPlantaoBar();
-  if(navigator.onLine)await sync(false);
+  if(navigator.onLine){
+    if(aguardarSync){
+      let t=0;while(syncing&&t++<25)await new Promise(r=>setTimeout(r,200));
+      await sync(false);
+    }else{
+      sync(false);
+    }
+  }
 }
 
 function limparFilaPresa(){
@@ -319,39 +326,56 @@ function renderPlantaoBar(){
   const btnLimparFila=pend?`<button class="sm badx" type="button" onclick="limparFilaPresa()" title="Limpar itens travados na fila">🧹 Limpar fila</button>`:'';
   if(plantaoAtivo&&plantaoAtivo.viatura){
     box.classList.remove('off');
-    box.innerHTML=`<div class="plantao-top"><div class="plantao-info">🟢 <b>Plantão ativo:</b> <span class="badge b-ok" style="margin:0 4px">${esc(plantaoAtivo.viatura)}</span><span class="muted" style="font-size:.76rem">Início: ${esc(plantaoAtivo.inicio)}</span></div><div class="plantao-acts">${btnSync}${btnLimparFila}<button class="sm sec" type="button" onclick="abrirTrocaViaturaPlantao()">🔄 Trocar</button><button class="sm badx" type="button" onclick="finalizarPlantao()">Encerrar</button></div></div><div id="plantao-troca-area" class="hidden" style="margin-top:8px;padding-top:8px;border-top:1px dashed #cbd5e1"><div class="plantao-start-row" style="margin-top:0"><select id="sel-troca-viat" aria-label="Nova viatura do plantão">${cfg.viaturas.map(v=>`<option value="${esc(v)}"${v===plantaoAtivo.viatura?' selected':''}>${esc(v)}</option>`).join('')}</select><button class="sm teal" type="button" onclick="confirmarTrocaViaturaPlantao()">Confirmar</button><button class="sm sec" type="button" onclick="$('plantao-troca-area').classList.add('hidden')">Cancelar</button></div></div>`;
+    box.innerHTML=`<div class="plantao-top"><div class="plantao-info">🟢 <b>Plantão ativo:</b> <span class="badge b-ok" style="margin:0 4px">${esc(plantaoAtivo.viatura)}</span><span class="muted" style="font-size:.76rem">Início: ${esc(plantaoAtivo.inicio)}</span></div><div class="plantao-acts">${btnSync}${btnLimparFila}<button class="sm sec" type="button" onclick="abrirTrocaViaturaPlantao()"${plantaoBusy?' disabled':''}>🔄 Trocar</button><button class="sm badx" type="button" onclick="finalizarPlantao()"${plantaoBusy?' disabled':''}>Encerrar</button></div></div><div id="plantao-troca-area" class="hidden" style="margin-top:8px;padding-top:8px;border-top:1px dashed #cbd5e1"><div class="plantao-start-row" style="margin-top:0"><select id="sel-troca-viat" aria-label="Nova viatura do plantão">${cfg.viaturas.map(v=>`<option value="${esc(v)}"${v===plantaoAtivo.viatura?' selected':''}>${esc(v)}</option>`).join('')}</select><button class="sm teal" type="button" onclick="confirmarTrocaViaturaPlantao()"${plantaoBusy?' disabled':''}>Confirmar</button><button class="sm sec" type="button" onclick="$('plantao-troca-area').classList.add('hidden')">Cancelar</button></div></div>`;
   }else{
     box.classList.add('off');const padrao=getViaturaPadraoEfetiva()||getViaturaAtual();
-    box.innerHTML=`<div class="plantao-top"><div class="plantao-info">🟡 <b>Nenhum plantão iniciado</b>${getViaturaPadraoEfetiva()?` • Padrão: <b>${esc(getViaturaPadraoEfetiva())}</b>`:' • Selecione a viatura do turno'}</div><div class="plantao-acts">${btnSync}${btnLimparFila}</div></div><div class="plantao-start-row"><select id="sel-inicio-plantao" aria-label="Viatura para iniciar plantão">${cfg.viaturas.map(v=>`<option value="${esc(v)}"${v===padrao?' selected':''}>${esc(v)}</option>`).join('')}</select><button class="sm teal" type="button" onclick="iniciarPlantao()">Iniciar plantão</button></div>`;
+    box.innerHTML=`<div class="plantao-top"><div class="plantao-info">🟡 <b>Nenhum plantão iniciado</b>${getViaturaPadraoEfetiva()?` • Padrão: <b>${esc(getViaturaPadraoEfetiva())}</b>`:' • Selecione a viatura do turno'}</div><div class="plantao-acts">${btnSync}${btnLimparFila}</div></div><div class="plantao-start-row"><select id="sel-inicio-plantao" aria-label="Viatura para iniciar plantão">${cfg.viaturas.map(v=>`<option value="${esc(v)}"${v===padrao?' selected':''}>${esc(v)}</option>`).join('')}</select><button class="sm teal" type="button" onclick="iniciarPlantao()"${plantaoBusy?' disabled':''}>Iniciar plantão</button></div>`;
   }
 }
 
 async function iniciarPlantao(){
+  if(plantaoBusy||plantaoAtivo)return;
   const v=$('sel-inicio-plantao')?$('sel-inicio-plantao').value:getViaturaAtual();if(!v){toast('Selecione uma viatura.');return}
-  const inicioFmt=agora();plantaoAtivo={viatura:v,inicio:inicioFmt,profissional:perfil?.nome||''};
-  sv(K_PLANTAO,plantaoAtivo);setViaturaAtual(v);renderPlantaoBar();renderChecklist();await registrarEventoPlantaoNuvem('iniciado',v,inicioFmt);toast('🟢 Plantão iniciado na viatura '+v+'.');
+  plantaoBusy=true;
+  try{
+    const inicioFmt=agora();plantaoAtivo={viatura:v,inicio:inicioFmt,profissional:perfil?.nome||''};
+    sv(K_PLANTAO,plantaoAtivo);setViaturaAtual(v);renderPlantaoBar();renderChecklist();
+    await registrarEventoPlantaoNuvem('iniciado',v,inicioFmt,true);
+    toast('🟢 Plantão iniciado na viatura '+v+'.');
+  }finally{plantaoBusy=false;renderPlantaoBar()}
 }
 function abrirTrocaViaturaPlantao(){$('plantao-troca-area')?.classList.toggle('hidden')}
 async function confirmarTrocaViaturaPlantao(){
-  if(!plantaoAtivo)return;const novaViat=$('sel-troca-viat')?.value,antigaViat=plantaoAtivo.viatura;
+  if(plantaoBusy||!plantaoAtivo)return;
+  const novaViat=$('sel-troca-viat')?.value,antigaViat=plantaoAtivo.viatura;
   if(!novaViat||novaViat===antigaViat){$('plantao-troca-area')?.classList.add('hidden');return}
-  const drafts=ld(K_CHK_DRAFTS,{});
-  if(drafts[antigaViat]&&confirm(`Há um rascunho de checklist em aberto na ${antigaViat}. Deseja transferir esse preenchimento para a ${novaViat}?`)){drafts[novaViat]=drafts[antigaViat];delete drafts[antigaViat];sv(K_CHK_DRAFTS,drafts)}
-  const inicioAnterior=plantaoAtivo.inicio||'',novoInicio=agora();
-  plantaoAtivo.viatura=novaViat;plantaoAtivo.inicio=novoInicio;plantaoAtivo.trocadoDe=antigaViat;plantaoAtivo.trocadoEm=novoInicio;
-  sv(K_PLANTAO,plantaoAtivo);setViaturaAtual(novaViat);renderPlantaoBar();renderChecklist();
-  await registrarEventoPlantaoNuvem('encerrado',antigaViat,inicioAnterior);
-  await registrarEventoPlantaoNuvem('iniciado',novaViat,novoInicio);
-  toast(`🔄 Plantão alterado de ${antigaViat} para ${novaViat}.`);
+  plantaoBusy=true;renderPlantaoBar();
+  try{
+    const drafts=ld(K_CHK_DRAFTS,{});
+    if(drafts[antigaViat]&&confirm(`Há um rascunho de checklist em aberto na ${antigaViat}. Deseja transferir esse preenchimento para a ${novaViat}?`)){drafts[novaViat]=drafts[antigaViat];delete drafts[antigaViat];sv(K_CHK_DRAFTS,drafts)}
+    const inicioAnterior=plantaoAtivo.inicio||'',novoInicio=agora();
+    plantaoAtivo.viatura=novaViat;plantaoAtivo.inicio=novoInicio;plantaoAtivo.trocadoDe=antigaViat;plantaoAtivo.trocadoEm=novoInicio;
+    sv(K_PLANTAO,plantaoAtivo);setViaturaAtual(novaViat);renderChecklist();
+    await registrarEventoPlantaoNuvem('encerrado',antigaViat,inicioAnterior,false);
+    await registrarEventoPlantaoNuvem('iniciado',novaViat,novoInicio,true);
+    toast(`🔄 Plantão alterado de ${antigaViat} para ${novaViat}.`);
+  }finally{plantaoBusy=false;renderPlantaoBar()}
 }
 async function finalizarPlantao(){
-  if(!plantaoAtivo)return;const v=plantaoAtivo.viatura,inicioFmt=plantaoAtivo.inicio||'';
+  if(plantaoBusy||!plantaoAtivo)return;
+  const v=plantaoAtivo.viatura,inicioFmt=plantaoAtivo.inicio||'';
   if(ld('fs_out',[]).length&&navigator.onLine&&sess&&perfil){try{await sync(false)}catch(_){}}
   const filaRest=ld('fs_out',[]),temDraft=!!ld(K_CHK_DRAFTS,{})[v];
   const msg=(filaRest.length||temDraft)?`Atenção: há ${filaRest.length} envio(s) pendente(s)${temDraft?' e rascunho de checklist em aberto':''}. Encerrar o plantão da ${v} mesmo assim?`:`Encerrar o plantão na viatura ${v}?`;
-  if(!confirm(msg))return;plantaoAtivo=null;localStorage.removeItem(K_PLANTAO);
-  const padrao=getViaturaPadraoEfetiva();if(padrao)setViaturaAtual(padrao);
-  renderPlantaoBar();await registrarEventoPlantaoNuvem('encerrado',v,inicioFmt);toast('Plantão encerrado.');
+  if(!confirm(msg))return;
+  plantaoBusy=true;
+  try{
+    plantaoAtivo=null;localStorage.removeItem(K_PLANTAO);
+    const padrao=getViaturaPadraoEfetiva();if(padrao)setViaturaAtual(padrao);
+    renderPlantaoBar();
+    await registrarEventoPlantaoNuvem('encerrado',v,inicioFmt,true);
+    toast('Plantão encerrado.');
+  }finally{plantaoBusy=false;renderPlantaoBar()}
 }
 
 function atualizarSugestoesInsumos(){const dl=$('dl-insumos');if(!dl)return;const nomes=new Set();cfg.kits.forEach(k=>k.itens.forEach(it=>{if(it&&it.nome)nomes.add(it.nome)}));dl.innerHTML=[...nomes].map(n=>`<option value="${esc(n)}"></option>`).join('')}
@@ -641,7 +665,7 @@ async function compartilhar(id){const m=ld(K_REM,[]).find(x=>x.id===id);if(!m)re
 
 async function exportar(){
   if(cloudOn&&perfil&&!sup()){toast('Exportação restrita à supervisão (LGPD).');return}
-  const d={versao:'1.2.4',cfg,checklists:ld(K_CHK,[]),remocoes:ld(K_REM,[]),solicitacoes:ld(K_SOL,[])},nome='fluxsaude-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  const d={versao:'1.2.5',cfg,checklists:ld(K_CHK,[]),remocoes:ld(K_REM,[]),solicitacoes:ld(K_SOL,[])},nome='fluxsaude-backup-'+new Date().toISOString().slice(0,10)+'.json';
   if(nat()){try{const r=await Capacitor.Plugins.Filesystem.writeFile({path:nome,data:JSON.stringify(d),directory:'CACHE',encoding:'utf8'});await Capacitor.Plugins.Share.share({title:'Backup FluxSaúde',url:r.uri})}catch(e){toast('Não foi possível exportar o backup.')}return}
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d)],{type:'application/json'}));a.download=nome;document.body.appendChild(a);a.click();a.remove();toast('Backup gerado.');
 }
@@ -813,7 +837,7 @@ async function sincronizarLeituraFuncionarioNuvem(silencioso=true){
     if(plantaoAtivo&&plantaoAtivo.viatura){
       const evViat=R.filter(r=>r.tipo==='plantao_evento'&&r.dados?.viatura===plantaoAtivo.viatura);
       const ultimoEv=evViat[0]?.dados;
-      if(ultimoEv&&ultimoEv.acao==='encerrado'&&ultimoEv.inicio===plantaoAtivo.inicio){
+      if(ultimoEv&&ultimoEv.acao==='encerrado'&&(!ultimoEv.inicio||ultimoEv.inicio===plantaoAtivo.inicio)){
         plantaoAtivo=null;
         localStorage.removeItem(K_PLANTAO);
         const padrao=getViaturaPadraoEfetiva();
@@ -927,10 +951,10 @@ async function sair(){
   else if(temRascunho)msgConf='Atenção: há rascunho de checklist não salvo em aberto. Deseja sair mesmo assim?';
   if(!confirm(msgConf))return;
   if(plantaoAtivo&&perfil&&!sup()){
-    let t=0;while(syncing&&t++<20)await new Promise(r=>setTimeout(r,250));
-    await registrarEventoPlantaoNuvem('encerrado',plantaoAtivo.viatura,plantaoAtivo.inicio||'');
+    await registrarEventoPlantaoNuvem('encerrado',plantaoAtivo.viatura,plantaoAtivo.inicio||'',true);
   }
-  const avisoSaida=filaRestante.length?`Saída concluída com ${filaRestante.length} item(ns) pendente(s) na fila.`:'Verificação concluída: tudo ok e dados sensíveis limpos deste aparelho.';
+  const filaFinal=ld('fs_out',[]);
+  const avisoSaida=filaFinal.length?`Saída concluída com ${filaFinal.length} item(ns) pendente(s) na fila.`:'Verificação concluída: tudo ok e dados sensíveis limpos deste aparelho.';
   try{if(sb)await sb.auth.signOut()}catch(e){}[K_REM,K_CHK,K_SOL,K_CHK_DRAFTS,K_CONSUMO_VIAT,K_SOL_ENVIADAS,K_PLANTAO,'fs_out','fs_bf','fs_sess','fs_perfil'].forEach(k=>localStorage.removeItem(k));
   toast('✅ '+avisoSaida);setTimeout(()=>location.reload(),700);
 }
@@ -996,11 +1020,13 @@ async function renderPainel(){
     const R=await api('/rest/v1/registros?select=local_id,tipo,dados,editado_em,historico&order=criado_em.desc&limit=180');
     const por=t=>R.filter(r=>r.tipo===t).map(r=>r.dados),ck=por('checklist'),rm=R.filter(r=>r.tipo==='remocao').slice(0,25),so=por('solicitacao').slice(0,15),evPlantao=por('plantao_evento').slice(0,15);
     ultimoPainelRms=rm;
-    const evTodos=por('plantao_evento'),vistos=new Set();
+    const evTodos=por('plantao_evento'),vistos=new Set(),viaturasEmPlantao=new Set();
     plantoesAtivos=evTodos.filter(e=>e.viatura&&!vistos.has(e.viatura)&&vistos.add(e.viatura)).filter(e=>e.acao==='iniciado');
-    for(const s of so){if(s?.status==='recebida')notificarSolucaoDemandaSupervisao(`Solicitação recebida (${s.viatura})`,`Pedido #${s.id} solucionado${s.solucionadaEm?' em '+s.solucionadaEm:''}.`,`sol_painel_${s.id}_${s.solucionadaEm||s.status}`)}
+    plantoesAtivos.forEach(e=>viaturasEmPlantao.add(e.viatura));
+    for(const s of so){if(s?.status==='recebida')await notificarSolucaoDemandaSupervisao(`Solicitação recebida (${s.viatura})`,`Pedido #${s.id} solucionado${s.solucionadaEm?' em '+s.solucionadaEm:''}.`,`sol_painel_${s.id}_${s.solucionadaEm||s.status}`)}
     const vs=[...new Set([...cfg.viaturas,...ck.map(c=>c.viatura)].filter(Boolean))];
-    $('pn').innerHTML=`<div class="card"><h2>🔔 Situação das viaturas</h2>${vs.length?vs.map(v=>{const c=ck.find(x=>x.viatura===v);if(!c)return`<div class="rec"><strong>${esc(v)}</strong><p class="muted" style="margin:4px 0 0">Sem checklist enviado ainda.</p></div>`;const p=pendenciasViatura(v,c);return`<div class="rec ${p.length?'bad':'ok'}"><strong>${esc(v)}</strong> <span class="muted">${esc(c.data)}</span><div style="margin-top:6px">${p.length?p.map(x=>`<div style="font-size:.8rem">• <b>${esc(x.i.nome)}</b> — ${esc(x.s.a.join(' | '))}</div>`).join(''):'<span class="badge b-ok">✅ Tudo em ordem</span>'}</div></div>`}).join(''):'<p class="muted">Nenhuma viatura cadastrada.</p>'}</div><div class="card"><h2>🟢 Movimentação de plantões</h2>${plantoesAtivos.length?plantoesAtivos.map((ev,i)=>`<div class="rec ok"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><strong>${esc(ev.viatura)}</strong><span class="badge b-ok">🟢 Em plantão</span></div><p class="muted" style="margin:4px 0">👤 ${esc(ev.profissional||'Profissional')} • desde ${esc(ev.data||'')}</p><div class="acts"><button class="sm badx" type="button" onclick="encerrarPlantaoSupervisor(${i})">Encerrar plantão</button></div></div>`).join(''):'<p class="muted">Nenhuma viatura em plantão agora.</p>'}${evPlantao.length?evPlantao.map(ev=>{const ativo=ev.acao==='iniciado';return`<div class="rec ${ativo?'ok':'bad'}"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><strong>${esc(ev.viatura||'—')}</strong><span class="badge ${ativo?'b-ok':'b-warn'}">${ativo?'🟢 Plantão ativo':'🔴 Plantão encerrado'}</span></div><p class="muted" style="margin:4px 0 0">👤 ${esc(ev.profissional||'Profissional')}${ev.coren?' ('+esc(ev.coren)+')':''} • 🕒 ${esc(ev.data||'')}${!ativo&&ev.inicio?' • Início: '+esc(ev.inicio):''}</p></div>`}).join(''):'<p class="muted">Nenhuma abertura ou encerramento de plantão registrado.</p>'}</div><div class="card"><h2>🚑 Remoções recentes</h2>${rm.length?rm.map(r=>{const m=r.dados,recKey=r.local_id||(m&&m.id)||'',hrs=formatarHorariosRemocao(m),insTxt=m.insumos&&m.insumos.length?`<br>🧪 Insumos gastos: ${esc(m.insumos.map(i=>`${i.nome} (${i.qtd})`).join(', '))}`:'';return`<div class="rec"><strong>${esc(m.nome)}</strong> <span class="badge b-warn" style="background:#e0f2fe;color:#0369a1">${esc(formatarConvenioExibicao(m.convenio))}</span>${m.guia?`<span class="badge" style="background:#f1f5f9;color:#334155">Guia ${esc(m.guia)}</span>`:''}<p class="muted" style="margin:6px 0 0">📍 ${esc(m.origem)} ➔ ${esc(m.destino)}<br>🚑 ${esc(m.viatura||'—')} • 🚗 ${esc(m.totalKm)} km • 🕒 ${esc(m.data)}${hrs?' • '+esc(hrs):''}${insTxt}<br>💬 ${esc(m.relato||'Sem relato.')}</p><div class="acts"><button class="sm teal" type="button" onclick="abrirEvolucaoModelo('${esc(recKey)}')">🖨️ Imprimir evolução</button></div>${ed(r)}</div>`}).join(''):'<p class="muted">Nenhuma remoção.</p>'}</div><div class="card"><h2>📦 Solicitações à farmácia</h2>${so.length?so.map(s=>{const ok=s.status==='recebida';return`<div class="rec ${ok?'ok':'bad'}"><div style="display:flex;justify-content:space-between;gap:8px"><strong>${esc(s.viatura)}</strong><span class="badge ${ok?'b-ok':'b-warn'}">${ok?'✅ Solucionada / Recebida':'⏳ Pendente'}</span></div><p class="muted" style="margin:4px 0">🕒 ${esc(s.data)}${s.solucionadaEm?' • Solucionada em '+esc(s.solucionadaEm):''}</p>${s.itens.map(i=>`<div style="font-size:.8rem">• ${esc(i.nome)} — <b>${i.qtd}</b></div>`).join('')}</div>`}).join(''):'<p class="muted">Nenhuma solicitação.</p>'}</div>`;
+    const viaturasJaMostradasAbertas=new Set();
+    $('pn').innerHTML=`<div class="card"><h2>🔔 Situação das viaturas</h2>${vs.length?vs.map(v=>{const c=ck.find(x=>x.viatura===v);if(!c)return`<div class="rec"><strong>${esc(v)}</strong><p class="muted" style="margin:4px 0 0">Sem checklist enviado ainda.</p></div>`;const p=pendenciasViatura(v,c);return`<div class="rec ${p.length?'bad':'ok'}"><strong>${esc(v)}</strong> <span class="muted">${esc(c.data)}</span><div style="margin-top:6px">${p.length?p.map(x=>`<div style="font-size:.8rem">• <b>${esc(x.i.nome)}</b> — ${esc(x.s.a.join(' | '))}</div>`).join(''):'<span class="badge b-ok">✅ Tudo em ordem</span>'}</div></div>`}).join(''):'<p class="muted">Nenhuma viatura cadastrada.</p>'}</div><div class="card"><h2>🟢 Movimentação de plantões</h2>${plantoesAtivos.length?plantoesAtivos.map((ev,i)=>`<div class="rec ok"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><strong>${esc(ev.viatura)}</strong><span class="badge b-ok">🟢 Em plantão agora</span></div><p class="muted" style="margin:4px 0">👤 ${esc(ev.profissional||'Profissional')} • desde ${esc(ev.data||'')}</p><div class="acts"><button class="sm badx" type="button" onclick="encerrarPlantaoSupervisor(${i})">Encerrar plantão</button></div></div>`).join(''):'<p class="muted">Nenhuma viatura em plantão agora.</p>'}${evPlantao.length?`<div style="border-top:1px solid #e2e8f0;margin-top:10px;padding-top:10px"><p class="muted" style="font-size:.78rem;margin:0 0 8px"><b>Histórico recente de aberturas e encerramentos:</b></p>${evPlantao.map(ev=>{const isIni=ev.acao==='iniciado';const aindaAberto=isIni&&viaturasEmPlantao.has(ev.viatura)&&!viaturasJaMostradasAbertas.has(ev.viatura);if(aindaAberto)viaturasJaMostradasAbertas.add(ev.viatura);const badgeTxt=aindaAberto?'🟢 Em andamento':(isIni?'⚪ Abertura (já encerrada)':'🔴 Plantão encerrado');const badgeCls=aindaAberto?'b-ok':(isIni?'':'b-warn');const badgeStyle=(isIni&&!aindaAberto)?' style="background:#f1f5f9;color:#475569"':'';return`<div class="rec ${aindaAberto?'ok':(isIni?'':'bad')}"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><strong>${esc(ev.viatura||'—')}</strong><span class="badge ${badgeCls}"${badgeStyle}>${badgeTxt}</span></div><p class="muted" style="margin:4px 0 0">👤 ${esc(ev.profissional||'Profissional')}${ev.coren?' ('+esc(ev.coren)+')':''} • 🕒 ${esc(ev.data||'')}${!isIni&&ev.inicio?' • Início: '+esc(ev.inicio):''}</p></div>`}).join('')}</div>`:'<p class="muted">Nenhuma abertura ou encerramento de plantão registrado.</p>'}</div><div class="card"><h2>🚑 Remoções recentes</h2>${rm.length?rm.map(r=>{const m=r.dados,recKey=r.local_id||(m&&m.id)||'',hrs=formatarHorariosRemocao(m),insTxt=m.insumos&&m.insumos.length?`<br>🧪 Insumos gastos: ${esc(m.insumos.map(i=>`${i.nome} (${i.qtd})`).join(', '))}`:'';return`<div class="rec"><strong>${esc(m.nome)}</strong> <span class="badge b-warn" style="background:#e0f2fe;color:#0369a1">${esc(formatarConvenioExibicao(m.convenio))}</span>${m.guia?`<span class="badge" style="background:#f1f5f9;color:#334155">Guia ${esc(m.guia)}</span>`:''}<p class="muted" style="margin:6px 0 0">📍 ${esc(m.origem)} ➔ ${esc(m.destino)}<br>🚑 ${esc(m.viatura||'—')} • 🚗 ${esc(m.totalKm)} km • 🕒 ${esc(m.data)}${hrs?' • '+esc(hrs):''}${insTxt}<br>💬 ${esc(m.relato||'Sem relato.')}</p><div class="acts"><button class="sm teal" type="button" onclick="abrirEvolucaoModelo('${esc(recKey)}')">🖨️ Imprimir evolução</button></div>${ed(r)}</div>`}).join(''):'<p class="muted">Nenhuma remoção.</p>'}</div><div class="card"><h2>📦 Solicitações à farmácia</h2>${so.length?so.map(s=>{const ok=s.status==='recebida';return`<div class="rec ${ok?'ok':'bad'}"><div style="display:flex;justify-content:space-between;gap:8px"><strong>${esc(s.viatura)}</strong><span class="badge ${ok?'b-ok':'b-warn'}">${ok?'✅ Solucionada / Recebida':'⏳ Pendente'}</span></div><p class="muted" style="margin:4px 0">🕒 ${esc(s.data)}${s.solucionadaEm?' • Solucionada em '+esc(s.solucionadaEm):''}</p>${s.itens.map(i=>`<div style="font-size:.8rem">• ${esc(i.nome)} — <b>${i.qtd}</b></div>`).join('')}</div>`}).join(''):'<p class="muted">Nenhuma solicitação.</p>'}</div>`;
   }catch(e){$('pn').innerHTML='<div class="card"><p class="muted">Não foi possível carregar. Verifique a internet.</p></div>'}
 }
 
