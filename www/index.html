@@ -208,9 +208,9 @@ details.kit[open]>summary{border-radius:8px 8px 0 0}details.kit>div.body{padding
   <button class="sm teal" type="button" id="add-carimbo">+ Salvar carimbo</button>
 </div></div>
 <div class="card hidden" id="cfg-viat-sup"><h2>🚐 Viaturas da empresa (Supervisão)</h2><p class="muted">Apenas a supervisão pode cadastrar, renomear ou remover viaturas. A equipe seleciona a viatura do plantão.</p><div id="aj-viat"></div><button class="sm teal" id="add-viat">+ Viatura</button></div>
-<div id="cfg-op"><div class="card"><h2>🚐 Viaturas disponíveis</h2><p class="muted" id="viat-readonly-list"></p></div>
+<div id="cfg-op"><div class="card"><h2>🚐 Viaturas disponíveis</h2><p class="muted" id="viat-readonly-list"></p><button class="sm sec" type="button" onclick="sincronizarViaturasAgora()" style="margin-top:6px">🔄 Sincronizar viaturas da empresa</button></div>
 <div class="card"><h2>🎒 Kits, itens e cotas</h2><div id="aj-kits"></div><div class="acts"><button class="sm teal" id="add-kit">+ Kit</button><button class="sm sec" id="reset-cfg">Restaurar padrão</button></div></div></div>
-<footer style="text-align:center;margin-top:14px;padding-bottom:8px;font-size:.75rem;color:var(--muted)">v.1.2.5</footer>
+<footer style="text-align:center;margin-top:14px;padding-bottom:8px;font-size:.75rem;color:var(--muted)">v.1.2.6</footer>
 </section>
 </div>
 
@@ -254,7 +254,7 @@ const ld=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?
 let tt;const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),3800)};
 const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){toast('Erro ao salvar: armazenamento indisponível ou cheio.');return false}};
 const defCarimbosCfg=()=>({estilo:'simples',alinhamento:'centro',lista:[]});
-const defCfg=()=>({viaturas:['UTI-15'],kits:KITS0.map(([n,i])=>({nome:n,itens:i.map(([a,b])=>({nome:a,cota:b}))})),carimbos:defCarimbosCfg()});
+const defCfg=()=>({viaturas:['UTI-15','UTI-16','UTI-17'],kits:KITS0.map(([n,i])=>({nome:n,itens:i.map(([a,b])=>({nome:a,cota:b}))})),carimbos:defCarimbosCfg()});
 
 function logoFluxSaudeSvg(className='',w=40,h=36){return`<svg class="${className}" width="${w}" height="${h}" viewBox="0 0 120 105" fill="none" aria-hidden="true"><circle cx="43" cy="14" r="4.5" fill="#003366"/><circle cx="55" cy="14" r="4.5" fill="#003366"/><path d="M43 14C22 14 14 34 22 54C29 71 58 92 60 93C62 92 84 76 94 61" stroke="#003366" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M55 14C62 14 66 20 67 24C72 17 82 14 91 17C104 21 108 37 101 51" stroke="#003366" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="96" cy="56" r="11" fill="#fff" stroke="#003366" stroke-width="6.5"/><circle cx="96" cy="56" r="3.5" fill="#003366"/><path d="M32 52H48L54 34L62 68L69 47L73 52H81" stroke="#00a896" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`}
 function renderBrandHeaders(){document.querySelectorAll('.js-brand-header').forEach(el=>{el.innerHTML=`<div class="brand">${logoFluxSaudeSvg('',46,42)}<h1><span class="fl">Flux</span><span class="sa">Saúde</span></h1></div>`})}
@@ -300,18 +300,26 @@ function limparFilaPresa(){
   toast('Fila de envio limpa.');
 }
 
+async function sincronizarViaturasAgora(){
+  toast('Sincronizando viaturas...');
+  const ok=await carregarConfigEmpresaNuvem(true);
+  if(ok)toast('✅ Viaturas atualizadas: '+cfg.viaturas.join(', '));
+  else toast('Não foi possível obter viaturas novas da nuvem agora.');
+}
+
 async function atualizarTudoFuncionario(){
   toast('Sincronizando com a nuvem...');
   await sync(true);
   if(!sup()&&sess){
+    await carregarConfigEmpresaNuvem(true);
     await sincronizarLeituraFuncionarioNuvem(false);
-    await carregarConfigEmpresaNuvem();
   }
   const aba=document.querySelector('.tab.on')?.dataset.t;
   if(aba==='checklist')renderChecklist();
   else if(aba==='avisos')renderAvisos();
   else if(aba==='history')renderHistorico(true);
   else if(aba==='field')renderAgenda();
+  else if(aba==='config')renderAjustes();
   atualizarDot();
   renderPlantaoBar();
   if(!ld('fs_out',[]).length)toast('✅ Tudo sincronizado com a supervisão.');
@@ -468,8 +476,17 @@ function status(i){
 function switchTab(t){
   document.querySelectorAll('.tab').forEach(b=>{const on=b.dataset.t===t;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('hidden',v.id!=='v-'+t));
-  if(t==='checklist')renderChecklist();if(t==='avisos')renderAvisos();if(t==='field'){atualizarSugestoesInsumos();renderInsumosRemocao();if(cloudOn&&!sup())renderAgenda()}
-  if(t==='history')renderHistorico();if(t==='config')renderAjustes();if(t==='painel')renderPainel();if(t==='agenda')renderAgenda();window.scrollTo(0,0);
+  if(t==='checklist')renderChecklist();if(t==='avisos')renderAvisos();if(t==='field'){fillViaturas();atualizarSugestoesInsumos();renderInsumosRemocao();if(cloudOn&&!sup())renderAgenda()}
+  if(t==='history')renderHistorico();if(t==='config')renderAjustes();if(t==='painel')renderPainel();if(t==='agenda')renderAgenda();
+  if(cloudOn&&sess&&navigator.onLine&&['checklist','avisos','field','config'].includes(t)){
+    carregarConfigEmpresaNuvem(false).then(mudou=>{
+      if(!mudou)return;
+      if(t==='checklist')renderChecklist();
+      else if(t==='avisos')renderAvisos();
+      else if(t==='config')renderAjustes();
+    });
+  }
+  window.scrollTo(0,0);
 }
 
 function fillViaturas(){
@@ -478,6 +495,7 @@ function fillViaturas(){
   const agV=$('ag-viat');if(agV){const curAg=agV.value;agV.innerHTML=`<option value="">Qualquer viatura</option>`+o;if(curAg&&cfg.viaturas.includes(curAg))agV.value=curAg}
   const todas=viaturasConhecidas(ld(K_CHK,[]),ld(K_REM,[]),ld(K_SOL,[])),oAll=`<option value="__ALL__">Todas as viaturas</option>`+todas.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
   ['av-viatura','hist-viatura'].forEach(id=>{const s=$(id);if(s){const prev=s.value;s.innerHTML=oAll;if(prev&&[...s.options].some(op=>op.value===prev))s.value=prev;else if(!s.dataset.userPicked)s.value=vSel;else s.value='__ALL__'}});
+  if($('viat-readonly-list'))$('viat-readonly-list').textContent='Viaturas cadastradas pela supervisão: '+cfg.viaturas.join(', ');
 }
 
 const chaveItemChk=(kitNome,itemNome)=>`${kitNome}||${itemNome}`;
@@ -665,7 +683,7 @@ async function compartilhar(id){const m=ld(K_REM,[]).find(x=>x.id===id);if(!m)re
 
 async function exportar(){
   if(cloudOn&&perfil&&!sup()){toast('Exportação restrita à supervisão (LGPD).');return}
-  const d={versao:'1.2.5',cfg,checklists:ld(K_CHK,[]),remocoes:ld(K_REM,[]),solicitacoes:ld(K_SOL,[])},nome='fluxsaude-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  const d={versao:'1.2.6',cfg,checklists:ld(K_CHK,[]),remocoes:ld(K_REM,[]),solicitacoes:ld(K_SOL,[])},nome='fluxsaude-backup-'+new Date().toISOString().slice(0,10)+'.json';
   if(nat()){try{const r=await Capacitor.Plugins.Filesystem.writeFile({path:nome,data:JSON.stringify(d),directory:'CACHE',encoding:'utf8'});await Capacitor.Plugins.Share.share({title:'Backup FluxSaúde',url:r.uri})}catch(e){toast('Não foi possível exportar o backup.')}return}
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d)],{type:'application/json'}));a.download=nome;document.body.appendChild(a);a.click();a.remove();toast('Backup gerado.');
 }
@@ -848,7 +866,7 @@ async function sincronizarLeituraFuncionarioNuvem(silencioso=true){
       }
     }
 
-    if(houveAtualizacao){atualizarDot();sincronizarNotificacoesValidade()}
+    if(houveAtualizacao){fillViaturas();atualizarDot();sincronizarNotificacoesValidade()}
   }catch(_){if(!silencioso)toast('Sem conexão para atualizar registros da nuvem; exibindo dados locais.')}
   finally{syncingRead=false}return houveAtualizacao;
 }
@@ -863,13 +881,34 @@ async function salvarConfigTipoNuvem(tipo,localId,dados){
     });
   }catch(_){toast('Configuração salva localmente, mas sem conexão para sincronizar.')}
 }
-async function carregarConfigEmpresaNuvem(){
-  if(!cloudOn||!sess||!perfil||!perfil.empresa_id)return;
+async function carregarConfigEmpresaNuvem(forcar=false){
+  if(!cloudOn||!sess||!perfil||!perfil.empresa_id)return false;
+  let mudou=false;
   try{
-    const resV=await api('/rest/v1/registros?select=dados&empresa_id=eq.'+encodeURIComponent(perfil.empresa_id)+'&tipo=eq.config_viaturas&limit=1');if(Array.isArray(resV)&&resV[0]?.dados?.viaturas?.length){cfg.viaturas=resV[0].dados.viaturas;if(!cfg.viaturas.includes(viatAtiva))viatAtiva=getViaturaAtual()}
-    const resC=await api('/rest/v1/registros?select=dados&empresa_id=eq.'+encodeURIComponent(perfil.empresa_id)+'&tipo=eq.config_carimbos&limit=1');if(Array.isArray(resC)&&resC[0]?.dados){cfg.carimbos={estilo:resC[0].dados.estilo||'simples',alinhamento:resC[0].dados.alinhamento||'centro',lista:Array.isArray(resC[0].dados.lista)?resC[0].dados.lista:[]}}
-    sv('fs_cfg',cfg);fillViaturas();renderPlantaoBar();if($('viat-readonly-list'))$('viat-readonly-list').textContent='Viaturas cadastradas pela supervisão: '+cfg.viaturas.join(', ');
+    const resV=await api('/rest/v1/registros?select=dados&empresa_id=eq.'+encodeURIComponent(perfil.empresa_id)+'&tipo=eq.config_viaturas&limit=1');
+    if(Array.isArray(resV)&&resV[0]?.dados?.viaturas?.length){
+      const novasV=resV[0].dados.viaturas.map(v=>String(v||'').trim()).filter(Boolean);
+      if(novasV.length&&JSON.stringify(novasV)!==JSON.stringify(cfg.viaturas)){
+        cfg.viaturas=novasV;
+        mudou=true;
+      }
+      if(!cfg.viaturas.includes(viatAtiva))viatAtiva=getViaturaAtual();
+    }
+    const resC=await api('/rest/v1/registros?select=dados&empresa_id=eq.'+encodeURIComponent(perfil.empresa_id)+'&tipo=eq.config_carimbos&limit=1');
+    if(Array.isArray(resC)&&resC[0]?.dados){
+      const novoCb={estilo:resC[0].dados.estilo||'simples',alinhamento:resC[0].dados.alinhamento||'centro',lista:Array.isArray(resC[0].dados.lista)?resC[0].dados.lista:[]};
+      if(JSON.stringify(novoCb)!==JSON.stringify(cfg.carimbos)){
+        cfg.carimbos=novoCb;
+        mudou=true;
+      }
+    }
+    if(mudou||forcar){
+      sv('fs_cfg',cfg);
+      fillViaturas();
+      renderPlantaoBar();
+    }
   }catch(_){}
+  return mudou;
 }
 const salvarViaturasNuvem=()=>salvarConfigTipoNuvem('config_viaturas','viaturas_empresa',{viaturas:cfg.viaturas,atualizado_em:new Date().toISOString()});
 const salvarCarimbosNuvem=()=>salvarConfigTipoNuvem('config_carimbos','carimbos_empresa',{estilo:cfg.carimbos.estilo||'simples',alinhamento:cfg.carimbos.alinhamento||'centro',lista:cfg.carimbos.lista||[],atualizado_em:new Date().toISOString()});
@@ -965,12 +1004,15 @@ function limparResiduosLocalSupervisor(){
 }
 
 async function iniciar(){
-  $('login').classList.add('hidden');if(sess)await carregarConfigEmpresaNuvem();const s=sup();
-  if(s)limparResiduosLocalSupervisor();
+  $('login').classList.add('hidden');if(sess)await carregarConfigEmpresaNuvem(true);const s=sup();
+  if(s){
+    limparResiduosLocalSupervisor();
+    if(sess)await salvarViaturasNuvem();
+  }
   document.querySelectorAll('.tab').forEach(b=>{const t=b.dataset.t,so=['painel','agenda'].includes(t);b.classList.toggle('hidden',s?!(so||t==='config'):so)});
   $('cfg-carimbos-sup').classList.toggle('hidden',!s);$('cfg-viat-sup').classList.toggle('hidden',!s);$('cfg-viat-padrao').classList.toggle('hidden',s);$('cfg-op').classList.toggle('hidden',s);$('ag-f').classList.toggle('hidden',s||!cloudOn||!sess);$('conta').classList.toggle('hidden',!cloudOn||!perfil);
   if(perfil){$('conta-info').textContent=[perfil.nome,perfil.coren,s?'Supervisor':'Funcionário'].filter(Boolean).join(' • ');const cbAtual=!(cfg.carimbos?.lista||[]).length?obterCarimboProfissionalAtual():null;if($('conta-carimbo-preview'))$('conta-carimbo-preview').innerHTML=cbAtual?renderCarimboRetangularHtml(cbAtual):''}
-  renderPlantaoBar();switchTab(s?'painel':'checklist');
+  fillViaturas();renderPlantaoBar();switchTab(s?'painel':'checklist');
   if(!s&&sess){backfill();await sync(false);await sincronizarLeituraFuncionarioNuvem(true);if(document.querySelector('.tab.on')?.dataset.t==='checklist')renderChecklist();atualizarDot();renderPlantaoBar()}
   prepararNotificacoesLocais();if(sess)renderAgenda();
 }
@@ -1011,7 +1053,8 @@ async function sync(mostrarErro=false){
   }finally{syncing=false;renderPlantaoBar()}
 }
 
-window.addEventListener('online',async()=>{await sync(false);if(!sup())await sincronizarLeituraFuncionarioNuvem(true)});
+window.addEventListener('online',async()=>{await sync(false);if(sess){await carregarConfigEmpresaNuvem(true);if(!sup())await sincronizarLeituraFuncionarioNuvem(true)}});
+document.addEventListener('visibilitychange',async()=>{if(!document.hidden&&sess&&navigator.onLine){const mudou=await carregarConfigEmpresaNuvem(false);if(mudou&&document.querySelector('.tab.on')?.dataset.t==='checklist')renderChecklist()}});
 setInterval(()=>sync(false),60000);
 
 async function renderPainel(){
@@ -1068,7 +1111,7 @@ function delCarimbo(i){if(!sup()){toast('Apenas a supervisão pode remover carim
 
 function renderAjustes(open){
   if($('meu-nome')&&perfil)$('meu-nome').value=perfil.nome||'';
-  fillViaturas();if($('viat-readonly-list'))$('viat-readonly-list').textContent='Viaturas ativas: '+cfg.viaturas.join(', ');
+  fillViaturas();
   if(!sup()&&$('sel-viat-padrao')){const padraoAtual=getViaturaPadraoEfetiva();$('sel-viat-padrao').innerHTML=`<option value="">Rodízio (escolher ao iniciar plantão)</option>`+cfg.viaturas.map(v=>`<option value="${esc(v)}"${v===padraoAtual?' selected':''}>Fixo: ${esc(v)}</option>`).join('')}
   if(sup()){renderCarimbosAjustes();$('aj-viat').innerHTML=cfg.viaturas.map((v,i)=>`<div class="row"><input value="${esc(v)}" aria-label="Nome da viatura" onchange="cfg.viaturas[${i}]=this.value.trim()||cfg.viaturas[${i}];persist(true,false);renderAjustes()"><button class="sm badx" onclick="delViat(${i})">Remover</button></div>`).join('')}
   $('aj-kits').innerHTML=cfg.kits.map((k,ki)=>`<details class="kit"${open===ki?' open':''}><summary>${esc(k.nome)} (${k.itens.length})</summary><div class="body"><div class="row"><input value="${esc(k.nome)}" aria-label="Nome do kit" onchange="cfg.kits[${ki}].nome=this.value.trim()||cfg.kits[${ki}].nome;persist(false,false)"><button class="sm badx" onclick="delKit(${ki})">Excluir kit</button></div>${k.itens.map((it,ii)=>`<div class="row"><input value="${esc(it.nome)}" aria-label="Nome do item" onchange="cfg.kits[${ki}].itens[${ii}].nome=this.value.trim()||cfg.kits[${ki}].itens[${ii}].nome;persist(false,false)"><input class="q" type="number" min="0" inputmode="numeric" value="${it.cota}" aria-label="Cota" onchange="cfg.kits[${ki}].itens[${ii}].cota=Math.max(0,parseInt(this.value)||0);persist(false,false)"><button class="sm badx" aria-label="Remover item" onclick="delItem(${ki},${ii})">✕</button></div>`).join('')}<button class="sm" onclick="addItem(${ki})">+ Item</button></div></details>`).join('');
@@ -1093,7 +1136,7 @@ $('add-carimbo').onclick=()=>{
   cfg.carimbos.lista.push({id:Date.now(),nome,categoria:categoria||'Enfermagem',registro});
   $('cb-novo-nome').value='';$('cb-novo-cat').value='';$('cb-novo-reg').value='';persist(false,true);renderCarimbosAjustes();toast('Carimbo cadastrado e sincronizado.');
 };
-$('add-viat').onclick=()=>{if(!sup()){toast('Apenas a supervisão pode adicionar viaturas.');return}const n=prompt('Identificação da viatura (ex.: UTI-16):');if(n&&n.trim()&&!cfg.viaturas.includes(n.trim())){cfg.viaturas.push(n.trim());persist(true,false);renderAjustes();toast('Viatura '+n.trim()+' adicionada.')}};
+$('add-viat').onclick=()=>{if(!sup()){toast('Apenas a supervisão pode adicionar viaturas.');return}const n=prompt('Identificação da viatura (ex.: UTI-18):');if(n&&n.trim()&&!cfg.viaturas.includes(n.trim())){cfg.viaturas.push(n.trim());persist(true,false);renderAjustes();toast('Viatura '+n.trim()+' adicionada.')}};
 $('add-kit').onclick=()=>{const n=prompt('Nome do novo kit:');if(n&&n.trim()){cfg.kits.push({nome:n.trim(),itens:[]});persist(false,false);renderAjustes(cfg.kits.length-1)}};
 $('reset-cfg').onclick=()=>{if(confirm('Restaurar kits e cotas para o padrão? O histórico é mantido.')){const vAtual=cfg.viaturas,cAtual=cfg.carimbos;cfg=defCfg();cfg.carimbos=cAtual;if(!sup())cfg.viaturas=vAtual;persist(false,false);renderAjustes();toast('Padrão restaurado.')}};
 
