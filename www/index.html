@@ -210,7 +210,7 @@ details.kit[open]>summary{border-radius:8px 8px 0 0}details.kit>div.body{padding
 <div class="card hidden" id="cfg-viat-sup"><h2>🚐 Viaturas da empresa (Supervisão)</h2><p class="muted">Apenas a supervisão pode cadastrar, renomear ou remover viaturas. A equipe seleciona a viatura do plantão.</p><div id="aj-viat"></div><button class="sm teal" id="add-viat">+ Viatura</button></div>
 <div id="cfg-op"><div class="card"><h2>🚐 Viaturas disponíveis</h2><p class="muted" id="viat-readonly-list"></p><button class="sm sec" type="button" onclick="sincronizarViaturasAgora()" style="margin-top:6px">🔄 Sincronizar viaturas da empresa</button></div>
 <div class="card"><h2>🎒 Kits, itens e cotas</h2><div id="aj-kits"></div><div class="acts"><button class="sm teal" id="add-kit">+ Kit</button><button class="sm sec" id="reset-cfg">Restaurar padrão</button></div></div></div>
-<footer style="text-align:center;margin-top:14px;padding-bottom:8px;font-size:.75rem;color:var(--muted)">v.1.2.6</footer>
+<footer style="text-align:center;margin-top:14px;padding-bottom:8px;font-size:.75rem;color:var(--muted)">v.1.2.7</footer>
 </section>
 </div>
 
@@ -248,6 +248,8 @@ const KITS0=[
   ["💉 Bolsa de Ampolagem",[["AAS 100 mg",4],["Adenosina 3mg",2],["Adrenalina 1mg/ml",10],["Água Destilada 10ml",15],["Aminofilina 24 mg/ml",5],["Amiodarona (Ancoron) 50mg/ml",5],["Atropina 0,25 mg/ml",10],["Atrovent (Brometo de Ipratrópio) 0,25mg/ml - 20 ml",1],["Bicarbonato de Sódio 8,4 % 250 ml",1],["Bicarbonato de Sódio 8,4% 10ml",5],["Buscopan Composto 04mg/ml",2],["Buscopan Simples 20mg/ml (Butilbrometo de Escopolamina) Inj.",2],["Captopril 25 mg",2],["Cedilanide (Deslanol) 0,2mg/ml",2],["Cloreto de Potássio (KCL) 19,1%",2],["Cloreto de Sódio 10%",2],["Decadron (Dexametasona) 4mg/2,5 ml",3],["Dipirona 500mg/ml",5],["Dipirona 500mg/ml 10 ml - Gotas.",1],["Dobutrex (Dobutamina) 250mg/20ml",1],["Dopamina 05mg/ml - 10ml",5],["Dramin B6 - 10 ml",2],["Efortil (Etilefrina) 10mg/ml",1],["Fernegan (Cloridrato de Prometazina) 50mg/2ml",2],["Fleet Enema - 130 ml",1],["Glicose 50% 10 ml",10],["Gluconato de Cálcio 10% - 10ml",2],["Heparina 5.000UI/5 ml",1],["Hidrocortisona 100 mg",5],["Hidrocortisona 500 mg",5],["Isordil 10 mg",2],["Isordil 5 mg SL",2],["Lasix (Furosemida) 10 mg/ml",5],["Methergin 0,2mg/ml",2],["Nitroprussiato de Sódio (Nipride) 50mg/2ml",1],["Noradrenalina 4mg - 1mg/ml",5],["Omeprazol Frasco 40mg + Diluente 10 ml",2],["Ondansetrona (Zofran) 8mg/4ml",2],["Paracetamol 200mg/ml - 15 ml - Gotas",1],["Plamet (Bromoprida) 10mg/ml",2],["Plamet (Bromoprida) Gotas",1],["Solução Glicerinada - 500 ml",1],["Soro Fisiológico 0,9% 100 ml",3],["Soro Glicosado 5% 250 ml",1],["Sulfato de Magnésio 10%",4],["Sulfato de Terbutalina (Bricanyl) 0,5mg/ml",3],["Vasopressina (Encrise) 20U/ml",1],["Vitamina K 10mg/ml",2],["Xilocaína 2% s/v 2ml amp",2]]],
   ["🔒 Bolsa de Ampolagem - Controlados",[["Amplictil (Cloridrato de Clorpromazina) 5mg/ml",2],["Diazepam 10 mg/2ml.",3],["Dormonid 5mg/ml - 10ml",2],["Dormonid 5mg/ml - 3ml",2],["Etomidato 2mg/ml",1],["Fenobarbital 200mg/ml (Gardenal)",2],["Fentanil 50mcg/ml - 10ml",2],["Flumazenil 0,5mg/5ml",2],["Haloperidol 5mg/ml - 1ml",1],["Hidantal (Fenitoína) 100 mg",5],["Morfina (Dimorf) 10mg/1ml",2],["Naloxone (Narcan) 0,4mg/ml",2],["Nubain 10mg/ml",1],["Succinin (Cloreto Suxametônio) 100mg",1],["Tramal 100 mg/2ml",2],["Tramal 50 mg/1ml",2]]]
 ];
+
+const ANTECEDENCIA_INICIO_MIN = 10; // Libera o botão "Iniciar remoção" 10 minutos antes do horário agendado
 
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ld=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}};
@@ -683,7 +685,7 @@ async function compartilhar(id){const m=ld(K_REM,[]).find(x=>x.id===id);if(!m)re
 
 async function exportar(){
   if(cloudOn&&perfil&&!sup()){toast('Exportação restrita à supervisão (LGPD).');return}
-  const d={versao:'1.2.6',cfg,checklists:ld(K_CHK,[]),remocoes:ld(K_REM,[]),solicitacoes:ld(K_SOL,[])},nome='fluxsaude-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  const d={versao:'1.2.7',cfg,checklists:ld(K_CHK,[]),remocoes:ld(K_REM,[]),solicitacoes:ld(K_SOL,[])},nome='fluxsaude-backup-'+new Date().toISOString().slice(0,10)+'.json';
   if(nat()){try{const r=await Capacitor.Plugins.Filesystem.writeFile({path:nome,data:JSON.stringify(d),directory:'CACHE',encoding:'utf8'});await Capacitor.Plugins.Share.share({title:'Backup FluxSaúde',url:r.uri})}catch(e){toast('Não foi possível exportar o backup.')}return}
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d)],{type:'application/json'}));a.download=nome;document.body.appendChild(a);a.click();a.remove();toast('Backup gerado.');
 }
@@ -918,6 +920,25 @@ function formatarAtraso(quandoIso){
   if(totalMin<1)return 'Atrasada há menos de 1 min';if(totalMin<60)return `Atrasada há ${totalMin} min`;
   const horas=Math.floor(totalMin/60),min=totalMin%60;if(horas<24)return min?`Atrasada há ${horas}h ${min}min`:`Atrasada há ${horas}h`;return `Atrasada há ${Math.floor(horas/24)}d`;
 }
+
+function infoJanelaAgendamento(quandoIso){
+  const alvoMs=new Date(quandoIso).getTime();
+  if(!Number.isFinite(alvoMs))return{liberado:true,textoBotao:'Iniciar remoção',aviso:''};
+  const diffMin=Math.ceil((alvoMs-Date.now())/60000);
+  if(diffMin>ANTECEDENCIA_INICIO_MIN){
+    const horaPrev=new Date(alvoMs).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    const faltaTxt=diffMin>=1440
+      ?`em ${Math.floor(diffMin/1440)}d`
+      :(diffMin>=60?`em ${Math.floor(diffMin/60)}h ${diffMin%60}min`:`em ${diffMin} min`);
+    return{
+      liberado:false,
+      textoBotao:`🔒 Libera ${ANTECEDENCIA_INICIO_MIN}m antes (${horaPrev})`,
+      aviso:`Disponível para iniciar a partir de ${ANTECEDENCIA_INICIO_MIN} min antes do horário (${faltaTxt}).`
+    };
+  }
+  return{liberado:true,textoBotao:'Iniciar remoção',aviso:''};
+}
+
 async function sincronizarNotificacoesAgenda(lista){
   const ln=getLocalNotifPlugin();if(!ln||!Array.isArray(lista))return;
   try{
@@ -1054,8 +1075,8 @@ async function sync(mostrarErro=false){
 }
 
 window.addEventListener('online',async()=>{await sync(false);if(sess){await carregarConfigEmpresaNuvem(true);if(!sup())await sincronizarLeituraFuncionarioNuvem(true)}});
-document.addEventListener('visibilitychange',async()=>{if(!document.hidden&&sess&&navigator.onLine){const mudou=await carregarConfigEmpresaNuvem(false);if(mudou&&document.querySelector('.tab.on')?.dataset.t==='checklist')renderChecklist()}});
-setInterval(()=>sync(false),60000);
+document.addEventListener('visibilitychange',async()=>{if(!document.hidden&&sess&&navigator.onLine){const mudou=await carregarConfigEmpresaNuvem(false);if(mudou&&document.querySelector('.tab.on')?.dataset.t==='checklist')renderChecklist();if(document.querySelector('.tab.on')?.dataset.t==='field'||sup())renderAgenda()}});
+setInterval(()=>{sync(false);if(sess&&!sup()&&document.querySelector('.tab.on')?.dataset.t==='field'&&agData.length)pintarListaAgenda(agData)},60000);
 
 async function renderPainel(){
   $('pn').innerHTML='<div class="card"><p class="muted">Carregando...</p></div>';
@@ -1073,13 +1094,23 @@ async function renderPainel(){
   }catch(e){$('pn').innerHTML='<div class="card"><p class="muted">Não foi possível carregar. Verifique a internet.</p></div>'}
 }
 
+function pintarListaAgenda(lista){
+  const box=sup()?$('ag-lista'):$('ag-lista-f');
+  if(!box)return;
+  if(!lista.length){box.innerHTML='<p class="muted">Nenhuma remoção agendada.</p>';return}
+  const ordenadas=[...lista].sort((a,b)=>{const atA=new Date(a.quando).getTime()<Date.now()?0:1,atB=new Date(b.quando).getTime()<Date.now()?0:1;return atA!==atB?atA-atB:new Date(a.quando).getTime()-new Date(b.quando).getTime()});
+  box.innerHTML=ordenadas.map(a=>{
+    const d=a.dados||{},q=new Date(a.quando).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}),atraso=formatarAtraso(a.quando),jan=infoJanelaAgendamento(a.quando);
+    return`<div class="${atraso?'rec bad':'rec'}"><strong>${esc(d.nome)}</strong> <span class="badge" style="background:#e0f2fe;color:#0369a1">${esc(q)}</span>${atraso?`<span class="badge b-bad">⚠️ ${esc(atraso)}</span>`:''}<p class="muted" style="margin:4px 0">📍 ${esc(d.origem)} ➔ ${esc(d.destino)}${d.viatura?'<br>🚑 '+esc(d.viatura):''}${d.obs?'<br>📝 '+esc(d.obs):''}</p>${!jan.liberado&&!sup()?`<p class="muted" style="margin:4px 0 0;font-size:.76rem">⏳ ${esc(jan.aviso)}</p>`:''}<div class="acts">${sup()?`<button class="sm teal" onclick="agEditar('${esc(a.id)}')">✏️ Editar</button><button class="sm badx" onclick="agDel('${esc(a.id)}')">Cancelar</button>`:`<button class="sm ${jan.liberado?'teal':'sec'}" ${jan.liberado?'':'disabled'} onclick="agUsar('${esc(a.id)}')">${esc(jan.textoBotao)}</button>`}</div></div>`;
+  }).join('');
+}
+
 async function renderAgenda(){
   if(!sess)return;fillViaturas();const box=sup()?$('ag-lista'):$('ag-lista-f');
   try{
-    agData=await api('/rest/v1/agenda?select=*&status=eq.agendada&order=quando.asc');sincronizarNotificacoesAgenda(agData);
-    if(!agData.length){box.innerHTML='<p class="muted">Nenhuma remoção agendada.</p>';return}
-    const ordenadas=[...agData].sort((a,b)=>{const atA=new Date(a.quando).getTime()<Date.now()?0:1,atB=new Date(b.quando).getTime()<Date.now()?0:1;return atA!==atB?atA-atB:new Date(a.quando).getTime()-new Date(b.quando).getTime()});
-    box.innerHTML=ordenadas.map(a=>{const d=a.dados||{},q=new Date(a.quando).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}),atraso=formatarAtraso(a.quando);return`<div class="${atraso?'rec bad':'rec'}"><strong>${esc(d.nome)}</strong> <span class="badge" style="background:#e0f2fe;color:#0369a1">${esc(q)}</span>${atraso?`<span class="badge b-bad">⚠️ ${esc(atraso)}</span>`:''}<p class="muted" style="margin:4px 0">📍 ${esc(d.origem)} ➔ ${esc(d.destino)}${d.viatura?'<br>🚑 '+esc(d.viatura):''}${d.obs?'<br>📝 '+esc(d.obs):''}</p><div class="acts">${sup()?`<button class="sm teal" onclick="agEditar('${esc(a.id)}')">✏️ Editar</button><button class="sm badx" onclick="agDel('${esc(a.id)}')">Cancelar</button>`:`<button class="sm teal" onclick="agUsar('${esc(a.id)}')">Iniciar remoção</button>`}</div></div>`}).join('');
+    agData=await api('/rest/v1/agenda?select=*&status=eq.agendada&order=quando.asc');
+    sincronizarNotificacoesAgenda(agData);
+    pintarListaAgenda(agData);
   }catch(e){box.innerHTML='<p class="muted">Agenda indisponível (sem internet).</p>'}
 }
 async function agSalvar(){
@@ -1087,7 +1118,15 @@ async function agSalvar(){
   try{const dados={nome:g('ag-nome'),origem:g('ag-orig'),destino:g('ag-dest'),viatura:$('ag-viat').value,obs:g('ag-obs')},quando=new Date(q).toISOString();if(agEd)await api('/rest/v1/agenda?id=eq.'+agEd,{method:'PATCH',h:{Prefer:'return=minimal'},body:{quando,dados}});else await api('/rest/v1/agenda',{method:'POST',h:{Prefer:'return=minimal'},body:{empresa_id:perfil?.empresa_id,quando,dados}});agCancelarEd();['ag-nome','ag-orig','ag-dest','ag-obs','ag-quando'].forEach(i=>$(i).value='');$('ag-viat').value='';toast('Remoção agendada.');renderAgenda()}catch(e){toast('Erro ao agendar. Verifique a internet.')}
 }
 async function agDel(id){if(!confirm('Cancelar esta remoção agendada?'))return;try{await api('/rest/v1/agenda?id=eq.'+id,{method:'DELETE'});renderAgenda()}catch(e){toast('Erro ao cancelar.')}}
-function agUsar(id){const a=agData.find(x=>x.id===id);if(!a)return;const d=a.dados||{},atraso=formatarAtraso(a.quando);$('r-nome').value=d.nome||'';$('r-orig').value=d.origem||'';$('r-dest').value=d.destino||'';if(d.viatura&&cfg.viaturas.includes(d.viatura))setViaturaAtual(d.viatura);agId=id;toast(atraso?`Atenção: remoção estava prevista para este horário (${atraso}).`:'Dados carregados. Preencha o hodômetro.');$('r-ini').focus()}
+function agUsar(id){
+  const a=agData.find(x=>x.id===id);if(!a)return;
+  const jan=infoJanelaAgendamento(a.quando);
+  if(!jan.liberado){toast(jan.aviso||'Esta remoção ainda não está na janela de início.');return}
+  const d=a.dados||{},atraso=formatarAtraso(a.quando);
+  $('r-nome').value=d.nome||'';$('r-orig').value=d.origem||'';$('r-dest').value=d.destino||'';
+  if(d.viatura&&cfg.viaturas.includes(d.viatura))setViaturaAtual(d.viatura);
+  agId=id;toast(atraso?`Atenção: remoção estava prevista para este horário (${atraso}).`:'Dados carregados. Preencha o hodômetro.');$('r-ini').focus();
+}
 
 const ed=r=>(r.editado_em||(r.dados&&r.dados.retificado))?`<div style="margin-top:6px"><span class="badge b-warn">✏️ Editada em ${esc(r.editado_em?new Date(r.editado_em).toLocaleString('pt-BR'):(r.dados?.editadoEm||''))}</span><details><summary class="muted" style="cursor:pointer">Versões anteriores (${(r.historico||[]).length})</summary>${(r.historico||[]).map(h=>`<div style="font-size:.75rem;border-top:1px solid #e2e8f0;padding:4px 0">${esc(new Date(h.em).toLocaleString('pt-BR'))}: ${esc(h.dados.nome)} • ${esc(h.dados.viatura||'—')} • ${esc(h.dados.origem)} ➔ ${esc(h.dados.destino)} • ${esc(h.dados.totalKm)} km • ${esc(h.dados.relato||'')}</div>`).join('')}</details></div>`:'';
 function enviarEdicao(tipo,o){if(!cloudOn||!sess||sup())return;const q=ld('fs_out',[]),lid=String(o.id),p=q.find(x=>x.tipo===tipo&&x.local_id===lid);if(p)p.dados=o;else q.push({op:'upd',tipo,local_id:lid,dados:o});sv('fs_out',q);renderPlantaoBar();sync(false)}
